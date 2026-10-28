@@ -3,7 +3,9 @@
 ================================================================================
  识字星球 · 字义扩展图统一模板  ziyi-viewer.html
 ================================================================================
- 本文件只是模板，不含正式字库数据。打开后按以下顺序找数据：
+ 本文件只是模板，不含正式字库数据。按组加载（xzq-common.js 的 XZQ.loadIndex / XZQ.loadGroup）：
+   先读 char-index.json，只加载当前字所在的组并立即显示，其余各组在后台陆续读取。
+   file:// 下改读 data/char-index.js 和 data/js/zi-<组号>.js（tools/build_data.py 生成）。
    1. 同目录 char-index.json   形如 {"字":"组号或文件"}
         值为数字或纯数字串 → 读 data/zi-<组号>.json（找不到时再试补零：zi-01 / zi-001）
         值为文件名         → "zi-12.json" 读 data/zi-12.json；含 "/" 的按相对路径原样读取
@@ -194,8 +196,11 @@ dl.kv dd{margin:0 0 6px}
 @keyframes rise{from{transform:translateY(10px);opacity:0}}
 @media (max-width:1100px){.main{grid-template-columns:190px 1fr 290px}}
 @media (max-width:820px){.main{grid-template-columns:1fr;grid-template-rows:auto 60vh auto}aside.left{max-height:40vh}}
+.learn-btn{margin-left:auto;min-height:44px;padding:0 16px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font:700 15px/1 var(--xzq-sans);cursor:pointer;pointer-events:auto}
+.learn-btn.on{background:var(--xzq-review);border-color:var(--xzq-review);color:var(--xzq-on-ink,#fff)}
 </style>
-<script>if(location.protocol==="file:")document.write('<script src="data/char-index.js"><\/script>')</script><script>if(location.protocol==="file:")document.write('<script src="data/bundle.js"><\/script>')</script><script>/* file:// 离线兜底：本地直接打开时从 data/*.js 读数据 */(function(){if(location.protocol!=='file:')return;var of=window.fetch;window.fetch=function(u,o){var k=String(u).replace(/^\.\//,'');var F=window.XZQ_FILES||{};if(k in F)return Promise.resolve(new Response(JSON.stringify(F[k]),{status:200,headers:{'Content-Type':'application/json'}}));if(/\.json$/.test(k))return Promise.resolve(new Response('',{status:404}));return of.apply(this,arguments)}})();</script></head>
+<script>if(location.protocol==="file:")document.write('<script src="data/char-index.js"><\/script>')</script><script src="xzq-common.js"></script><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FF8A5C"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
 <body>
 <div class="app">
   <header>
@@ -223,7 +228,7 @@ dl.kv dd{margin:0 0 6px}
     </aside>
     <section class="stage" id="stage">
       <div class="stars"></div>
-      <div class="stage-head"><div class="big" id="bigChar"></div><div class="meta" id="bigMeta"></div></div>
+      <div class="stage-head"><div class="big" id="bigChar"></div><div class="meta" id="bigMeta"></div><button type="button" class="learn-btn" id="learnBtn" aria-pressed="false" hidden>☆ 我学会了</button></div>
       <div class="zoom"><button id="zin" title="放大">＋</button><button id="zout" title="缩小">－</button><button id="zfit" title="适应窗口">⤢</button></div>
       <svg id="svg"><defs><filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#5a3c14" flood-opacity=".13"/></filter></defs><g id="world"></g></svg>
       <div class="empty" id="empty" hidden></div>
@@ -269,21 +274,12 @@ dl.kv dd{margin:0 0 6px}
 (function(){
 "use strict";
 /* ---------- 配置 ---------- */
-const NAV=[
-  ["字义扩展图","ziyi-viewer.html",true],
-  ["偏旁部首","pianpang-bushou.html"],
-  ["声旁音部","pianpang-bushou.html#shengpang"],
-  ["字词句","zicijv.html"],
-  ["汉字密码","hanzi-mima.html"],
-  ["易错诊所","yicuo-fuxi.html#yicuo"],
-  ["记忆复习","yicuo-fuxi.html#review"],
-  ["学习路径","learning-path.html"]
-];
+/* 顶部菜单在 xzq-common.js（XZQ.NAV）里统一维护 */
 const TYPE_VAR={"本义":"--t-ben","引申":"--t-yin","比喻":"--t-bi","转喻":"--t-zhuan","假借":"--t-jia"};
 const CONF_VAR={"确定":"--c-ok","通行说法":"--c-mid","待查":"--c-todo"};
 const NS="http://www.w3.org/2000/svg";
 const $=id=>document.getElementById(id);
-const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const esc=XZQ.esc;
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim()||"#999";
 const typeColor=t=>css(TYPE_VAR[t]||"--t-jia");
 const confColor=c=>css(CONF_VAR[c]||"--c-mid");
@@ -301,20 +297,9 @@ const arr=v=>Array.isArray(v)?v.filter(has):(has(v)?[v]:[]);
 const S={chars:{},groups:new Map(),index:null,cur:null,mode:"group",source:"",view:{x:0,y:0,k:1}};
 
 /* ---------- 顶部菜单 ---------- */
-function renderNav(){
-  const z=S.cur?("?zi="+encodeURIComponent(S.cur)):"";
-  $("topnav").innerHTML=NAV.map(([n,href,on])=>{
-    const [p,h]=href.split("#");
-    return `<a href="${esc(p+z+(h?"#"+h:""))}"${on?' class="on" aria-current="page"':""}>${esc(n)}</a>`;
-  }).join("");
-}
+function renderNav(){ $("topnav").innerHTML=XZQ.navHtml("meaning",S.cur); }
 
 /* ---------- 数据读取 ---------- */
-async function getJSON(url){
-  const r=await fetch(url,{cache:"no-cache"});
-  if(!r.ok)throw new Error(r.status);
-  return r.json();
-}
 function addGroup(obj,label){
   if(!obj||!Array.isArray(obj.chars))return 0;
   const g=String(obj.group!=null&&obj.group!==""?obj.group:label);
@@ -328,42 +313,57 @@ function addGroup(obj,label){
   });
   return n;
 }
-function candidates(v){
-  const s=String(v).trim();
-  if(/^\d+$/.test(s))return [`data/zi-${s}.json`,`data/zi-${s.padStart(2,"0")}.json`,`data/zi-${s.padStart(3,"0")}.json`].filter((x,i,a)=>a.indexOf(x)===i);
-  if(s.includes("/"))return [s];
-  return ["data/"+(s.endsWith(".json")?s:s+".json")];
+const loadedGroups=new Set();
+async function loadRef(g){
+  g=String(g).replace(/^.*\/|\.json$/g,"").replace(/^zi-0*/,"");
+  if(loadedGroups.has(g))return true;
+  try{const o=await XZQ.loadGroup(g);loadedGroups.add(g);addGroup(o,g);return true;}catch(e){return false;}
 }
-const loaded=new Set();
-async function loadRef(v){
-  for(const url of candidates(v)){
-    if(loaded.has(url))return true;
-    try{const o=await getJSON(url);loaded.add(url);addGroup(o,String(v).replace(/^.*\/|\.json$/g,""));return true;}catch(e){}
-  }
-  return false;
-}
+/* 先加载当前字所在的组并显示，再在后台读取其余各组 */
 async function boot(){
-  try{
-    const idx=await getJSON("char-index.json");
-    if(idx&&typeof idx==="object"){
-      S.index=idx;
-      const refs=[...new Set(Object.values(idx).map(String))];
-      await Promise.allSettled(refs.map(loadRef));
-    }
-  }catch(e){}
-  if(!Object.keys(S.chars).length){
+  const idx=await XZQ.loadIndex();
+  const want=new URLSearchParams(location.search).get("zi");
+  if(idx){
+    S.index=idx;
+    /* 用索引先把左侧“按组”目录排好，未加载的组点到时再读 */
+    Object.keys(idx).forEach(z=>{const g=String(idx[z]);if(!S.groups.has(g))S.groups.set(g,[]);const l=S.groups.get(g);if(!l.includes(z))l.push(z);});
+    const first=(want&&idx[want]!=null)?idx[want]:[...S.groups.keys()][0];
+    if(first!=null)await loadRef(first);
+  }else{
     let miss=0;
     for(let i=1;i<=300&&miss<3;i++){ if(await loadRef(i))miss=0; else miss++; }
   }
   if(Object.keys(S.chars).length){S.source="data";}
   else{
+    S.groups=new Map();
     addGroup(JSON.parse($("demo-data").textContent),"示例");
     S.source="demo";
     showBanner(location.protocol==="file:"
-      ?"当前为演示数据：直接双击打开时浏览器不允许读取本地 data 目录。"
+      ?"当前为演示数据：没有找到 data/char-index.js 或 data/js 目录。"
       :"当前为演示数据：没有找到 char-index.json 或 data/zi-*.json。");
   }
   afterLoad();
+  if(S.source==="data"&&S.index)loadRest();
+}
+const idle=()=>new Promise(r=>window.requestIdleCallback?requestIdleCallback(()=>r(),{timeout:400}):setTimeout(r,30));
+async function loadRest(){
+  const rest=[...new Set(Object.values(S.index).map(String))].filter(g=>!loadedGroups.has(g));
+  let i=0;
+  const worker=async()=>{while(i<rest.length){await loadRef(rest[i++]);await idle();}};
+  await Promise.all([worker(),worker(),worker()]);
+  S.allLoaded=true;
+  if(S.mode!=="group")renderBrowse();
+}
+/* 跳到某个字：所在组还没加载时先加载 */
+async function go(z,push=true){
+  if(!z)return false;
+  if(!S.chars[z]&&S.index&&S.index[z]!=null&&S.source==="data"){
+    $("qmsg").textContent="正在读取……";
+    await loadRef(S.index[z]);
+    $("qmsg").textContent="";
+  }
+  if(!S.chars[z])return false;
+  select(z,push);return true;
 }
 function showBanner(t){$("bannerText").textContent=t;$("banner").hidden=false;}
 async function readLocalFiles(files){
@@ -408,10 +408,11 @@ function renderBrowse(){
     Object.keys(by).sort((a,b)=>a==="其他"?1:b==="其他"?-1:a.localeCompare(b,"zh")).forEach(b=>{
       html+=`<div class="grp"><h5><span>部首 <b class="kai" style="font-size:15px;color:var(--ink)">${esc(b)}</b></span><span>${by[b].length} 字</span></h5><div class="grid">${by[b].map(btn).join("")}</div></div>`;
     });
+    if(S.source==="data"&&!S.allLoaded)html=`<p class="p loading-note" style="color:var(--ink2);font-size:13px">其余各组正在后台读取，读完后这里会自动补全。</p>`+html;
   }
   box.innerHTML=html||`<p class="p" style="color:var(--ink2);font-size:13px">还没有字。</p>`;
 }
-$("browse").addEventListener("click",e=>{const b=e.target.closest("button[data-zi]");if(b)select(b.dataset.zi);});
+$("browse").addEventListener("click",e=>{const b=e.target.closest("button[data-zi]");if(b)go(b.dataset.zi);});
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
   S.mode=b.dataset.mode;document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b));renderBrowse();
   const on=$("browse").querySelector("button.on");if(on)on.scrollIntoView({block:"center"});
@@ -422,11 +423,7 @@ $("q").addEventListener("keydown",async e=>{
   if(e.key!=="Enter")return;
   const z=[...e.target.value.trim()][0]; const m=$("qmsg"); m.textContent="";
   if(!z)return;
-  if(S.chars[z]){select(z);e.target.value="";return;}
-  if(S.index&&S.index[z]!=null&&S.source==="data"){
-    m.textContent="正在读取……";
-    if(await loadRef(S.index[z])&&S.chars[z]){m.textContent="";renderBrowse();select(z);e.target.value="";return;}
-  }
+  if(await go(z)){e.target.value="";return;}
   m.textContent=`“${z}”暂未收录`;
 });
 
@@ -439,7 +436,7 @@ function select(z,push=true){
   renderNav(); renderHead(); renderMap(true); renderSide();
   document.querySelectorAll("#browse button[data-zi]").forEach(b=>b.classList.toggle("on",b.dataset.zi===z));
 }
-window.addEventListener("popstate",()=>{const z=new URLSearchParams(location.search).get("zi");if(z&&S.chars[z])select(z,false);});
+window.addEventListener("popstate",()=>{const z=new URLSearchParams(location.search).get("zi");if(z)go(z,false);});
 
 /* ---------- 义项整理 ---------- */
 function senseList(c){
@@ -585,7 +582,19 @@ function renderHead(){
     has(c._group)&&(/^\d+$/.test(c._group)?`第 ${esc(c._group)} 组`:esc(c._group))].filter(Boolean);
   $("bigMeta").innerHTML=bits.join(" · ");
   document.title=`${c.zi} · 字义扩展图 · 识字星球`;
+  /* 学习进度：打开即记为“看过”，按钮记“学会了”（存储不可用时只在本次打开期间有效） */
+  if(S.source==="data"){XZQ.progress.markViewed(c.zi);renderLearn();}
 }
+function renderLearn(){
+  const b=$("learnBtn"),on=XZQ.progress.isLearned(S.cur);
+  b.hidden=false;b.setAttribute("aria-pressed",on);b.classList.toggle("on",on);b.textContent=on?"★ 已学会":"☆ 我学会了";
+}
+$("learnBtn").onclick=()=>{
+  const z=S.cur;if(!z)return;
+  if(XZQ.progress.isLearned(z))XZQ.progress.unmarkLearned(z);else XZQ.progress.markLearned(z);
+  if(!XZQ.store.ok)XZQ.toast("浏览器不允许保存进度，关闭页面后会丢失");
+  renderLearn();
+};
 function card(title,body,color){return has(body)?`<div class="card"><h3><span class="bar"${color?` style="background:${color}"`:""}></span>${title}</h3>${body}</div>`:"";}
 function renderSide(){
   const c=S.chars[S.cur]; const o=c.origin||{}; let h="";
@@ -596,6 +605,7 @@ function renderSide(){
   const evo=(Array.isArray(c.evo)?c.evo:[]).filter(has);
   if(evo.length)ob+=`<h4>字形演变（文字占位）</h4><div class="evo">${evo.map(e=>`<div><b>${has(e.stage)?esc(e.stage):"说明"}</b>${has(e.desc)?esc(e.desc):'<span style="color:var(--xzq-muted,#7A7896)">资料待补</span>'}</div>`).join("")}</div>`;
   if(has(o.why))ob+=`<h4>本义判定理由</h4><p class="p">${esc(o.why)}</p>`;
+  if(has(o.ref))ob+=`<h4>核对出处</h4><div class="src">${esc(o.ref)}</div>${has(o.refNote)?`<p class="p" style="font-size:13px;color:var(--ink2)">${esc(o.refNote)}</p>`:""}`;
   if(has(ob))ob+=`<div style="margin-top:10px">${has(o.conf)?badge(o.conf):'<span class="badge" style="color:var(--xzq-muted,#7A7896)">可信度待标注</span>'}</div>`;
   h+=card("本义溯源",ob);
   /* 偏旁拆分 */

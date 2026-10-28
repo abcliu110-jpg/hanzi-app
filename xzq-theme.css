@@ -1,7 +1,8 @@
 /* ==========================================================
    识字星球 · 共享主题 (xzq-theme)  —— 其他页面可整段复制或引用 xzq-theme.css
    ----------------------------------------------------------
-   配色：每个模块一个主色，通用色用 --xzq-ink / --xzq-bg 等
+   配色：每个模块一个主色，通用色用 --xzq-ink / --xzq-bg 等；深色模式在下方 prefers-color-scheme 里只改变量
+   字体：--xzq-sans / --xzq-kai / --xzq-serif；最小点击尺寸 --xzq-tap
    组件：.xzq-topbar .xzq-nav .xzq-card .xzq-btn .xzq-chip .xzq-hz .xzq-tip
    本地存储约定（各页面共用，同一浏览器内有效）：
      xzq_learned   [{zi:"休",date:"2026-10-27"}]   已学的字
@@ -25,33 +26,85 @@
   --xzq-radius:20px;
   --xzq-shadow:0 6px 0 rgba(43,42,76,.06),0 10px 30px rgba(43,42,76,.08);
   --xzq-topbar-h:64px;
+  /* 补充的语义色：各页面不再直接写死颜色，统一引用这些变量（深色模式只需改这里） */
+  --xzq-surface:#FFFDF8;               /* 略带暖色的卡片底 */
+  --xzq-ink-soft:var(--xzq-muted);
+  --xzq-on-color:#FFFFFF;              /* 彩色底上的文字，深浅模式都是白色 */
+  --xzq-strong:var(--xzq-ink);         /* 实心按钮 / 选中菜单的底色 */
+  --xzq-on-strong:#FFFFFF;
+  --xzq-strong-shadow:#15142E;
+  --xzq-topbar-bg:rgba(255,248,238,.88);
+  --xzq-glow-1:#FFE3C6; --xzq-glow-2:#D9F3EC; --xzq-glow-3:#E9E3FF;
+  --xzq-logo-a:#FF8A5C; --xzq-logo-b:#F7B733; --xzq-logo-shadow:#D9772F;
+  --xzq-tip-bg:#FFFAF0; --xzq-tip-line:#F7E3BF;
+  --xzq-serif:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC","SimSun",serif;
+  --xzq-tap:44px;                      /* 最小点击尺寸 */
+  color-scheme:light dark;
+}
+/* ---------- 深色模式：跟随系统 prefers-color-scheme ---------- */
+@media (prefers-color-scheme:dark){
+  :root{
+    --xzq-bg:#16152A; --xzq-ink:#ECEAF8; --xzq-muted:#A9A6C6; --xzq-line:#34324F; --xzq-card:#211F38; --xzq-surface-2:#2A2844;
+    --xzq-surface:#24223D;
+    --xzq-meaning:#6E95F5;  --xzq-meaning-soft:#1F2A4F;
+    --xzq-radical:#F5A852;  --xzq-radical-soft:#3B2C18;
+    --xzq-phon:#A08AF5;     --xzq-phon-soft:#2C2551;
+    --xzq-word:#3BB8D8;     --xzq-word-soft:#133B46;
+    --xzq-code:#E673AE;     --xzq-code-soft:#45203A;
+    --xzq-clinic:#F06B74;   --xzq-clinic-soft:#4A1F25;
+    --xzq-review:#3CC2A6;   --xzq-review-soft:#143E36;
+    --xzq-path:#7E8CE6;     --xzq-path-soft:#262C58;
+    --xzq-strong:#ECEAF8; --xzq-on-strong:#16152A; --xzq-strong-shadow:#000;
+    --xzq-topbar-bg:rgba(22,21,42,.9);
+    --xzq-glow-1:#2A2140; --xzq-glow-2:#15302C; --xzq-glow-3:#231F44;
+    --xzq-logo-shadow:#8A4A1C;
+    --xzq-tip-bg:#2B2536; --xzq-tip-line:#4A3E2A;
+    --xzq-shadow:0 6px 0 rgba(0,0,0,.25),0 10px 30px rgba(0,0,0,.35);
+  }
+  img:not([src$=".svg"]){filter:brightness(.92)}
 }
 *{box-sizing:border-box}
 html,body{margin:0}
 body.xzq{font-family:var(--xzq-sans);color:var(--xzq-ink);background:var(--xzq-bg);line-height:1.6;min-height:100vh;
-  background-image:radial-gradient(circle at 8% -5%,#FFE3C6 0,transparent 38%),radial-gradient(circle at 105% 18%,#D9F3EC 0,transparent 32%),radial-gradient(circle at 50% 120%,#E9E3FF 0,transparent 40%);
+  background-image:radial-gradient(circle at 8% -5%,var(--xzq-glow-1) 0,transparent 38%),radial-gradient(circle at 105% 18%,var(--xzq-glow-2) 0,transparent 32%),radial-gradient(circle at 50% 120%,var(--xzq-glow-3) 0,transparent 40%);
   background-attachment:fixed;padding-top:var(--xzq-topbar-h)}
 .xzq a{color:inherit}
 .xzq button{font-family:inherit;cursor:pointer}
-.xzq-topbar{position:fixed;top:0;left:0;right:0;height:var(--xzq-topbar-h);z-index:40;background:rgba(255,248,238,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--xzq-line)}
+.xzq-topbar{position:fixed;top:0;left:0;right:0;height:var(--xzq-topbar-h);z-index:40;background:var(--xzq-topbar-bg);backdrop-filter:blur(10px);border-bottom:1px solid var(--xzq-line)}
 .xzq-topbar .in{max-width:1180px;margin:0 auto;height:100%;display:flex;align-items:center;gap:14px;padding:0 18px}
 .xzq-brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex:0 0 auto}
-.xzq-logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#FF8A5C,#F7B733);display:grid;place-items:center;color:#fff;font-family:var(--xzq-kai);font-size:24px;font-weight:700;box-shadow:0 3px 0 #D9772F}
+.xzq-logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--xzq-logo-a),var(--xzq-logo-b));display:grid;place-items:center;color:var(--xzq-on-color);font-family:var(--xzq-kai);font-size:24px;font-weight:700;box-shadow:0 3px 0 var(--xzq-logo-shadow)}
 .xzq-brand b{font-size:18px;letter-spacing:1px}
 .xzq-nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1}
 .xzq-nav::-webkit-scrollbar{display:none}
 .xzq-nav a{flex:0 0 auto;text-decoration:none;color:var(--xzq-muted);font-weight:700;font-size:14px;padding:7px 12px;border-radius:999px;transition:.15s;white-space:nowrap}
-.xzq-nav a:hover{background:#fff;color:var(--xzq-ink)}
-.xzq-nav a.on{background:var(--xzq-ink);color:#fff;box-shadow:0 3px 0 #15142E}
+.xzq-nav a:hover{background:var(--xzq-card);color:var(--xzq-ink)}
+.xzq-nav a.on{background:var(--xzq-strong);color:var(--xzq-on-strong);box-shadow:0 3px 0 var(--xzq-strong-shadow)}
 .xzq-wrap{max-width:1180px;margin:0 auto;padding:22px 18px 40px}
 .xzq-card{background:var(--xzq-card);border-radius:var(--xzq-radius);padding:18px;box-shadow:var(--xzq-shadow)}
-.xzq-btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:14px;padding:10px 18px;font-size:15px;font-weight:700;color:#fff;background:var(--xzq-ink);box-shadow:0 4px 0 #15142E;text-decoration:none;transition:.12s}
-.xzq-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #15142E}
-.xzq-btn.ghost{background:#fff;color:var(--xzq-ink);border:2px solid var(--xzq-line);box-shadow:none}
+.xzq-btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:14px;padding:10px 18px;font-size:15px;font-weight:700;color:var(--xzq-on-strong);background:var(--xzq-strong);box-shadow:0 4px 0 var(--xzq-strong-shadow);text-decoration:none;transition:.12s;min-height:var(--xzq-tap)}
+.xzq-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--xzq-strong-shadow)}
+.xzq-btn.ghost{background:var(--xzq-card);color:var(--xzq-ink);border:2px solid var(--xzq-line);box-shadow:none}
 .xzq-btn.sm{padding:6px 12px;font-size:13px;border-radius:10px}
 .xzq-chip{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px;background:var(--xzq-path-soft);color:var(--xzq-path)}
 .xzq-hz{font-family:var(--xzq-kai);font-weight:700;line-height:1.1}
-.xzq-tip{background:#FFFAF0;border:1.5px solid #F7E3BF;border-radius:14px;padding:10px 12px;font-size:14px}
+.xzq-tip{background:var(--xzq-tip-bg);border:1.5px solid var(--xzq-tip-line);border-radius:14px;padding:10px 12px;font-size:14px}
 .xzq-muted{color:var(--xzq-muted)}
+/* ---------- 小屏与触屏：统一布局和点击尺寸（≥44px） ---------- */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+img,svg,video{max-width:100%}
+@media (pointer:coarse),(max-width:760px){
+  button,select,input[type=button],input[type=submit],[role=button],.xzq-btn,.xzq-btn.sm,.xzq-back{min-height:var(--xzq-tap)}
+  button:not(.xzq-inline),[role=button]{min-width:var(--xzq-tap)}
+  input[type=text],input[type=search],input:not([type]),select{min-height:var(--xzq-tap);font-size:16px}  /* 16px 防止 iOS 聚焦时放大 */
+  nav a,.xzq-nav a,.topnav a,.top a,.xzq-brand{min-height:var(--xzq-tap);display:inline-flex;align-items:center}
+  .xzq-brand{min-width:var(--xzq-tap)}
+  .quick a{min-height:var(--xzq-tap);min-width:var(--xzq-tap);display:inline-flex;align-items:center;justify-content:center}
+}
+@media (max-width:760px){
+  .xzq-wrap{padding:16px 12px 32px}
+  .xzq-topbar .in{padding:0 12px;gap:8px}
+  .xzq-brand b{display:none}
+}
 /* ================= 主题结束 ================= */
 /* 使用：<link rel="stylesheet" href="xzq-theme.css">，并给 <body> 加 class="xzq" */

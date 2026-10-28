@@ -21,7 +21,7 @@
     else location.href = home;
   };
   var css = document.createElement('style');
-  css.textContent = '.xzq-back{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;min-height:40px;padding:0 14px;margin-right:10px;border:1px solid var(--xzq-line,#F0E6D6);border-radius:999px;background:#fff;color:var(--xzq-ink,#2B2A4C);font:600 15px/1 var(--xzq-sans,"PingFang SC","Microsoft YaHei",sans-serif);cursor:pointer;box-shadow:0 2px 0 rgba(43,42,76,.06)}'
+  css.textContent = '.xzq-back{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 14px;margin-right:10px;border:1px solid var(--xzq-line,#F0E6D6);border-radius:999px;background:var(--xzq-card,#fff);color:var(--xzq-ink,#2B2A4C);font:600 15px/1 var(--xzq-sans,"PingFang SC","Microsoft YaHei",sans-serif);cursor:pointer;box-shadow:0 2px 0 rgba(43,42,76,.06)}'
     + '.xzq-back:hover{background:var(--xzq-bg,#FFF8EE)}.xzq-back span{font-size:18px}'
     + '.xzq-back-bar{max-width:1240px;margin:0 auto;padding:12px 16px 0}';
   document.head.appendChild(css);

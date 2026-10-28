@@ -266,9 +266,10 @@ function hl(html){if(!query)return html;const re=new RegExp("("+escR(query)+")",
  return html.split(/(<[^>]+>)/).map(p=>p.startsWith("<")?p:p.replace(re,"<mark>$1</mark>")).join("")}
 
 function renderTop(){
- $("topnav").innerHTML=TOP.map((t,i)=>`<button class="tn ${i===topSel?"on":""}" onclick="pickTop(${i})">${t}${i===4?"":'<span class="soon">· 待开放</span>'}</button>`).join("");
+ $("topnav").innerHTML=TOP.map((t,i)=>`<button class="tn ${i===topSel?"on":""}" onclick="pickTop(${i})">${t}</button>`).join("");
 }
-function pickTop(i){topSel=i;renderTop();$("wrap").style.gridTemplateColumns=i===4?"":"1fr";$("side").style.display=i===4?"":"none";renderMain()}
+const TOP_LINKS=["ziyi-viewer.html","pianpang-bushou.html","pianpang-bushou.html#shengpang","zicijv.html",null,"yicuo-fuxi.html","yicuo-fuxi.html#review","learning-path.html"];
+function pickTop(i){if(TOP_LINKS[i]){location.href=TOP_LINKS[i];return}topSel=i;renderTop();$("wrap").style.gridTemplateColumns=i===4?"":"1fr";$("side").style.display=i===4?"":"none";renderMain()}
 function renderSide(){
  $("catlist").innerHTML=CATS.map((c,ci)=>`<div class="cat ${c.id===catSel||query?"open":""}">
   <button class="cat-h ${c.id===catSel&&!query?"on":""}" onclick="pickCat('${c.id}')"><span class="dot kai" style="background:${c.color}">${c.icon}</span>${ci+1} ${c.name}<span class="arr">›</span></button>
@@ -323,5 +324,6 @@ function toggleSide(v){$("side").classList.toggle("show",v);$("mask").classList.
 
 renderTop();renderSide();renderMain();
 </script>
+<script src="xzq-back.js" data-target="header .brand"></script>
 </body>
 </html>

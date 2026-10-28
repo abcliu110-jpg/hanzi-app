@@ -21,6 +21,8 @@
 | jie-ziyi-kuozhan-tu.html | 单字示例「节」 |
 | verify-pilot.html | 「待查」条目核对报告（试点） |
 
+`xzq-back.js` 给各模块页加「← 返回」按钮（有上一页就返回，否则回首页；在 app-shell 里嵌入时自动隐藏）。
+
 学习进度存在浏览器 localStorage，键名约定见 `xzq-theme.css` 开头注释。
 
 ## 数据

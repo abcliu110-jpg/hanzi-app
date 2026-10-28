@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>字义扩展图 · 汉字学习</title>
+<style>
+:root{
+  --paper:#faf6ee; --paper2:#f3ecdf; --card:#fffdf8; --ink:#2b2622; --ink2:#5d544b; --ink3:#8f857a;
+  --line:#e6dccb; --seal:#c8553d; --seal-soft:#f6e1d9;
+  --t-yin:#2f8f83; --t-bi:#e08a2e; --t-zhuan:#7b5ea7; --t-jia:#8a8f98;
+  --c-sure:#3f8f4f; --c-common:#3b72b8; --c-tbd:#c9871a;
+  --radius:14px; --shadow:0 2px 10px rgba(80,60,30,.08),0 1px 2px rgba(80,60,30,.06);
+  --serif:"Noto Serif SC","Source Han Serif SC","Songti SC","STSong","SimSun",serif;
+  --sans:"PingFang SC","Noto Sans SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6}
+button{font-family:inherit;cursor:pointer}
+.app{display:grid;grid-template-rows:auto 1fr;height:100vh}
+/* top nav */
+.topbar{display:flex;align-items:center;gap:18px;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(0,0,0,.02)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;white-space:nowrap}
+.brand .seal{width:34px;height:34px;border-radius:9px;background:var(--seal);color:#fff;display:grid;place-items:center;font-family:var(--serif);font-size:20px}
+.brand small{display:block;font-weight:400;color:var(--ink3);font-size:11px;line-height:1.1}
+.nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav button{border:0;background:transparent;padding:8px 14px;border-radius:999px;color:var(--ink2);font-size:14px;white-space:nowrap;position:relative}
+.nav button:hover{background:var(--paper2)}
+.nav button.active{background:var(--seal);color:#fff;font-weight:600}
+.nav button.soon::after{content:"";position:absolute;top:7px;right:7px;width:5px;height:5px;border-radius:50%;background:var(--line)}
+/* layout */
+.main{display:grid;grid-template-columns:200px 1fr 360px;min-height:0}
+.side{border-right:1px solid var(--line);background:var(--paper2);overflow:auto;padding:14px 10px}
+.side h3{margin:4px 8px 10px;font-size:12px;color:var(--ink3);font-weight:600;letter-spacing:.1em}
+.charlist{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.charbtn{border:1px solid transparent;background:var(--card);border-radius:12px;padding:8px 4px 6px;text-align:center;box-shadow:var(--shadow);transition:.15s}
+.charbtn .c{font-family:var(--serif);font-size:26px;line-height:1.1;display:block;color:var(--ink)}
+.charbtn .p{font-size:11px;color:var(--ink3)}
+.charbtn:hover{transform:translateY(-1px);border-color:var(--line)}
+.charbtn.active{border-color:var(--seal);background:var(--seal-soft)}
+.charbtn.active .c{color:var(--seal)}
+/* center */
+.stage{display:flex;flex-direction:column;min-width:0;min-height:0}
+.stagehead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px 8px;flex-wrap:wrap}
+.title{display:flex;align-items:baseline;gap:12px}
+.title .big{font-family:var(--serif);font-size:40px;line-height:1;color:var(--seal)}
+.title .meta{color:var(--ink2)}
+.title .meta b{font-size:16px;color:var(--ink)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink2);align-items:center}
+.legend i{display:inline-block;width:22px;height:0;border-top:3px solid;vertical-align:middle;margin-right:5px;border-radius:2px}
+.legend .jia i{border-top-style:dashed}
+.canvaswrap{position:relative;flex:1;margin:0 20px 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;min-height:340px;
+  background-image:radial-gradient(circle,#efe6d6 1px,transparent 1px);background-size:22px 22px}
+svg#map{width:100%;height:100%;display:block;cursor:grab;touch-action:none;user-select:none}
+svg#map.drag{cursor:grabbing}
+.tools{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:6px}
+.tools button{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:17px;color:var(--ink2);box-shadow:var(--shadow)}
+.tools button:hover{color:var(--seal);border-color:var(--seal)}
+.toggles{position:absolute;left:12px;bottom:12px;font-size:12px;color:var(--ink2);background:rgba(255,253,248,.92);padding:5px 10px;border-radius:999px;border:1px solid var(--line)}
+.hint{position:absolute;left:12px;top:10px;font-size:12px;color:var(--ink3)}
+.node{cursor:pointer}
+.node rect{transition:filter .15s}
+.node:hover rect{filter:brightness(.97) drop-shadow(0 2px 4px rgba(0,0,0,.12))}
+.node.sel rect{stroke-width:3}
+.elabel{pointer-events:none}
+/* right panel */
+.panel{border-left:1px solid var(--line);overflow:auto;padding:14px 16px 30px;background:var(--paper)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;margin-bottom:14px}
+.card h4{margin:0 0 10px;font-size:13px;color:var(--ink3);font-weight:600;letter-spacing:.08em;display:flex;align-items:center;gap:6px}
+.card h4::before{content:"";width:4px;height:13px;border-radius:2px;background:var(--seal)}
+.dhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.dhead .name{font-size:19px;font-weight:700;font-family:var(--serif)}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap}
+.why{background:var(--paper2);border-radius:10px;padding:8px 10px;color:var(--ink2);margin:6px 0 10px}
+.why b{color:var(--ink)}
+.row{margin:10px 0}
+.row .lab{font-size:12px;color:var(--ink3);margin-bottom:4px}
+.words{display:flex;gap:6px;flex-wrap:wrap}
+.words span{background:var(--seal-soft);color:#8e3a27;padding:3px 10px;border-radius:8px;font-weight:600}
+.quote{font-family:var(--serif);font-size:15.5px;border-left:3px solid var(--seal);padding:4px 0 4px 10px;margin:4px 0}
+.src{font-size:12px;color:var(--ink3)}
+.trans{color:var(--ink2);font-size:13px;margin-top:2px}
+.tbd{color:var(--c-tbd);font-weight:600}
+.tag{font-size:11px;padding:0 6px;border-radius:5px;background:#eef1f5;color:#5b6676;margin-left:6px;vertical-align:1px}
+.evo{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:6px 0}
+.evo div{border:1px dashed var(--line);border-radius:10px;text-align:center;padding:6px 2px;background:var(--paper)}
+.evo .g{font-family:var(--serif);font-size:22px;color:#cbbfae;line-height:1.3}
+.evo .s{font-size:11px;color:var(--ink3)}
+.kv{display:grid;grid-template-columns:52px 1fr;gap:6px 10px;align-items:start}
+.kv .k{font-size:12px;padding:2px 0;text-align:center;border-radius:6px;font-weight:600}
+.k.yi{background:#e3f1ef;color:var(--t-yin)} .k.yin{background:#fdeedd;color:#b0671c}
+ul.clean{margin:0;padding-left:18px} ul.clean li{margin:3px 0}
+.pit{display:flex;gap:8px;margin:4px 0}
+.pit .k{flex:none;font-size:12px;padding:1px 7px;border-radius:6px;height:fit-content}
+.k.r{background:#fbe6e2;color:#b2412b} .k.w{background:#e7edf8;color:#335f9e}
+.codeitem{display:flex;gap:8px;margin:6px 0}
+.codeitem::before{content:"🔑";flex:none}
+.foot{font-size:11.5px;color:var(--ink3);line-height:1.7}
+.toast{position:fixed;left:50%;top:70px;transform:translateX(-50%) translateY(-10px);background:var(--ink);color:#fff;padding:8px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width:1100px){.main{grid-template-columns:150px 1fr}.panel{grid-column:1/-1;border-left:0;border-top:1px solid var(--line)}.app{height:auto}.canvaswrap{height:520px;flex:none}.charlist{grid-template-columns:1fr}}
+@media (max-width:640px){.main{grid-template-columns:1fr}.side{border-right:0}.charlist{grid-template-columns:repeat(5,1fr)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="seal">字</div><div>汉字学习<small>字义扩展图 · 第21组</small></div></div>
+    <nav class="nav" id="nav"></nav>
+  </header>
+  <div class="main">
+    <aside class="side"><h3>本组 20 字</h3><div class="charlist" id="charlist"></div></aside>
+    <section class="stage">
+      <div class="stagehead">
+        <div class="title"><span class="big" id="tChar"></span><span class="meta" id="tMeta"></span></div>
+        <div class="legend">
+          <span style="color:var(--t-yin)"><i style="border-color:var(--t-yin)"></i>引申</span>
+          <span style="color:var(--t-bi)"><i style="border-color:var(--t-bi)"></i>比喻</span>
+          <span style="color:var(--t-zhuan)"><i style="border-color:var(--t-zhuan)"></i>转喻</span>
+          <span class="jia" style="color:var(--t-jia)"><i style="border-color:var(--t-jia)"></i>假借</span>
+        </div>
+      </div>
+      <div class="canvaswrap" id="wrap">
+        <svg id="map" xmlns="http://www.w3.org/2000/svg"><g id="vp"></g></svg>
+        <div class="hint">滚轮缩放 · 拖动平移 · 点击义项看详情</div>
+        <label class="toggles"><input type="checkbox" id="showWhy" checked> 线上显示原因</label>
+        <div class="tools"><button id="zin" title="放大">＋</button><button id="zout" title="缩小">－</button><button id="zfit" title="适应窗口">⤢</button></div>
+      </div>
+    </section>
+    <aside class="panel" id="panel"></aside>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script id="data" type="application/json">{"meta": {"title": "字义扩展图 · 第21组", "version": "maps-21"}, "chars": [{"char": "联", "trad": "聯", "pinyin": "lián", "origin": {"meaning": "连接、连续不断", "shuowen": "聯，連也。从耳，耳連於頰也；从絲，絲連不絕也。", "evo": "繁体「聯」由「耳」和「丝」组成：耳朵连着脸颊，丝线连绵不断。简化后右边写作「关」形。甲骨文是否有此字待查。", "reason": "《说文》直接训为「连也」，两个部件「耳」「丝」都指向「连着、不断开」，所以把「连接」定为本义。", "certainty": "确定", "classical": null}, "senses": [{"id": "a", "label": "联合、结合", "parent": "o", "type": "引申", "why": "东西能连在一起，人也能「连」起来一起做事。", "words": ["联合", "联盟", "联手"], "parse": "联盟 ＝ 联（连起来）＋ 盟（立下约定）", "modern": "两个班联手办了一场运动会。", "classical": null, "certainty": "确定"}, {"id": "b", "label": "联系、联络", "parent": "o", "type": "引申", "why": "人和人之间像有一根线连着，可以互相传消息。", "words": ["联系", "联络", "联想"], "parse": "联想 ＝ 联（连上）＋ 想（想法）：由一个想法连到另一个想法", "modern": "放假了也要和老师保持联系。", "classical": null, "certainty": "确定"}, {"id": "c", "label": "古代户籍单位", "parent": "a", "type": "转喻", "why": "把几户人家「连」成一组来管理，这一组也叫「联」。", "words": ["比联", "官联", "联保"], "parse": "联保 ＝ 联（几家连成一组）＋ 保（互相担保）", "modern": "古时候，十户人家编成一「联」。", "classical": {"text": "五家为比，十家为联。", "src": "《周礼·地官·族师》", "trans": "五户人家编为一「比」，十户人家编为一「联」。", "certainty": "通行说法"}, "certainty": "通行说法"}, {"id": "d", "label": "对联", "parent": "o", "type": "转喻", "why": "上下两句话一对一对连在一起，就叫「联」。", "words": ["对联", "春联", "上联"], "parse": "春联 ＝ 春（春节）＋ 联（成对的两句话）", "modern": "过年时，爷爷在门上贴了一副春联。", "classical": null, "certainty": "确定"}], "parts": {"meaning": "耳、丝（繁体「聯」）：耳连于颊，丝连不断", "sound": "无，会意字", "note": "简化字右边写成「关」，只是形体记号，不表音。"}, "pitfalls": {"read": ["读 lián（第二声），不要读成 liǎn（脸）。"], "write": ["左边「耳」字旁最后一笔是提，不是横。", "右边就是「关」，上面两点向内。"]}, "code": ["会意字密码：两个部件合起来表意——耳 ＋ 丝 ＝ 连着。", "「联」「连」都有「连接」义：「联」偏重组合，「连」偏重接续。"]}, {"char": "持", "trad": "持", "pinyin": "chí", "origin": {"meaning": "握着、拿着", "shuowen": "持，握也。从手寺聲。", "evo": "小篆左手右寺，隶变后「手」写作提手旁「扌」，一直沿用到楷书。", "reason": "字从手，《说文》训「握」，和手的动作直接对应，所以「拿着」是本义。", "certainty": "确定", "classical": {"text": "左手把秦王之袖，而右手持匕首揕之。", "src": "《战国策·燕策三》", "trans": "（荆轲）左手抓住秦王的袖子，右手拿着匕首刺他。", "certainty": "确定"}}, "senses": [{"id": "a", "label": "扶持、支持", "parent": "o", "type": "引申", "why": "用手握住别人，就能托住他、帮他一把。", "words": ["支持", "扶持", "维持"], "parse": "扶持 ＝ 扶（用手扶）＋ 持（握住托着）", "modern": "同学们都支持小明当班长。", "classical": {"text": "危而不持，颠而不扶，则将焉用彼相矣？", "src": "《论语·季氏》", "trans": "盲人遇到危险不去扶持，摔倒了不去搀扶，那还要那个助手做什么呢？", "certainty": "确定"}, "certainty": "确定"}, {"id": "b", "label": "坚持、保持", "parent": "o", "type": "引申", "why": "一直握着不松手，就是一直保持下去。", "words": ["坚持", "保持", "持久"], "parse": "坚持 ＝ 坚（坚定）＋ 持（握住不放）", "modern": "她每天坚持跳绳一百下。", "classical": null, "certainty": "确定"}, {"id": "c", "label": "主管、料理", "parent": "o", "type": "比喻", "why": "把一件事「握在手里」，就是由你来管。", "words": ["主持", "持家", "操持"], "parse": "主持 ＝ 主（做主）＋ 持（掌握着）", "modern": "这次班会由小红主持。", "classical": null, "certainty": "确定"}, {"id": "d", "label": "相持不下", "parent": "b", "type": "引申", "why": "两边都紧紧握住不放，谁也赢不了谁。", "words": ["相持", "僵持", "持平"], "parse": "僵持 ＝ 僵（僵住不动）＋ 持（都握着不放）", "modern": "拔河比赛两队僵持了一分钟。", "classical": null, "certainty": "确定"}], "parts": {"meaning": "扌（手）：和手的动作有关", "sound": "寺：古音与「持」相近", "note": "形声字，左形右声。"}, "pitfalls": {"read": ["读 chí（第二声），不要读成 shí 或 zhí。", "和「特 tè」「侍 shì」「待 dài」形近，注意区分。"], "write": ["右边「寺」上面是「土」，下面是「寸」，寸的点别漏写。"]}, "code": ["扌旁的字多和手的动作有关：打、拉、推、提、持。", "「寺」族字：诗、侍、待、恃、峙，读音常带 i 韵。"]}, {"char": "组", "trad": "組", "pinyin": "zǔ", "origin": {"meaning": "丝带（用来系印章、帽子的宽丝带）", "shuowen": "組，綬屬。其小者以爲冕纓。从糸且聲。", "evo": "小篆左糸右且，楷书繁体「組」，简化后「糸」写作「纟」。", "reason": "字从糸，表示丝织品；《说文》说它属于「绶」（系印的丝带）一类，小的用来做帽带，所以本义是丝带。", "certainty": "确定", "classical": {"text": "执辔如组。", "src": "《诗经·邶风·简兮》", "trans": "手握缰绳，像握着丝带一样整齐。", "certainty": "确定"}}, "senses": [{"id": "a", "label": "编结、组合", "parent": "o", "type": "引申", "why": "丝带是一股股丝编成的，于是「组」就有了把东西编在一起的意思。", "words": ["组织", "组合", "组成"], "parse": "组织 ＝ 组（编结）＋ 织（织布）：本指编织，后指把人和事安排在一起", "modern": "我们用积木组合成一座小城堡。", "classical": null, "certainty": "通行说法"}, {"id": "b", "label": "小团体", "parent": "a", "type": "转喻", "why": "编在一起的结果——一群人，也叫「组」。", "words": ["小组", "组长", "组员"], "parse": "组长 ＝ 组（一个小团体）＋ 长（带头的人）", "modern": "我们小组一共有四个人。", "classical": null, "certainty": "确定"}, {"id": "c", "label": "量词：一组", "parent": "b", "type": "引申", "why": "一群放在一起的东西，可以数成「一组、两组」。", "words": ["一组", "组诗", "组图"], "parse": "组诗 ＝ 组（成套的一批）＋ 诗", "modern": "老师给我们看了一组秋天的照片。", "classical": null, "certainty": "确定"}], "parts": {"meaning": "纟（糸）：和丝线、织物有关", "sound": "且：「祖、阻、租」都用它表音", "note": "形声字，左形右声。"}, "pitfalls": {"read": ["读 zǔ（第三声）。"], "write": ["右边「且」里面是两横，不要写成一横的「旦」。", "和「祖、租、阻、粗」只差偏旁，按意思选偏旁。"]}, "code": ["纟旁的字多和丝线有关：线、织、组、结、绳。", "「且」族字：祖、组、阻、租、粗、助，读音多带 u 韵。"]}, {"char": "每", "trad": "每", "pinyin": "měi", "origin": {"meaning": "草长得茂盛", "shuowen": "每，艸盛上出也。从屮母聲。", "evo": "小篆上面是「屮」（小草），下面是「母」；楷书上部变成「𠂉」，下部仍是「母」。", "reason": "《说文》训「草盛向上长」，上部「屮」就是草，所以「草茂盛」是本义。", "certainty": "通行说法", "classical": {"text": "原田每每，舍其旧而新是谋。", "src": "《左传·僖公二十八年》", "trans": "原野上的草长得很茂盛，（要）丢开旧的而谋求新的。", "certainty": "确定"}}, "senses": [{"id": "a", "label": "每一个、各个", "parent": "o", "type": "假借", "why": "这个意思和草没关系，是借用了「每」的读音。", "words": ["每天", "每人", "每次"], "parse": "每天 ＝ 每（任何一个）＋ 天", "modern": "我每天睡前都读一会儿书。", "classical": {"text": "子入太庙，每事问。", "src": "《论语·八佾》", "trans": "孔子进入太庙，每件事都要问一问。", "certainty": "确定"}, "certainty": "通行说法"}, {"id": "b", "label": "每当、常常", "parent": "a", "type": "引申", "why": "每一次都这样，也就是「常常这样」。", "words": ["每每", "每逢", "每当"], "parse": "每逢 ＝ 每（每一次）＋ 逢（碰到）", "modern": "每逢下雨，小狗就躲进屋里。", "classical": {"text": "每与臣论此事，未尝不叹息痛恨于桓、灵也。", "src": "诸葛亮《出师表》", "trans": "（先帝）每次和我谈论这件事，没有一次不对桓帝、灵帝感到叹息痛心。", "certainty": "确定"}, "certainty": "确定"}], "parts": {"meaning": "屮（楷书变作「𠂉」）：小草", "sound": "母：古音与「每」相近", "note": "今天看不出草的样子了，可以记作「草长得像妈妈一样多」。"}, "pitfalls": {"read": ["读 měi（第三声）。"], "write": ["下面是「母」（里面两点），不是「毋」（一撇）。", "上面是「𠂉」，一撇一横，别写成「人」。"]}, "code": ["「每」族字：梅、霉、海、悔、敏、晦——都用「每」做声旁。", "假借密码：有些常用义是「借音」来的，和字形没关系。"]}, {"char": "济", "trad": "濟", "pinyin": "jì", "origin": {"meaning": "水名（济水）", "shuowen": "濟，水。出常山房子贊皇山，東入泜。从水齊聲。", "evo": "小篆左水右齐，楷书繁体「濟」，简化为「济」。古代「四渎」之一的济水，《说文》另作「泲」（待查）。", "reason": "字从水，《说文》用水名来解释，所以按《说文》本义是水名；「渡河」与水名的关系学界说法不一。", "certainty": "通行说法", "classical": {"text": "济、河惟兖州。", "src": "《尚书·禹贡》", "trans": "济水和黄河之间是兖州。", "certainty": "确定"}}, "senses": [{"id": "a", "label": "渡河", "parent": "o", "type": "假借", "why": "人们用这个带水的字表示过河；它和水名之间怎么联系起来，说法不一。", "words": ["同舟共济", "济河焚舟", "共济"], "parse": "同舟共济 ＝ 同舟（坐一条船）＋ 共济（一起过河）", "modern": "遇到困难，全班同舟共济。", "classical": {"text": "秦伯伐晋，济河焚舟。", "src": "《左传·文公三年》", "trans": "秦穆公攻打晋国，渡过黄河后把船烧掉。", "certainty": "确定"}, "certainty": "待查"}, {"id": "b", "label": "帮助、救济", "parent": "a", "type": "比喻", "why": "帮别人「渡过」难关，就像送人过河。", "words": ["救济", "接济", "济困"], "parse": "接济 ＝ 接（接上）＋ 济（帮助）", "modern": "社区为受灾的家庭送去救济物资。", "classical": {"text": "知周乎万物而道济天下。", "src": "《周易·系辞上》", "trans": "智慧遍及万物，用道来救助天下。", "certainty": "通行说法"}, "certainty": "通行说法"}, {"id": "c", "label": "有用、成功", "parent": "b", "type": "引申", "why": "能帮上忙，事情就办成了。", "words": ["无济于事", "不济事", "经济"], "parse": "经济 ＝ 经（治理）＋ 济（救助）：古代指「经世济民」，今指生产生活", "modern": "光着急是无济于事的。", "classical": null, "certainty": "通行说法"}, {"id": "d", "label": "济济：人多", "parent": "o", "type": "假借", "why": "借这个字的读音形容人很多，读 jǐ。", "words": ["人才济济", "济济一堂", "济济"], "parse": "人才济济 ＝ 人才 ＋ 济济（很多的样子）", "modern": "运动会上人才济济。", "classical": null, "certainty": "通行说法"}], "parts": {"meaning": "氵（水）：和水有关", "sound": "齐：繁体「齊」表音", "note": "多音字：jì（救济）、jǐ（济南、济济）。"}, "pitfalls": {"read": ["「济南」「人才济济」读 jǐ，其余多读 jì。"], "write": ["右边「齐」下面是一撇一竖，别写成三笔。"]}, "code": ["「齐」族字：挤、剂、荠、脐、霁。", "氵旁的字多和水有关；但常用义可能已离开水。"]}, {"char": "车", "trad": "車", "pinyin": "chē", "origin": {"meaning": "车子（有轮子的交通工具）", "shuowen": "車，輿輪之總名。夏后時奚仲所造。象形。", "evo": "甲骨文、金文像车的俯视图，有车轮、车轴、车厢；小篆简化成一个轮子加轴；简化字「车」由草书楷化而来。", "reason": "字形就像车，《说文》说是车厢（舆）和车轮的总称，象形字，本义很明确。", "certainty": "确定", "classical": {"text": "戎车既驾，四牡业业。", "src": "《诗经·小雅·采薇》", "trans": "兵车已经套好，四匹公马高大强壮。", "certainty": "确定"}}, "senses": [{"id": "a", "label": "用轮子转的器具", "parent": "o", "type": "引申", "why": "水车、纺车也靠轮子转，所以也叫「车」。", "words": ["水车", "纺车", "风车"], "parse": "纺车 ＝ 纺（纺线）＋ 车（带轮子的器具）", "modern": "公园里有一架会转的大水车。", "classical": null, "certainty": "确定"}, {"id": "b", "label": "机器、车床", "parent": "a", "type": "引申", "why": "机器里也有转动的轮子，于是机器、车床也叫「车」。", "words": ["车床", "车间", "车工"], "parse": "车间 ＝ 车（机器）＋ 间（房间）：放机器做工的地方", "modern": "爸爸在工厂的车间上班。", "classical": null, "certainty": "确定"}, {"id": "c", "label": "牙床（辅车）", "parent": "o", "type": "比喻", "why": "牙床和颊骨互相依靠，就像车的部件一样配合着。", "words": ["辅车相依", "牙车", "颊车"], "parse": "辅车相依 ＝ 辅（颊骨）＋ 车（牙床）＋ 相依（互相依靠）", "modern": "「辅车相依」比喻两样东西互相依存。", "classical": {"text": "辅车相依，唇亡齿寒。", "src": "《左传·僖公五年》", "trans": "颊骨和牙床互相依存，嘴唇没了，牙齿就会受冻。", "certainty": "确定"}, "certainty": "通行说法"}, {"id": "d", "label": "象棋棋子（jū）", "parent": "o", "type": "转喻", "why": "象棋模仿打仗，用「车」代表战车，读 jū。", "words": ["车马炮", "丢车保帅", "车（jū）"], "parse": "丢车保帅 ＝ 丢车（舍掉车）＋ 保帅（保住主帅）", "modern": "他走了一步车，吃掉了对方的马。", "classical": null, "certainty": "确定"}], "parts": {"meaning": "整字象形：车的样子", "sound": "无，象形字", "note": "作左偏旁时最后一横变提，如「轮、转」。"}, "pitfalls": {"read": ["象棋里读 jū，其余读 chē。"], "write": ["笔顺：横、撇折、横、竖。", "作偏旁时（车字旁）最后一横写成提。"]}, "code": ["车字旁的字多和车有关：轮、轨、转、辆、输。", "象形字密码：看字像看画，「车」就是一辆俯视的车。"]}, {"char": "亲", "trad": "親", "pinyin": "qīn", "origin": {"meaning": "关系最近、最亲密", "shuowen": "親，至也。从見亲聲。", "evo": "繁体「親」左边是声旁「亲」，右边是「见」；简化时去掉了「见」，只留左半。", "reason": "《说文》训「至」，一般理解为情意达到极点、最亲近；从「见」，可以理解为常常相见的人。", "certainty": "通行说法", "classical": null}, "senses": [{"id": "a", "label": "父母", "parent": "o", "type": "转喻", "why": "和我们最亲的人就是爸爸妈妈。", "words": ["双亲", "父亲", "母亲"], "parse": "双亲 ＝ 双（两位）＋ 亲（父母）", "modern": "周末我陪双亲去公园散步。", "classical": {"text": "孩提之童无不知爱其亲者。", "src": "《孟子·尽心上》", "trans": "两三岁的小孩，没有不知道爱自己父母的。", "certainty": "确定"}, "certainty": "确定"}, {"id": "b", "label": "亲戚、亲人", "parent": "a", "type": "引申", "why": "从父母扩大到所有有血缘或婚姻关系的人。", "words": ["亲戚", "亲人", "探亲"], "parse": "探亲 ＝ 探（看望）＋ 亲（亲人）", "modern": "过年时我们回老家探亲。", "classical": null, "certainty": "确定"}, {"id": "c", "label": "亲近、喜爱", "parent": "o", "type": "引申", "why": "关系近了，就愿意靠近、喜欢对方。", "words": ["亲近", "亲切", "亲热"], "parse": "亲切 ＝ 亲（亲近）＋ 切（贴近）", "modern": "新来的老师笑起来很亲切。", "classical": {"text": "泛爱众而亲仁。", "src": "《论语·学而》", "trans": "广泛地爱众人，亲近有仁德的人。", "certainty": "确定"}, "certainty": "确定"}, {"id": "d", "label": "亲自", "parent": "o", "type": "引申", "why": "近到不能再近，就是「自己本人」来做。", "words": ["亲自", "亲手", "亲眼"], "parse": "亲眼 ＝ 亲（自己）＋ 眼（眼睛）", "modern": "这是我亲手做的贺卡。", "classical": {"text": "亲于其身为不善者，君子不入也。", "src": "《论语·阳货》", "trans": "亲自做坏事的人那里，君子是不去的。", "certainty": "确定"}, "certainty": "确定"}, {"id": "e", "label": "用嘴唇碰", "parent": "c", "type": "引申", "why": "喜爱一个人，就会亲一亲表示亲热。", "words": ["亲吻", "亲一下", "亲脸"], "parse": "亲吻 ＝ 亲（用嘴碰）＋ 吻（嘴唇）", "modern": "妈妈亲了亲宝宝的小脸。", "classical": null, "certainty": "确定"}], "parts": {"meaning": "见（繁体「親」右边）：常相见", "sound": "亲（繁体左边）：表音", "note": "简化后只剩声旁，表义的「见」看不到了。"}, "pitfalls": {"read": ["「亲家」读 qìng jia，其余读 qīn。"], "write": ["上面是「立」，下面是「木」，别写成「辛」。"]}, "code": ["「亲」作声旁：新、薪——都读 xīn。", "简化字密码：有的字简化时去掉了一半，要回到繁体才看得清意思。"]}, {"char": "极", "trad": "極", "pinyin": "jí", "origin": {"meaning": "房屋正中最高的大梁", "shuowen": "極，棟也。从木亟聲。", "evo": "小篆左木右亟，繁体「極」；简化字右边改为「及」，「及」也读 jí，仍能表音。", "reason": "字从木，《说文》训「栋」，就是屋顶最高处的那根正梁，所以本义是大梁。", "certainty": "确定", "classical": null}, "senses": [{"id": "a", "label": "顶点、尽头", "parent": "o", "type": "引申", "why": "大梁在房子的最高处，于是「极」表示最高点、尽头。", "words": ["极点", "登峰造极", "无极"], "parse": "登峰造极 ＝ 登峰（登上山顶）＋ 造极（到达最高点）", "modern": "他的画技已经登峰造极。", "classical": {"text": "天之苍苍，其正色邪？其远而无所至极邪？", "src": "《庄子·逍遥游》", "trans": "天色深蓝，是它本来的颜色吗？还是因为它远得没有尽头呢？", "certainty": "确定"}, "certainty": "确定"}, {"id": "b", "label": "地球、磁体的两端", "parent": "a", "type": "引申", "why": "地球最顶端、最末端的地方，叫南极、北极。", "words": ["南极", "北极", "正极"], "parse": "北极 ＝ 北 ＋ 极（尽头）", "modern": "企鹅生活在南极。", "classical": null, "certainty": "确定"}, {"id": "c", "label": "非常、最", "parent": "a", "type": "引申", "why": "到了顶点，就是程度最高。", "words": ["极好", "极其", "好极了"], "parse": "极其 ＝ 极（非常）＋ 其（词尾）", "modern": "今天的天气好极了。", "classical": null, "certainty": "确定"}, {"id": "d", "label": "用尽", "parent": "a", "type": "引申", "why": "把力气、眼光用到最远最大。", "words": ["极力", "极目远眺", "竭尽全力"], "parse": "极目远眺 ＝ 极目（把眼光放到最远）＋ 远眺", "modern": "站在山顶极目远眺，城市尽收眼底。", "classical": null, "certainty": "确定"}], "parts": {"meaning": "木：和木头、房梁有关", "sound": "繁体「亟」；简化字「及」，都读 jí", "note": "形声字，左形右声。"}, "pitfalls": {"read": ["读 jí（第二声）。"], "write": ["右边「及」笔顺：撇、横折折撇、捺。", "「及」别写成「乃」。"]}, "code": ["「及」族字：级、极、汲、吸、圾。", "木旁的字除了树，还常指木制的东西：梁、柱、极、桥。"]}, {"char": "林", "trad": "林", "pinyin": "lín", "origin": {"meaning": "成片的树木", "shuowen": "林，平土有叢木曰林。从二木。", "evo": "从甲骨文起就是两个「木」并排，一直到楷书都没大变。", "reason": "两个木会意，表示树多；《说文》说平地上丛生的树木叫林。", "certainty": "确定", "classical": {"text": "此地有崇山峻岭，茂林修竹。", "src": "王羲之《兰亭集序》", "trans": "这里有高山峻岭，茂密的树林和高高的竹子。", "certainty": "确定"}}, "senses": [{"id": "a", "label": "同类人或物的聚集", "parent": "o", "type": "比喻", "why": "一群同类的人或物聚在一起，像树木长成一片林。", "words": ["儒林", "碑林", "艺林"], "parse": "碑林 ＝ 碑（石碑）＋ 林（很多聚在一起）", "modern": "西安的碑林里有很多古代石碑。", "classical": {"text": "《儒林列传》（篇名）", "src": "《史记》", "trans": "专门记载儒家学者的列传，「儒林」就是儒者群体。", "certainty": "确定"}, "certainty": "确定"}, {"id": "b", "label": "林业", "parent": "o", "type": "引申", "why": "种树、管树林的工作，也用「林」来说。", "words": ["林业", "农林", "林场"], "parse": "林场 ＝ 林（树林）＋ 场（地方）", "modern": "叔叔在林场工作，负责照看树苗。", "classical": null, "certainty": "确定"}, {"id": "c", "label": "姓", "parent": "o", "type": "假借", "why": "借来当姓氏用，和树林的意思没有直接关系。", "words": ["林姓", "林老师", "林家"], "parse": "林老师 ＝ 林（姓）＋ 老师", "modern": "我们的数学老师姓林。", "classical": null, "certainty": "通行说法"}], "parts": {"meaning": "木 ＋ 木：树木多", "sound": "无，会意字", "note": "左边「木」最后一笔捺变成点，让给右边。"}, "pitfalls": {"read": ["读 lín（第二声）。"], "write": ["左边「木」的捺写成点，右边「木」保留捺。"]}, "code": ["叠字密码：木 → 林 → 森，越多越茂密。", "「林」作声旁：淋、琳、霖。"]}, {"char": "服", "trad": "服", "pinyin": "fú", "origin": {"meaning": "用、从事（依《说文》）", "shuowen": "服，用也。一曰車右騑，所以舟旋。从舟𠬝聲。", "evo": "小篆左边是「舟」，右边是「𠬝」；隶变后「舟」写成「月」形，看起来像月亮的月。", "reason": "《说文》首训「用也」，故依说文定「用、从事」为本义；也有学者根据甲骨文字形认为本义是「使人屈服」，待查。", "certainty": "通行说法", "classical": null}, "senses": [{"id": "a", "label": "从事、承担", "parent": "o", "type": "引申", "why": "把力气「用」在一件事上，就是去做这件事。", "words": ["服务", "服役", "服刑"], "parse": "服务 ＝ 服（从事）＋ 务（事情）", "modern": "志愿者在车站为旅客服务。", "classical": {"text": "有事，弟子服其劳。", "src": "《论语·为政》", "trans": "有事情，年轻人替长辈去操劳。", "certainty": "确定"}, "certainty": "确定"}, {"id": "b", "label": "服从、信服", "parent": "o", "type": "引申", "why": "愿意听别人的、为别人做事，就是服从。", "words": ["服从", "佩服", "心服口服"], "parse": "佩服 ＝ 佩（敬重）＋ 服（信服）", "modern": "大家都佩服他的勇气。", "classical": {"text": "举直错诸枉，则民服。", "src": "《论语·为政》", "trans": "提拔正直的人放在邪曲的人之上，百姓就会服从。", "certainty": "确定"}, "certainty": "确定"}, {"id": "c", "label": "衣服", "parent": "o", "type": "转喻", "why": "穿在身上「用」的东西，就是衣服。", "words": ["衣服", "服装", "制服"], "parse": "制服 ＝ 制（规定的样式）＋ 服（衣服）", "modern": "运动会那天，全班穿上了统一的制服。", "classical": {"text": "余幼好此奇服兮，年既老而不衰。", "src": "屈原《九章·涉江》", "trans": "我从小就喜欢这奇特的服饰，年纪老了也没有改变。", "certainty": "确定"}, "certainty": "确定"}, {"id": "d", "label": "吃药", "parent": "o", "type": "引申", "why": "把药「用」到身体里，就是服药。", "words": ["服药", "服用", "内服"], "parse": "服用 ＝ 服（吃下）＋ 用（使用）", "modern": "这种药每天服用两次。", "classical": null, "certainty": "确定"}, {"id": "e", "label": "适应", "parent": "b", "type": "引申", "why": "身体「服从」新环境，就是适应了。", "words": ["水土不服", "服帖", "不服气"], "parse": "水土不服 ＝ 水土（当地环境）＋ 不服（不适应）", "modern": "刚到新城市，他有点水土不服。", "classical": null, "certainty": "确定"}], "parts": {"meaning": "左边「月」本是「舟」", "sound": "𠬝（fú）：表音", "note": "这个「月」不是月亮，也不是肉，是舟的变形。"}, "pitfalls": {"read": ["读 fú；口语「衣服」中读轻声 fu。"], "write": ["右边是「𠬝」，不要写成「反」。"]}, "code": ["「月」三家：月亮月（朗、期）、肉月（脸、肚）、舟月（服、朕、前）。", "同一个部件可能来自不同的古字，要看字源。"]}, {"char": "快", "trad": "快", "pinyin": "kuài", "origin": {"meaning": "高兴、痛快", "shuowen": "快，喜也。从心夬聲。", "evo": "小篆左心右夬，楷书「心」在左边写成竖心旁「忄」。", "reason": "字从心，表示心情；《说文》训「喜」，所以「高兴」是本义。", "certainty": "确定", "classical": {"text": "抑王兴甲兵，危士臣，构怨于诸侯，然后快于心与？", "src": "《孟子·梁惠王上》", "trans": "难道大王要发动战争，让将士冒险，和各国结仇，然后心里才痛快吗？", "certainty": "确定"}}, "senses": [{"id": "a", "label": "爽快、直爽", "parent": "o", "type": "引申", "why": "心里痛快的人，说话做事也干脆。", "words": ["爽快", "快人快语", "心直口快"], "parse": "心直口快 ＝ 心直（心里直）＋ 口快（嘴上快）", "modern": "小丽很爽快，一口就答应了。", "classical": null, "certainty": "确定"}, {"id": "b", "label": "迅速", "parent": "a", "type": "引申", "why": "干脆利落，做事就快。", "words": ["快速", "飞快", "快车"], "parse": "飞快 ＝ 飞（像飞一样）＋ 快", "modern": "小兔子飞快地跑回了家。", "classical": null, "certainty": "通行说法"}, {"id": "c", "label": "锋利", "parent": "b", "type": "引申", "why": "锋利的刀一下就切开，切得快。", "words": ["快刀", "快刀斩乱麻", "刀快"], "parse": "快刀斩乱麻 ＝ 快刀（锋利的刀）＋ 斩乱麻", "modern": "这把刀很快，切菜要小心。", "classical": null, "certainty": "确定"}, {"id": "d", "label": "将要", "parent": "b", "type": "引申", "why": "时间很快就到，就是「快要」了。", "words": ["快要", "快到了", "快下雨了"], "parse": "快要 ＝ 快（很快）＋ 要（将要）", "modern": "天快黑了，我们回家吧。", "classical": null, "certainty": "确定"}], "parts": {"meaning": "忄（心）：和心情有关", "sound": "夬（guài）：表音", "note": "形声字，左形右声。"}, "pitfalls": {"read": ["读 kuài（第四声）。"], "write": ["右边「夬」不是「央」，上面不出头的是夬。", "竖心旁笔顺：左点、右点、竖。"]}, "code": ["「夬」族字：块、筷、决、诀、缺。", "忄旁的字多和心情有关：快、怕、慌、情、恨。"]}, {"char": "办", "trad": "辦", "pinyin": "bàn", "origin": {"meaning": "出力做事、处理事务", "shuowen": "《说文》正文未见「辦」字（待查）。", "evo": "繁体「辦」中间是「力」，两边是「辛」；简化字「办」保留「力」，两边各加一点。", "reason": "繁体中间的「力」表示出力做事，常用义都和「处理事情」有关；本义判定没有《说文》依据，待查。", "certainty": "待查", "classical": null}, "senses": [{"id": "a", "label": "创设、经营", "parent": "o", "type": "引申", "why": "把一件大事从无到有做起来。", "words": ["创办", "开办", "举办"], "parse": "创办 ＝ 创（开始）＋ 办（做起来）", "modern": "学校举办了一场读书节。", "classical": null, "certainty": "确定"}, {"id": "b", "label": "置备、采购", "parent": "o", "type": "引申", "why": "做事要先把东西准备好。", "words": ["置办", "备办", "办年货"], "parse": "置办 ＝ 置（购买）＋ 办（准备）", "modern": "快过年了，妈妈去超市办年货。", "classical": null, "certainty": "确定"}, {"id": "c", "label": "惩处", "parent": "o", "type": "引申", "why": "处理犯了错的人，也叫「办」。", "words": ["惩办", "法办", "严办"], "parse": "法办 ＝ 法（依法）＋ 办（处理）", "modern": "小偷被警察依法惩办。", "classical": null, "certainty": "确定"}, {"id": "d", "label": "办事的机构", "parent": "o", "type": "转喻", "why": "用「办事」指办事的地方，如「校办」。", "words": ["办公室", "校办", "办事处"], "parse": "办公室 ＝ 办公（处理公事）＋ 室", "modern": "请把作业本送到老师办公室。", "classical": null, "certainty": "确定"}], "parts": {"meaning": "力：出力做事", "sound": "繁体两边的「辛」与音有关（待查）", "note": "简化后两点只是记号。"}, "pitfalls": {"read": ["读 bàn（第四声）。"], "write": ["「力」左右各一点，别写成「为」。"]}, "code": ["力旁的字多和用力有关：加、助、动、劝、功。", "简化字密码：「办」把繁体的两边换成两点。"]}, {"char": "议", "trad": "議", "pinyin": "yì", "origin": {"meaning": "讨论、商量", "shuowen": "議，語也。从言義聲。", "evo": "小篆左言右義，繁体「議」；简化为「议」，右边用同音的「义」。", "reason": "字从言，和说话有关；《说文》训「语」，指大家说话商讨，所以本义是商议。", "certainty": "通行说法", "classical": {"text": "士志于道，而耻恶衣恶食者，未足与议也。", "src": "《论语·里仁》", "trans": "读书人立志追求真理，却以穿得差、吃得差为耻，这种人不值得和他商讨。", "certainty": "确定"}}, "senses": [{"id": "a", "label": "议论、评说", "parent": "o", "type": "引申", "why": "大家一起说某件事好不好，就是议论。", "words": ["议论", "非议", "街谈巷议"], "parse": "非议 ＝ 非（批评）＋ 议（议论）", "modern": "同学们在议论昨天的足球赛。", "classical": {"text": "天下有道，则庶人不议。", "src": "《论语·季氏》", "trans": "天下政治清明，老百姓就不会议论批评朝政。", "certainty": "确定"}, "certainty": "确定"}, {"id": "b", "label": "意见、主张", "parent": "o", "type": "转喻", "why": "商量出来的结果，就是意见。", "words": ["建议", "提议", "异议"], "parse": "建议 ＝ 建（提出）＋ 议（主张）", "modern": "我建议周末去爬山。", "classical": null, "certainty": "确定"}, {"id": "c", "label": "会议、议会", "parent": "o", "type": "转喻", "why": "专门坐下来商量事情的场合和机构。", "words": ["会议", "议会", "议员"], "parse": "会议 ＝ 会（聚在一起）＋ 议（商量）", "modern": "班委下午开会议，讨论春游安排。", "classical": null, "certainty": "确定"}], "parts": {"meaning": "讠（言）：和说话有关", "sound": "义（繁体「義」）：表音", "note": "形声字，左形右声。"}, "pitfalls": {"read": ["读 yì（第四声）。"], "write": ["右边「义」的点在上面，别漏写。"]}, "code": ["讠旁的字多和说话有关：说、话、议、论、谈。", "「义」族字：议、仪、蚁。"]}, {"char": "往", "trad": "往", "pinyin": "wǎng", "origin": {"meaning": "去、到某处去", "shuowen": "往，之也。从彳㞷聲。", "evo": "小篆左彳右㞷（huáng），隶变后右边写成「主」形。", "reason": "「彳」表示行走，《说文》训「之」，「之」就是「去」，所以本义是去。", "certainty": "确定", "classical": {"text": "昔我往矣，杨柳依依。", "src": "《诗经·小雅·采薇》", "trans": "当初我出征离开时，杨柳随风飘拂。", "certainty": "确定"}}, "senses": [{"id": "a", "label": "过去的", "parent": "o", "type": "引申", "why": "已经走过去的，就是过去的时间。", "words": ["往事", "以往", "往年"], "parse": "往事 ＝ 往（过去的）＋ 事", "modern": "爷爷常给我讲小时候的往事。", "classical": {"text": "往者不可谏，来者犹可追。", "src": "《论语·微子》", "trans": "过去的事已无法挽回，未来的还来得及补救。", "certainty": "确定"}, "certainty": "确定"}, {"id": "b", "label": "朝、向", "parent": "o", "type": "引申", "why": "去哪里，就是朝着哪个方向。", "words": ["往东", "往前", "开往"], "parse": "开往 ＝ 开（行驶）＋ 往（朝向）", "modern": "这趟列车开往北京。", "classical": null, "certainty": "确定"}, {"id": "c", "label": "交往", "parent": "o", "type": "引申", "why": "你去我这里，我去你那里，就是来往。", "words": ["来往", "交往", "往来"], "parse": "交往 ＝ 交（交朋友）＋ 往（来来去去）", "modern": "他和邻居常有来往。", "classical": null, "certainty": "确定"}, {"id": "d", "label": "往往（常常）", "parent": "o", "type": "引申", "why": "一次又一次地这样，就是经常。", "words": ["往往", "往常", "一如既往"], "parse": "往常 ＝ 往（过去）＋ 常（平常）", "modern": "他往往是第一个到教室的。", "classical": null, "certainty": "待查"}], "parts": {"meaning": "彳：和走路有关", "sound": "右边本是「㞷」（huáng），表音", "note": "今天右边写作「主」，已看不出声旁。"}, "pitfalls": {"read": ["读 wǎng（第三声），不读 wàng。"], "write": ["左边是双人旁「彳」。", "右边是「主」，不是「王」。"]}, "code": ["彳旁的字多和行走有关：行、往、径、徒、徐。", "古今变形密码：楷书的「主」来自古代的声旁「㞷」。"]}, {"char": "元", "trad": "元", "pinyin": "yuán", "origin": {"meaning": "人的头", "shuowen": "元，始也。从一从兀。", "evo": "甲骨文、金文像侧立的人形，特别突出头部；小篆上一横下「兀」，楷书沿用。", "reason": "古文字字形突出人头，《孟子》「丧其元」即丢掉脑袋，所以多数学者定「头」为本义；《说文》训「始」是引申义。", "certainty": "通行说法", "classical": {"text": "勇士不忘丧其元。", "src": "《孟子·滕文公下》", "trans": "勇敢的人不怕丢掉自己的脑袋。", "certainty": "确定"}}, "senses": [{"id": "a", "label": "开始、第一", "parent": "o", "type": "引申", "why": "头在身体最上面，所以「元」表示第一个、开头。", "words": ["元旦", "元年", "元月"], "parse": "元旦 ＝ 元（第一）＋ 旦（早晨、日子）：一年的第一天", "modern": "元旦那天我们一起看日出。", "classical": {"text": "元年春，王正月。", "src": "《春秋·隐公元年》", "trans": "（鲁隐公）元年春季，周历正月。", "certainty": "确定"}, "certainty": "确定"}, {"id": "b", "label": "为首的、首要的", "parent": "o", "type": "比喻", "why": "头是身体最重要的部分，就像带头的人。", "words": ["元首", "元帅", "元老"], "parse": "元帅 ＝ 元（为首的）＋ 帅（统帅）", "modern": "他是这支球队的元老。", "classical": null, "certainty": "确定"}, {"id": "c", "label": "根本、基本", "parent": "a", "type": "引申", "why": "最开始的东西，往往就是最根本的。", "words": ["元素", "元气", "单元"], "parse": "元气 ＝ 元（根本）＋ 气", "modern": "睡了一大觉，他又元气满满了。", "classical": null, "certainty": "确定"}, {"id": "d", "label": "货币单位", "parent": "o", "type": "假借", "why": "和头没关系，借来表示钱的单位（原多写作「圆」）。", "words": ["一元", "美元", "元角分"], "parse": "美元 ＝ 美（美国）＋ 元（货币单位）", "modern": "一支铅笔两元钱。", "classical": null, "certainty": "通行说法"}], "parts": {"meaning": "整字：人形突出头部", "sound": "无", "note": "《说文》析为「从一从兀」。"}, "pitfalls": {"read": ["读 yuán（第二声）。"], "write": ["下面的「儿」右边是竖弯钩。", "与「无、云」形近，注意区分。"]}, "code": ["「元」族字：园、远、完、玩、顽、院。", "本义密码：本义不一定等于《说文》第一个解释，还要看古文字。"]}, {"char": "英", "trad": "英", "pinyin": "yīng", "origin": {"meaning": "花", "shuowen": "英，艸榮而不實者。一曰黃英。从艸央聲。", "evo": "小篆上艹下央，楷书沿用至今。", "reason": "字从艹，《说文》指开花不结果的草，后来就用来指花。", "certainty": "通行说法", "classical": {"text": "芳草鲜美，落英缤纷。", "src": "陶渊明《桃花源记》", "trans": "芳香的青草鲜艳美丽，落下的花瓣繁多交杂。", "certainty": "确定"}}, "senses": [{"id": "a", "label": "精华", "parent": "o", "type": "比喻", "why": "花是草木最美的部分，就像东西最好的部分。", "words": ["精英", "英华", "含英咀华"], "parse": "精英 ＝ 精（最好的）＋ 英（花、精华）", "modern": "比赛选出了各班的精英。", "classical": null, "certainty": "确定"}, {"id": "b", "label": "才能出众的人", "parent": "a", "type": "比喻", "why": "才能特别好的人，就像人群里开出的花。", "words": ["英雄", "英才", "英俊"], "parse": "英雄 ＝ 英（出众）＋ 雄（勇猛）", "modern": "消防员是我们心中的英雄。", "classical": {"text": "今天下英雄，唯使君与操耳。", "src": "《三国志·蜀书·先主传》", "trans": "当今天下的英雄，只有您和我曹操罢了。", "certainty": "确定"}, "certainty": "确定"}, {"id": "c", "label": "英国、英语", "parent": "o", "type": "假借", "why": "借「英」的读音翻译外国名字。", "words": ["英国", "英语", "英镑"], "parse": "英语 ＝ 英（英国）＋ 语（语言）", "modern": "我每天读十分钟英语。", "classical": null, "certainty": "确定"}], "parts": {"meaning": "艹：和草木有关", "sound": "央：表音", "note": "形声字，上形下声。"}, "pitfalls": {"read": ["读 yīng（第一声）。"], "write": ["下面「央」中间一竖要出头，别写成「夹」。"]}, "code": ["「央」族字：映、秧、殃、鸯、英。", "艹头的字多和草木有关：花、草、英、苗、芽。"]}, {"char": "士", "trad": "士", "pinyin": "shì", "origin": {"meaning": "能做事的男子", "shuowen": "士，事也。數始於一，終於十。从一从十。孔子曰：推十合一爲士。", "evo": "金文字形学者解释不一（有象斧钺等说法，待查）；小篆、楷书为上长横下短横加一竖。", "reason": "《说文》以「事」释「士」，强调能做事；古书中「士」常指成年男子、有身份的人。字形本义学界说法不一。", "certainty": "通行说法", "classical": null}, "senses": [{"id": "a", "label": "读书人", "parent": "o", "type": "引申", "why": "能做大事的人里，读书明理的人叫「士」。", "words": ["士人", "学士", "博士"], "parse": "博士 ＝ 博（学问广）＋ 士（读书人）", "modern": "表姐正在读博士。", "classical": {"text": "士不可以不弘毅，任重而道远。", "src": "《论语·泰伯》", "trans": "读书人不可以不胸怀宽广、意志坚强，因为责任重大而路途遥远。", "certainty": "确定"}, "certainty": "确定"}, {"id": "b", "label": "军人", "parent": "o", "type": "引申", "why": "打仗做事的男子，也叫「士」。", "words": ["士兵", "战士", "士气"], "parse": "士气 ＝ 士（军人）＋ 气（精神）", "modern": "比赛前大家喊口号，士气高涨。", "classical": {"text": "今岁饥民贫，士卒食芋菽。", "src": "《史记·项羽本纪》", "trans": "今年闹饥荒，百姓贫困，士兵只能吃芋头和豆子。", "certainty": "确定"}, "certainty": "确定"}, {"id": "c", "label": "有专门技能的人", "parent": "o", "type": "引申", "why": "会做某种专门事情的人。", "words": ["护士", "院士", "力士"], "parse": "护士 ＝ 护（护理）＋ 士（有专长的人）", "modern": "护士阿姨帮我打针。", "classical": null, "certainty": "确定"}, {"id": "d", "label": "对人的美称", "parent": "c", "type": "引申", "why": "尊称别人为「士」，表示敬重。", "words": ["女士", "人士", "烈士"], "parse": "女士 ＝ 女 ＋ 士（尊称）", "modern": "女士们、先生们，晚上好！", "classical": null, "certainty": "确定"}], "parts": {"meaning": "整字", "sound": "无", "note": "《说文》析为「从一从十」。"}, "pitfalls": {"read": ["读 shì（第四声）。"], "write": ["上横长、下横短，和「土」正好相反。"]}, "code": ["士 vs 土：士上长下短，土上短下长。", "「士」作部件：吉、志、壮、声。"]}, {"char": "证", "trad": "證", "pinyin": "zhèng", "origin": {"meaning": "告发、揭发", "shuowen": "證，告也。从言登聲。", "evo": "小篆左言右登，繁体「證」；简化字右边用「正」，「正」也读 zhèng。古代另有「証」字（意思有别，待查）。", "reason": "字从言，《说文》训「告」，指把真相说出来，所以本义是告发。", "certainty": "通行说法", "classical": {"text": "其父攘羊，而子证之。", "src": "《论语·子路》", "trans": "他的父亲偷了羊，儿子去告发他。", "certainty": "确定"}}, "senses": [{"id": "a", "label": "证明", "parent": "o", "type": "引申", "why": "把真相说出来，就是用事实说明。", "words": ["证明", "证实", "论证"], "parse": "证实 ＝ 证（证明）＋ 实（真实）", "modern": "实验证明了植物需要阳光。", "classical": null, "certainty": "确定"}, {"id": "b", "label": "凭据", "parent": "a", "type": "转喻", "why": "能证明事情的东西，也叫「证」。", "words": ["证据", "证件", "证书"], "parse": "证书 ＝ 证（凭据）＋ 书（文书）", "modern": "他拿到了游泳比赛的获奖证书。", "classical": null, "certainty": "确定"}, {"id": "c", "label": "病症（证候）", "parent": "o", "type": "假借", "why": "中医用「证」指病的表现，今天多写作「症」。", "words": ["证候", "辨证", "病证"], "parse": "辨证 ＝ 辨（分辨）＋ 证（病的表现）", "modern": "中医看病讲究辨证。", "classical": null, "certainty": "通行说法"}], "parts": {"meaning": "讠（言）：和说话有关", "sound": "繁体「登」；简化字「正」，都表音", "note": "形声字，左形右声。"}, "pitfalls": {"read": ["读 zhèng（第四声）。"], "write": ["右边「正」最后一横最长。", "与「征、症」区分：证明用「证」。"]}, "code": ["「正」族字：政、征、整、症、证。", "讠旁的字多和说话有关。"]}, {"char": "近", "trad": "近", "pinyin": "jìn", "origin": {"meaning": "距离短、靠近", "shuowen": "近，附也。从辵斤聲。", "evo": "小篆左辵右斤，楷书「辵」写作「辶」，包在左下。", "reason": "「辶」表示行走，《说文》训「附」，就是挨着、靠近，所以本义是距离近。", "certainty": "确定", "classical": {"text": "我以日始出时去人近，而日中时远也。", "src": "《列子·汤问》", "trans": "我认为太阳刚出来时离人近，到中午时离人远。", "certainty": "确定"}}, "senses": [{"id": "a", "label": "时间短", "parent": "o", "type": "比喻", "why": "把空间上的「近」借来说时间：离现在不远。", "words": ["近来", "最近", "近代"], "parse": "近来 ＝ 近（离现在不远）＋ 来", "modern": "最近我学会了骑自行车。", "classical": null, "certainty": "确定"}, {"id": "b", "label": "关系亲密", "parent": "o", "type": "比喻", "why": "心和心挨得近，关系就亲密。", "words": ["亲近", "近亲", "平易近人"], "parse": "平易近人 ＝ 平易（温和）＋ 近人（让人愿意靠近）", "modern": "校长很平易近人。", "classical": null, "certainty": "确定"}, {"id": "c", "label": "接近、差不多", "parent": "o", "type": "引申", "why": "快要挨上了，就是差不多。", "words": ["近似", "将近", "接近"], "parse": "将近 ＝ 将（快要）＋ 近（接近）", "modern": "操场上将近有一百人。", "classical": null, "certainty": "确定"}, {"id": "d", "label": "浅显", "parent": "o", "type": "比喻", "why": "离我们近、伸手就够得着的道理，就是浅显的。", "words": ["浅近", "言近旨远", "近易"], "parse": "浅近 ＝ 浅（不深）＋ 近（好懂）", "modern": "这本书文字浅近，适合小学生读。", "classical": {"text": "言近而指远者，善言也。", "src": "《孟子·尽心下》", "trans": "话说得浅近而含义深远，这是好的言论。", "certainty": "确定"}, "certainty": "确定"}], "parts": {"meaning": "辶（辵）：和行走、距离有关", "sound": "斤：表音", "note": "半包围结构，先写「斤」再写「辶」。"}, "pitfalls": {"read": ["读 jìn（第四声）。"], "write": ["先写里面的「斤」，最后写「辶」。", "「辶」是三笔：点、横折折撇、平捺。"]}, "code": ["辶旁的字多和走路、距离有关：远、近、边、道、过。", "「斤」族字：近、芹、祈、靳。"]}, {"char": "失", "trad": "失", "pinyin": "shī", "origin": {"meaning": "丢掉，从手中脱落", "shuowen": "失，縱也。从手乙聲。", "evo": "小篆像手中有东西滑落（说文析为从手乙声）；隶变后成为今天的「失」。", "reason": "《说文》训「纵」，即放开、脱手；字从手，指东西从手里滑掉，所以本义是丢失。", "certainty": "通行说法", "classical": null}, "senses": [{"id": "a", "label": "失去、丧失", "parent": "o", "type": "引申", "why": "东西从手里掉了，就是失去了它。", "words": ["失去", "丧失", "机不可失"], "parse": "机不可失 ＝ 机（机会）＋ 不可失（不能丢掉）", "modern": "机会难得，机不可失。", "classical": {"text": "此之谓失其本心。", "src": "《孟子·告子上》", "trans": "这就叫丧失了人本来的善心。", "certainty": "确定"}, "certainty": "确定"}, {"id": "b", "label": "错误、过失", "parent": "o", "type": "引申", "why": "没拿稳就会出错，所以「失」也指错误。", "words": ["失误", "过失", "失策"], "parse": "失误 ＝ 失（出错）＋ 误（错误）", "modern": "他在比赛中一次失误也没有。", "classical": {"text": "智者千虑，必有一失。", "src": "《史记·淮阴侯列传》", "trans": "聪明的人考虑上千次，也难免有一次失误。", "certainty": "确定"}, "certainty": "确定"}, {"id": "c", "label": "没控制住", "parent": "o", "type": "引申", "why": "像东西从手里滑走一样，控制不住自己。", "words": ["失手", "失声", "失眠"], "parse": "失眠 ＝ 失（没能做到）＋ 眠（睡觉）", "modern": "他一失手，把杯子打碎了。", "classical": null, "certainty": "确定"}, {"id": "d", "label": "违背、不合", "parent": "b", "type": "引申", "why": "做错了，就是没有遵守约定或规矩。", "words": ["失约", "失信", "失礼"], "parse": "失信 ＝ 失（违背）＋ 信（诺言）", "modern": "答应别人的事不能失信。", "classical": null, "certainty": "确定"}], "parts": {"meaning": "手：东西从手里脱落", "sound": "乙：表音（依《说文》）", "note": "楷书已看不出手和乙。"}, "pitfalls": {"read": ["读 shī（第一声）。"], "write": ["上面的撇要出头，不要写成「夫」。"]}, "code": ["「失」族字：铁、秩、跌、迭、轶。", "失 vs 夫：失的头冒出来了。"]}]}</script>
+<script>
+(function(){
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const CHARS = DATA.chars;
+const MENU = ["字义扩展图","偏旁部首","声旁音部","字词句","汉字密码","易错诊所","记忆复习","学习路径"];
+const TYPE_COLOR = {"引申":"#2f8f83","比喻":"#e08a2e","转喻":"#7b5ea7","假借":"#8a8f98"};
+const CERT = {"确定":["#3f8f4f","#e6f3e8"],"通行说法":["#3b72b8","#e5eef9"],"待查":["#c9871a","#fbf0dc"]};
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let cur = 0, sel = "o", tf = {x:0,y:0,k:1}, bbox = null;
+
+/* nav */
+$('#nav').innerHTML = MENU.map((m,i)=>`<button class="${i===0?'active':'soon'}" data-i="${i}">${m}</button>`).join('');
+$('#nav').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.i!=="0") toast(`「${b.textContent}」模块在独立页面中，本页只包含「字义扩展图」`);
+});
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200);}
+
+/* char list */
+$('#charlist').innerHTML = CHARS.map((c,i)=>`<button class="charbtn" data-i="${i}"><span class="c">${c.char}</span><span class="p">${c.pinyin}</span></button>`).join('');
+$('#charlist').addEventListener('click', e=>{const b=e.target.closest('.charbtn'); if(b) selectChar(+b.dataset.i);});
+
+function certChip(c){const v=CERT[c]||CERT["待查"];return `<span class="chip" style="color:${v[0]};background:${v[1]};border-color:${v[0]}33">${c==="确定"?"✓":c==="待查"?"?":"≈"} ${esc(c)}</span>`;}
+function typeChip(t){const col=TYPE_COLOR[t];return `<span class="chip" style="color:${col};border-color:${col}66;background:${col}12">${esc(t)}</span>`;}
+
+/* layout */
+function layout(c){
+  const nodes=[{id:"o",label:c.origin.meaning,x:0,y:0,lvl:0}];
+  const s=c.senses, byParent={};
+  s.forEach(n=>{(byParent[n.parent]=byParent[n.parent]||[]).push(n);});
+  const l1=byParent["o"]||[]; const R1=250, R2=440;
+  const pos={o:{x:0,y:0,a:0}};
+  // weight by children count so branches get space
+  const weight=n=>1+((byParent[n.id]||[]).length)*0.6;
+  const total=l1.reduce((a,n)=>a+weight(n),0);
+  let acc=-Math.PI/2 - (Math.PI*2)*(weight(l1[0]||{id:''})/total)/2;
+  l1.forEach(n=>{
+    const span=Math.PI*2*weight(n)/total, a=acc+span/2; acc+=span;
+    pos[n.id]={x:R1*Math.cos(a),y:R1*Math.sin(a),a,span};
+    nodes.push(Object.assign({},n,pos[n.id],{lvl:1}));
+  });
+  // deeper levels
+  let frontier=l1.slice(), depth=2;
+  while(frontier.length){
+    const next=[];
+    frontier.forEach(p=>{
+      const kids=byParent[p.id]||[]; if(!kids.length) return;
+      const pp=pos[p.id], span=Math.min(pp.span||1, 1.1)*0.8;
+      kids.forEach((k,j)=>{
+        const a = kids.length===1? pp.a : pp.a - span/2 + span*j/(kids.length-1);
+        const R = R1 + (R2-R1)*(depth-1);
+        pos[k.id]={x:R*Math.cos(a),y:R*Math.sin(a),a,span:span/kids.length};
+        nodes.push(Object.assign({},k,pos[k.id],{lvl:depth}));
+        next.push(k);
+      });
+    });
+    frontier=next; depth++;
+  }
+  return nodes;
+}
+function wrapText(t,n){const out=[];let s=String(t);while(s.length>n){out.push(s.slice(0,n));s=s.slice(n);}if(s)out.push(s);return out;}
+function textW(t,size){let w=0;for(const ch of t){w+= /[\x00-\xff]/.test(ch)?size*0.58:size;}return w;}
+
+function renderMap(){
+  const c=CHARS[cur], nodes=layout(c), map={}; nodes.forEach(n=>map[n.id]=n);
+  const showWhy=$('#showWhy').checked;
+  let edges="", labels="", nds="";
+  nodes.forEach(n=>{
+    if(n.id==="o") return;
+    const p=map[n.parent], col=TYPE_COLOR[n.type]||"#999";
+    const dash=n.type==="假借"?'stroke-dasharray="8 6"':'';
+    const mx=(p.x+n.x)/2, my=(p.y+n.y)/2;
+    // gentle curve
+    const dx=n.x-p.x, dy=n.y-p.y, len=Math.hypot(dx,dy)||1, off=18;
+    const cx=mx - dy/len*off, cy=my + dx/len*off;
+    edges+=`<path d="M${p.x},${p.y} Q${cx},${cy} ${n.x},${n.y}" fill="none" stroke="${col}" stroke-width="2.4" ${dash} opacity=".85"/>`;
+    const lx=(p.x+2*cx+n.x)/4, ly=(p.y+2*cy+n.y)/4;
+    const tw=textW(n.type,12)+16;
+    labels+=`<g class="elabel" transform="translate(${lx},${ly})"><rect x="${-tw/2}" y="-11" width="${tw}" height="22" rx="11" fill="#fff" stroke="${col}" stroke-width="1.4"/><text y="4.5" text-anchor="middle" font-size="12" font-weight="600" fill="${col}">${esc(n.type)}</text>`;
+    if(showWhy){
+      const lines=wrapText(n.why,11);
+      const bw=Math.max(...lines.map(l=>textW(l,11)))+12, bh=lines.length*15+8;
+      labels+=`<rect x="${-bw/2}" y="14" width="${bw}" height="${bh}" rx="7" fill="#fffdf8" fill-opacity=".93" stroke="${col}" stroke-opacity=".25"/>`;
+      lines.forEach((l,i)=>labels+=`<text y="${28+i*15}" text-anchor="middle" font-size="11" fill="#5d544b">${esc(l)}</text>`);
+    }
+    labels+=`</g>`;
+  });
+  nodes.forEach(n=>{
+    const isSel=n.id===sel;
+    if(n.id==="o"){
+      const lines=wrapText(n.label,8);
+      nds+=`<g class="node${isSel?' sel':''}" data-id="o"><circle r="86" fill="#c8553d" opacity=".12"/><rect x="-74" y="-74" width="148" height="148" rx="74" fill="#c8553d" stroke="${isSel?'#7d2e1f':'#c8553d'}" stroke-width="${isSel?4:0}"/>
+      <text y="-14" text-anchor="middle" font-size="52" fill="#fff" style="font-family:var(--serif)">${esc(c.char)}</text>
+      <text y="16" text-anchor="middle" font-size="11" fill="#ffe7df" letter-spacing="2">本 义</text>
+      ${lines.map((l,i)=>`<text y="${36+i*16}" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">${esc(l)}</text>`).join('')}</g>`;
+    }else{
+      const col=TYPE_COLOR[n.type]||"#999", w=textW(n.label,15)+34, h=40;
+      const cc=(CERT[n.certainty]||CERT["待查"])[0];
+      nds+=`<g class="node${isSel?' sel':''}" data-id="${n.id}" transform="translate(${n.x},${n.y})">
+      <rect x="${-w/2}" y="${-h/2}" width="${w}" height="${h}" rx="12" fill="${isSel?col:'#fffdf8'}" stroke="${col}" stroke-width="${isSel?3:1.8}"/>
+      <circle cx="${-w/2+13}" cy="0" r="4" fill="${isSel?'#fff':cc}"/>
+      <text x="6" y="5.5" text-anchor="middle" font-size="15" font-weight="600" fill="${isSel?'#fff':'#2b2622'}">${esc(n.label)}</text></g>`;
+    }
+  });
+  $('#vp').innerHTML=`<g>${edges}</g><g>${nds}</g><g>${labels}</g>`;
+  const xs=nodes.map(n=>n.x), ys=nodes.map(n=>n.y);
+  bbox={x0:Math.min(...xs)-140,x1:Math.max(...xs)+140,y0:Math.min(...ys)-110,y1:Math.max(...ys)+130};
+}
+function applyTf(){ $('#vp').setAttribute('transform',`translate(${tf.x},${tf.y}) scale(${tf.k})`); }
+function fit(){
+  const svg=$('#map'), W=svg.clientWidth, H=svg.clientHeight; if(!bbox||!W) return;
+  const k=Math.min(W/(bbox.x1-bbox.x0), H/(bbox.y1-bbox.y0), 1.3);
+  tf.k=k; tf.x=W/2-k*(bbox.x0+bbox.x1)/2; tf.y=H/2-k*(bbox.y0+bbox.y1)/2; applyTf();
+}
+function zoomAt(px,py,f){ const k2=Math.max(.3,Math.min(3.5,tf.k*f)); tf.x=px-(px-tf.x)*k2/tf.k; tf.y=py-(py-tf.y)*k2/tf.k; tf.k=k2; applyTf(); }
+
+/* interactions */
+const svg=$('#map');
+svg.addEventListener('wheel',e=>{e.preventDefault();const r=svg.getBoundingClientRect();zoomAt(e.clientX-r.left,e.clientY-r.top,e.deltaY<0?1.12:1/1.12);},{passive:false});
+let drag=null;
+svg.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,tx:tf.x,ty:tf.y,moved:false,target:e.target};svg.setPointerCapture(e.pointerId);});
+svg.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>4){drag.moved=true;svg.classList.add('drag');}if(drag.moved){tf.x=drag.tx+dx;tf.y=drag.ty+dy;applyTf();}});
+svg.addEventListener('pointerup',e=>{
+  if(drag&&!drag.moved){const n=drag.target.closest&&drag.target.closest('.node');if(n){sel=n.dataset.id;renderMap();renderDetail();}}
+  drag=null;svg.classList.remove('drag');
+});
+$('#zin').onclick=()=>zoomAt(svg.clientWidth/2,svg.clientHeight/2,1.2);
+$('#zout').onclick=()=>zoomAt(svg.clientWidth/2,svg.clientHeight/2,1/1.2);
+$('#zfit').onclick=fit;
+$('#showWhy').onchange=()=>{renderMap();};
+window.addEventListener('resize',()=>fit());
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(e.key==='ArrowDown'||e.key==='ArrowRight'){selectChar((cur+1)%CHARS.length);}
+  if(e.key==='ArrowUp'||e.key==='ArrowLeft'){selectChar((cur-1+CHARS.length)%CHARS.length);}
+});
+
+/* detail */
+function classicalBlock(cl){
+  if(!cl) return `<div class="row"><div class="lab">文言原句</div><span class="tbd">待查</span><span class="src">　暂未核实到合适的可靠出处，不作编造。</span></div>`;
+  return `<div class="row"><div class="lab">文言原句 ${certChip(cl.certainty||"确定")}</div><div class="quote">${esc(cl.text)}</div><div class="src">—— ${esc(cl.src)}</div><div class="trans">译文：${esc(cl.trans)}</div></div>`;
+}
+function renderDetail(){
+  const c=CHARS[cur]; let h="";
+  if(sel==="o"){
+    const o=c.origin;
+    h+=`<div class="card"><h4>本义</h4>
+      <div class="dhead"><span class="name">${esc(o.meaning)}</span>${certChip(o.certainty)}</div>
+      <div class="row"><div class="lab">《说文解字》原文</div><div class="quote">${esc(o.shuowen)}</div></div>
+      <div class="row"><div class="lab">字形演变 <span class="tag">字形图占位</span></div>
+        <div class="evo">${["甲骨文","金文","小篆","隶书","楷书"].map((s,i)=>`<div><div class="g">${i===4?esc(c.trad):"□"}</div><div class="s">${s}</div></div>`).join('')}</div>
+        <div class="trans">${esc(o.evo)}</div></div>
+      <div class="row"><div class="lab">本义判定理由</div><div class="why">${esc(o.reason)}</div></div>
+      ${o.classical?classicalBlock(o.classical):''}
+      <div class="foot">点击图中的义项，查看词族、构词、例句。</div></div>`;
+  }else{
+    const s=c.senses.find(x=>x.id===sel), p=s.parent==="o"?"本义":(c.senses.find(x=>x.id===s.parent)||{}).label;
+    h+=`<div class="card"><h4>义项详情</h4>
+      <div class="dhead"><span class="name">${esc(s.label)}</span>${typeChip(s.type)}${certChip(s.certainty)}</div>
+      <div class="src">由「${esc(p)}」${esc(s.type)}而来</div>
+      <div class="why"><b>为什么？</b>${esc(s.why)}</div>
+      <div class="row"><div class="lab">词族</div><div class="words">${s.words.map(w=>`<span>${esc(w)}</span>`).join('')}</div></div>
+      <div class="row"><div class="lab">构词拆解</div><div>${esc(s.parse)}</div></div>
+      <div class="row"><div class="lab">现代例句<span class="tag">示例</span></div><div>${esc(s.modern)}</div></div>
+      ${classicalBlock(s.classical)}
+      <div class="row"><div class="lab">把握程度</div>${certChip(s.certainty)}</div></div>`;
+  }
+  const pt=c.parts;
+  h+=`<div class="card"><h4>偏旁拆分</h4><div class="kv">
+      <span class="k yi">表义</span><span>${esc(pt.meaning)}</span>
+      <span class="k yin">表音</span><span>${esc(pt.sound)}</span></div>
+      <div class="trans" style="margin-top:8px">${esc(pt.note)}</div></div>
+    <div class="card"><h4>易读错 · 易写错</h4>
+      ${c.pitfalls.read.map(t=>`<div class="pit"><span class="k r">读</span><span>${esc(t)}</span></div>`).join('')}
+      ${c.pitfalls.write.map(t=>`<div class="pit"><span class="k w">写</span><span>${esc(t)}</span></div>`).join('')}</div>
+    <div class="card"><h4>相关汉字密码</h4>${c.code.map(t=>`<div class="codeitem">${esc(t)}</div>`).join('')}</div>
+    <div class="foot">把握程度：<b style="color:var(--c-sure)">确定</b>＝有原文可依；<b style="color:var(--c-common)">通行说法</b>＝多数辞书采用但仍有分歧；<b style="color:var(--c-tbd)">待查</b>＝尚未核实，不作定论。现代例句均为自编示例；字形图为占位，待接入字形库。</div>`;
+  $('#panel').innerHTML=h;
+}
+function selectChar(i){
+  cur=i; sel="o";
+  document.querySelectorAll('.charbtn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  const c=CHARS[i];
+  $('#tChar').textContent=c.char;
+  $('#tMeta').innerHTML=`<b>${esc(c.pinyin)}</b>　繁体 ${esc(c.trad)}　·　${c.senses.length} 个常用义项`;
+  renderMap(); fit(); renderDetail();
+  const b=document.querySelector(`.charbtn[data-i="${i}"]`); if(b&&b.scrollIntoView) b.scrollIntoView({block:'nearest'});
+}
+selectChar(0);
+requestAnimationFrame(fit);
+})();
+</script>
+</body>
+</html>

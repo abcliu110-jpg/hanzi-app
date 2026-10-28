@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>字趣乐园 · 字词句</title>
+<style>
+:root{
+  --bg:#FFF9F0;--paper:#FFFFFF;--ink:#33302E;--soft:#7A716A;--line:#F1E6D6;
+  --pri:#E8613C;--pri2:#FFB547;--teal:#2BA89A;--sky:#4A8FE7;
+  --pz:#4A8FE7;--bl:#2BA89A;--db:#F08A24;--zw:#8E6CDB;--bc:#E35D9A;--cy:#8C8C8C;--fj:#B08B4F;
+  --r:22px;--sh:0 6px 0 #F1E2CC;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;font-size:18px;line-height:1.6;min-height:100vh;
+  background-image:radial-gradient(#F6E8D2 1.2px,transparent 1.2px);background-size:22px 22px}
+.kai{font-family:"KaiTi","STKaiti","楷体","Kaiti SC","BiauKai",serif}
+button{font-family:inherit;cursor:pointer;border:none}
+/* 顶部 */
+.brand{display:flex;align-items:center;gap:12px;padding:14px 20px 6px;max-width:1240px;margin:0 auto}
+.logo{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;font-size:32px;display:grid;place-items:center;box-shadow:0 4px 0 #C94A28}
+.brand h1{font-size:26px;letter-spacing:2px}
+.brand small{display:block;font-size:14px;color:var(--soft);letter-spacing:0;font-weight:400}
+.topnav{position:sticky;top:0;z-index:20;background:rgba(255,249,240,.95);backdrop-filter:blur(6px);border-bottom:2px solid var(--line)}
+.topnav .in{max-width:1240px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding:10px 16px;scrollbar-width:none}
+.topnav .in::-webkit-scrollbar{display:none}
+.tn{flex:none;font-size:17px;font-weight:700;padding:10px 16px;border-radius:999px;background:transparent;color:var(--soft)}
+.tn:hover{background:#FCEBD9}
+.tn.on{background:var(--pri);color:#fff;box-shadow:0 4px 0 #C94A28}
+/* 布局 */
+.wrap{max-width:1240px;margin:0 auto;padding:18px 16px 60px;display:grid;grid-template-columns:230px 1fr;gap:22px}
+.side{position:sticky;top:76px;align-self:start;display:flex;flex-direction:column;gap:10px}
+.sn{display:flex;align-items:center;gap:10px;text-align:left;font-size:18px;font-weight:700;padding:14px 16px;border-radius:18px;background:var(--paper);color:var(--ink);box-shadow:var(--sh);transition:.15s}
+.sn .ic{font-size:24px}
+.sn:hover{transform:translateY(-2px)}
+.sn.on{background:var(--teal);color:#fff;box-shadow:0 6px 0 #1E7F74}
+main{min-width:0}
+.panel{display:none;animation:fade .35s}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.ptitle{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.ptitle h2{font-size:30px}
+.ptitle p{color:var(--soft);font-size:16px}
+/* 选字 */
+.chars{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 18px}
+.ch{width:64px;height:64px;border-radius:18px;background:var(--paper);font-size:38px;box-shadow:var(--sh);color:var(--ink);transition:.15s}
+.ch:hover{transform:translateY(-2px)}
+.ch.on{background:var(--pri2);color:#5A3200;box-shadow:0 6px 0 #D88F1F;transform:translateY(-2px)}
+/* 卡片 */
+.hero{display:flex;gap:20px;align-items:center;background:var(--paper);border-radius:var(--r);padding:16px 22px;box-shadow:var(--sh);margin-bottom:18px}
+.hero .big{font-size:96px;line-height:1;width:120px;height:120px;display:grid;place-items:center;border-radius:20px;
+  background:linear-gradient(#fff,#fff) padding-box;border:3px dashed #F3C9A8;position:relative}
+.hero .big:before,.hero .big:after{content:"";position:absolute;background:#F7DCC6}
+.hero .big:before{left:50%;top:0;bottom:0;width:1.5px}
+.hero .big:after{top:50%;left:0;right:0;height:1.5px}
+.hero .big span{position:relative;z-index:1}
+.hero .meta{font-size:18px}
+.hero .meta b{color:var(--pri);font-size:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:var(--paper);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.card .no{position:absolute;right:14px;top:10px;font-size:46px;font-weight:900;color:#FBEFE2}
+.sense-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:relative}
+.sk{font-size:22px;font-weight:900;color:var(--pri)}
+.py{font-size:14px;font-weight:700;background:#FDEBDD;color:#B4482A;border-radius:999px;padding:1px 10px}
+.gl{color:var(--soft);font-size:16px;margin:4px 0 10px;position:relative}
+.words{display:flex;flex-wrap:wrap;gap:8px}
+.wd{display:inline-flex;align-items:center;gap:6px;font-size:22px;padding:6px 12px;border-radius:14px;background:#FFF5EA;border:2px solid #F7E3CC;color:var(--ink)}
+.wd:hover{border-color:var(--pri2)}
+.tag{font-size:13px;font-weight:800;color:#fff;border-radius:999px;padding:1px 9px;font-family:"PingFang SC","Microsoft YaHei",sans-serif;white-space:nowrap}
+.t-偏正{background:var(--pz)}.t-并列{background:var(--bl)}.t-动宾{background:var(--db)}.t-主谓{background:var(--zw)}.t-补充{background:var(--bc)}.t-成语{background:var(--cy)}.t-附加{background:var(--fj)}
+.note{background:#FFF3C9;border-radius:18px;padding:14px 18px;font-size:17px;margin:16px 0;border-left:6px solid var(--pri2)}
+.note b{color:#B4482A}
+.dq{display:inline-block;font-size:12px;font-weight:800;color:#C2410C;background:#FFE4CC;border-radius:6px;padding:0 6px;margin-left:4px;vertical-align:2px}
+/* 构词方式 */
+.type-card{border-top:8px solid}
+.type-card h3{font-size:24px;display:flex;align-items:center;gap:8px}
+.formula{font-size:17px;background:#F7F4EF;border-radius:12px;padding:8px 12px;margin:8px 0}
+.formula b{font-size:20px}
+.mini{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.mini span{font-size:18px;background:#F7F4EF;border-radius:10px;padding:2px 10px;cursor:pointer}
+.mini span:hover{background:#FDE7D3}
+.mono-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:12px}
+.mono{background:var(--paper);border-radius:18px;padding:14px 16px;box-shadow:var(--sh)}
+.mono .w{font-size:34px}
+.mono .k{font-size:13px;font-weight:800;background:#EEE;border-radius:999px;padding:1px 10px;margin-left:6px;vertical-align:8px}
+/* 拆解 */
+.eq{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:12px 0;border-bottom:2px dashed var(--line)}
+.eq:last-child{border-bottom:none}
+.eq .whole{font-size:30px;font-weight:700;min-width:96px}
+.eq .eqs{font-size:18px;color:var(--ink);flex:1;min-width:220px}
+.eq .eqs .pc{display:inline-block;background:#FFF5EA;border-radius:10px;padding:0 8px;margin:2px 0}
+.eq .eqs .pc b{font-size:22px;color:var(--pri)}
+.eq .eqs .op{color:var(--soft);font-weight:900;margin:0 4px}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:10px}
+.cmp div{border-radius:16px;padding:12px 14px;font-size:17px}
+.same{background:#E3F6F3}.diff{background:#FDE6E6}
+.cmp .w{font-size:26px;font-weight:700}
+/* 古今 */
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.now,.old{border-radius:16px;padding:12px 14px}
+.now{background:#EAF3FF}
+.old{background:#F6EEDF;background-image:repeating-linear-gradient(0deg,transparent 0 31px,#EBDDC4 31px 32px)}
+.lab{font-size:13px;font-weight:900;letter-spacing:1px;margin-bottom:4px;display:flex;gap:6px;align-items:center}
+.now .lab{color:var(--sky)}.old .lab{color:#8A6A33}
+.sent{font-size:22px;line-height:1.7}
+.sent em{font-style:normal;color:var(--pri);font-weight:900;background:linear-gradient(transparent 60%,#FFE1A8 60%)}
+.src{font-size:15px;color:#8A6A33;margin-top:4px}
+.tr{font-size:16px;color:var(--soft);margin-top:4px;border-top:1px dashed #D9C6A4;padding-top:4px}
+.ex-tag{font-size:12px;font-weight:800;background:var(--sky);color:#fff;border-radius:6px;padding:0 6px}
+.pend{font-size:18px;color:#B4482A}
+/* 练习 */
+.quiz{max-width:820px}
+.qbar{display:flex;align-items:center;gap:12px;margin:10px 0 16px}
+.qbar .bar{flex:1;height:16px;border-radius:999px;background:#F2E6D6;overflow:hidden}
+.qbar .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),#7DD3C0);width:0;transition:width .4s;border-radius:999px}
+.qbar .n{font-weight:900;font-size:18px;min-width:64px;text-align:right}
+.qcard{background:var(--paper);border-radius:28px;padding:22px;box-shadow:var(--sh)}
+.qhead{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.qhead .big{font-size:64px;line-height:1;width:84px;height:84px;display:grid;place-items:center;background:#FFF1E3;border-radius:20px}
+.qhead p{font-size:20px;font-weight:700}
+.qs{border-radius:18px;padding:14px 16px;margin-top:12px;background:#FBF7F1;border:2px solid var(--line)}
+.qs .sent{font-size:24px}
+.qs .num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;font-size:16px;font-weight:900;margin-right:8px;vertical-align:3px}
+.opts{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.opt{font-size:19px;font-weight:700;padding:10px 18px;border-radius:14px;background:#fff;border:3px solid #EADBC6;color:var(--ink);min-height:52px}
+.opt:hover{border-color:var(--pri2)}
+.opt.sel{border-color:var(--sky);background:#EAF3FF}
+.opt.ok{border-color:var(--teal);background:var(--teal);color:#fff}
+.opt.bad{border-color:#E5484D;background:#E5484D;color:#fff;animation:shake .4s}
+.opt[disabled]{cursor:default}
+@keyframes shake{25%,75%{transform:translateX(-6px)}50%{transform:translateX(6px)}}
+.qact{display:flex;justify-content:center;margin-top:18px}
+.bigbtn{font-size:22px;font-weight:900;padding:14px 38px;border-radius:999px;background:var(--pri);color:#fff;box-shadow:0 6px 0 #C94A28}
+.bigbtn:active{transform:translateY(4px);box-shadow:0 2px 0 #C94A28}
+.bigbtn[disabled]{background:#D9CFC4;box-shadow:0 6px 0 #BFB3A6;cursor:not-allowed}
+.explain{margin-top:16px;border-radius:18px;padding:14px 18px;font-size:18px;display:none}
+.explain.show{display:block;animation:fade .3s}
+.explain.good{background:#E3F6F3;border-left:6px solid var(--teal)}
+.explain.wrong{background:#FDECEC;border-left:6px solid #E5484D}
+.explain h4{font-size:22px;margin-bottom:4px}
+.result{text-align:center;padding:30px 20px}
+.result .em{font-size:90px}
+.result .score{font-size:44px;font-weight:900;color:var(--pri)}
+.review{text-align:left;margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.review div{background:#FDF3EA;border-radius:14px;padding:10px 14px;font-size:17px}
+/* 建设中 */
+.wip{text-align:center;padding:70px 20px;background:var(--paper);border-radius:28px;box-shadow:var(--sh)}
+.wip .em{font-size:90px;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-10px) rotate(-6deg)}}
+.wip h2{font-size:32px;margin:8px 0}
+.wip p{color:var(--soft)}
+/* 弹层 */
+.mask{position:fixed;inset:0;background:rgba(40,30,20,.35);display:none;z-index:50;align-items:center;justify-content:center;padding:16px}
+.mask.show{display:flex}
+.pop{background:#fff;border-radius:26px;padding:22px;max-width:520px;width:100%;animation:fade .25s;position:relative}
+.pop .x{position:absolute;right:14px;top:12px;width:44px;height:44px;border-radius:50%;background:#F5EDE3;font-size:22px}
+.pop .w{font-size:48px}
+footer{text-align:center;color:var(--soft);font-size:14px;padding:0 16px 30px}
+@media(max-width:820px){
+  .wrap{grid-template-columns:1fr;gap:12px}
+  .side{position:static;flex-direction:row;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+  .side::-webkit-scrollbar{display:none}
+  .sn{flex:none;font-size:16px;padding:10px 14px}
+  .pair{grid-template-columns:1fr}
+  .hero .big{font-size:72px;width:96px;height:96px}
+  .ptitle h2{font-size:26px}
+}
+</style>
+</head>
+<body>
+<div class="brand"><div class="logo kai">字</div><h1>字趣乐园<small>8–14 岁汉字学习</small></h1></div>
+<nav class="topnav"><div class="in" id="topnav"></div></nav>
+
+<div id="wipView" class="wrap" style="display:none;grid-template-columns:1fr">
+  <div class="wip"><div class="em">🚧</div><h2 id="wipTitle">建设中</h2><p>这个模块正在建设中，先去「字词句」玩一玩吧！</p></div>
+</div>
+
+<div id="zcjView" class="wrap">
+  <aside class="side" id="side"></aside>
+  <main>
+    <section class="panel on" id="p-family">
+      <div class="ptitle"><h2>义项词族</h2><p>一个字有好几个意思，每个意思都有自己的“词语家族”</p></div>
+      <div class="chars" data-chars></div>
+      <div id="familyBox"></div>
+    </section>
+    <section class="panel" id="p-types">
+      <div class="ptitle"><h2>构词方式</h2><p>两个字怎么“手拉手”变成一个词？</p></div>
+      <div class="grid" id="typeBox" style="margin-top:14px"></div>
+      <h3 style="font-size:24px;margin:26px 0 4px">🧩 不能拆开理解的词</h3>
+      <p style="color:var(--soft)">这些词两个字合在一起才有意思，拆开后单个字的意思和整个词没关系。</p>
+      <div class="mono-row" id="monoBox"></div>
+    </section>
+    <section class="panel" id="p-split">
+      <div class="ptitle"><h2>词的拆解</h2><p>把词拆成“字 + 字”，看看每个字在这里是什么意思</p></div>
+      <div class="chars" data-chars></div>
+      <div id="splitBox"></div>
+    </section>
+    <section class="panel" id="p-oldnew">
+      <div class="ptitle"><h2>例句古今对照</h2><p>同一个意思，今天怎么用，古人怎么用</p></div>
+      <div class="chars" data-chars></div>
+      <div id="oldnewBox"></div>
+    </section>
+    <section class="panel" id="p-quiz">
+      <div class="ptitle"><h2>语境辨义练习</h2><p>同一个字，放进不同句子，意思就变了</p></div>
+      <div class="quiz" id="quizBox"></div>
+    </section>
+  </main>
+</div>
+<footer>标“待查”的内容请老师对照权威辞书核对；标“示例”的现代句为自编例句。</footer>
+
+<div class="mask" id="mask"><div class="pop" id="pop"></div></div>
+
+<script>
+/* ===================== 数据 =====================
+ 每个字：c 字, py 拼音, note 提示
+ ss 义项：k 简称, g 解释, py 该义读音(多音字), ws 词语[词, 构词方式, 拆解], now 现代示例句, old 文言句{t 原文, src 出处, tr 译文} 或 null(待查)
+ 构词方式：偏正 并列 动宾 主谓 补充；成语另标
+================================================== */
+var D=[
+{c:"节",py:"jié",note:"“节约、节能”里的<b>节</b>都是<b>节省</b>；“春节、过节”里的<b>节</b>是<b>节日</b>。字一样，意思不一样。",
+ ss:[
+ {k:"分段处",g:"物体分段相连的地方（本来指竹节）",ws:[["竹节","偏正","竹（竹子）+ 节（分段处）"],["骨节","偏正","骨（骨头）+ 节（相连处）"],["指节","偏正","指（手指）+ 节（分段处）"]],
+  now:"竹子一节一节地往上长。",old:{t:"彼节者有间，而刀刃者无厚。",src:"《庄子·养生主》",tr:"牛的骨节之间有空隙，而刀刃薄得几乎没有厚度。"}},
+ {k:"节省",g:"控制、少用",ws:[["节约","并列","节（节制）+ 约（约束）"],["节俭","并列","节（节省）+ 俭（俭省）"],["节能","动宾","节（节省）+ 能（能源）"],["节水","动宾","节（节省）+ 水"]],
+  now:"我们要节约用水，随手关好水龙头。",old:{t:"节用而爱人，使民以时。",src:"《论语·学而》",tr:"节省财用，爱护百姓，役使百姓要选在农闲的时候。"}},
+ {k:"节日",g:"一年中特别的日子",ws:[["春节","偏正","春（春天）+ 节（节日）"],["节日","偏正","节（节令）+ 日（日子）"],["过节","动宾","过（度过）+ 节（节日）"]],
+  now:"春节快到了，家家户户贴春联。",old:{t:"独在异乡为异客，每逢佳节倍思亲。",src:"王维《九月九日忆山东兄弟》",tr:"独自在外地做客，每到美好的节日就更加思念亲人。"}}
+ ]},
+{c:"成",py:"chéng",note:"“成功、成就、成果”里的<b>成</b>都是<b>完成</b>的意思；“变成、长成”里的<b>成</b>表示<b>变化的结果</b>。",
+ cmp:{same:[["成功","把事情做完成了"],["成就","完成、达到"]],diff:[["成本","做成一样东西要花的费用。这里不是“成功”的意思，“成”的确切理据<span class='dq'>待查</span>"]]},
+ ss:[
+ {k:"完成",g:"把事情做好、做完",ws:[["成功","动宾","成（完成）+ 功（功业）"],["成就","并列","成（完成）+ 就（达到）"],["完成","并列","完（完结）+ 成（做好）"],["成果","偏正","成（完成后的）+ 果（结果）"]],
+  now:"经过一次次练习，他终于跳绳成功了。",old:{t:"有志者事竟成也。",src:"《后汉书·耿弇传》",tr:"有志向的人，事情最终一定能完成。"}},
+ {k:"变成",g:"变为另一种样子",ws:[["变成","补充","变（变化）+ 成（结果：成为）"],["长成","补充","长（生长）+ 成（结果）"],["化成","补充","化（融化）+ 成（结果）"]],
+  now:"太阳一出来，雪人慢慢化成了一摊水。",old:{t:"积土成山，风雨兴焉。",src:"《荀子·劝学》",tr:"堆积泥土变成高山，风雨就从那里兴起了。"}},
+ {k:"现成的",g:"已经有的、定型的",ws:[["成语","偏正","成（现成的、定型的）+ 语（话）"],["成见","偏正","成（早已形成的）+ 见（看法）"],["成规","偏正","成（现成的）+ 规（规矩）"]],
+  now:"“画蛇添足”是一个有趣的成语。",old:{t:"故画竹，必先得成竹于胸中。",src:"苏轼《文与可画筼筜谷偃竹记》",tr:"所以画竹子，一定要先在心里有一棵完整的竹子。"}}
+ ]},
+{c:"明",py:"míng",note:"“明月”的<b>明</b>是<b>亮</b>，“明白”的<b>明</b>是<b>清楚</b>，“明天”的<b>明</b>是<b>下一个</b>。",
+ ss:[
+ {k:"亮",g:"光线充足",ws:[["光明","并列","光（光亮）+ 明（亮）"],["明亮","并列","明（亮）+ 亮"],["明月","偏正","明（明亮的）+ 月（月亮）"]],
+  now:"新教室又宽敞又明亮。",old:{t:"床前明月光，疑是地上霜。",src:"李白《静夜思》",tr:"床前洒满明亮的月光，好像地上结了一层霜。"}},
+ {k:"清楚",g:"懂得、清楚",ws:[["明白","并列","明（清楚）+ 白（清楚）"],["说明","补充","说（讲）+ 明（结果：清楚）"],["聪明","并列","聪（耳朵灵）+ 明（眼睛亮、心里清楚）"]],
+  now:"老师一举例子，我就明白了。",old:{t:"君子博学而日参省乎己，则知明而行无过矣。",src:"《荀子·劝学》",tr:"君子广泛学习，又每天检查反省自己，就会见识明白、行为没有过错。"}},
+ {k:"下一个",g:"指今天、今年之后的那一个",ws:[["明天","偏正","明（下一个）+ 天（日子）"],["明年","偏正","明（下一个）+ 年"],["明早","偏正","明（下一个）+ 早（早上）"]],
+  now:"明天我们去郊外春游。",old:{t:"明日复明日，明日何其多。",src:"《明日歌》（作者一般题为钱福，另有他说，<span class='dq'>待查</span>）",tr:"等了明天又等明天，明天是多么多啊！"}}
+ ]},
+{c:"保",py:"bǎo",note:"“保护”的<b>保</b>是<b>守护</b>，“保持”的<b>保</b>是<b>守住不变</b>，“保证”的<b>保</b>是<b>担保</b>。",
+ ss:[
+ {k:"守护",g:"护着，不让受伤害",ws:[["保护","并列","保（守护）+ 护（护卫）"],["保卫","并列","保（守护）+ 卫（防卫）"],["保家卫国","成语","保家（动宾）+ 卫国（动宾），两部分并列"]],
+  now:"我们要保护小动物。",old:{t:"保民而王，莫之能御也。",src:"《孟子·梁惠王上》",tr:"安定、爱护百姓而统一天下，就没有谁能阻挡。"}},
+ {k:"守住不变",g:"维持原样",ws:[["保持","并列","保（守住）+ 持（维持）"],["保存","并列","保（守住）+ 存（留存）"],["保温","动宾","保（保持）+ 温（温度）"],["保密","动宾","保（保守）+ 密（秘密）"]],
+  now:"图书馆里请保持安静。",old:null},
+ {k:"担保",g:"负责说一定做到",ws:[["保证","并列","保（担保）+ 证（证明）"],["担保","并列","担（承担）+ 保（担保）"],["作保","动宾","作（当）+ 保（担保人）"]],
+  now:"我保证按时完成作业。",old:null}
+ ]},
+{c:"头",py:"tóu",note:"“石头、木头”里的<b>头</b>读轻声，只是一个<b>词尾</b>，没有实在意思，和“脑袋”无关。",
+ ss:[
+ {k:"脑袋",g:"人或动物身体最上面的部分",ws:[["头发","偏正","头（脑袋）+ 发（fà，毛发）"],["点头","动宾","点（向下动一动）+ 头"],["头痛","主谓","头（谁）+ 痛（怎么样）"]],
+  now:"听到问题，他点了点头。",old:{t:"举头望明月，低头思故乡。",src:"李白《静夜思》",tr:"抬头望着明月，低头思念故乡。"}},
+ {k:"顶端·开头",g:"物体的顶部、两端或事情的起点",ws:[["山头","偏正","山 + 头（顶端）"],["源头","偏正","源（水源）+ 头（开头处）"],["尽头","偏正","尽（到底）+ 头（端）"]],
+  now:"我们沿着小路走到了尽头。",old:{t:"问渠那得清如许？为有源头活水来。",src:"朱熹《观书有感》",tr:"问水渠为什么这样清澈？因为源头有活水不断流来。"}},
+ {k:"第一·领头",g:"次序在最前的",ws:[["头名","偏正","头（第一）+ 名（名次）"],["头等","偏正","头（第一）+ 等（等级）"],["带头","动宾","带（带领）+ 头（前头）"]],
+  now:"她在朗诵比赛中得了头名。",old:null}
+ ]},
+{c:"走",py:"zǒu",note:"<b>古今义不同！</b>古文里的“走”多是<b>跑</b>；今天的“走”是<b>步行</b>。读文言文时要特别小心。",
+ ss:[
+ {k:"跑（古义）",g:"快速奔跑",ws:[["奔走","并列","奔（跑）+ 走（跑）"],["走兽","偏正","走（会跑的）+ 兽（野兽）"],["走马观花","成语","骑着马跑着看花（走＝跑）"]],
+  now:"山林里有许多飞禽走兽。",old:{t:"兔走触株，折颈而死。",src:"《韩非子·五蠹》",tr:"兔子奔跑时撞到树桩上，折断脖子死了。"}},
+ {k:"步行",g:"一步一步地行进",ws:[["走路","动宾","走（步行）+ 路"],["行走","并列","行（走）+ 走（步行）"],["走廊","偏正","走（行走的）+ 廊（廊道）"]],
+  now:"我每天走路上学。",old:null},
+ {k:"离开",g:"离开原来的地方",ws:[["走开","补充","走 + 开（离开原处）"],["赶走","补充","赶（驱赶）+ 走（结果：离开）"],["搬走","补充","搬（搬运）+ 走（结果：离开）"]],
+  now:"小猫被狗吓得跑走了。",old:null}
+ ]},
+{c:"道",py:"dào",note:"“道路”的<b>道</b>是<b>路</b>，“道理”的<b>道</b>是<b>规律、道理</b>，“道谢”的<b>道</b>是<b>说</b>。",
+ ss:[
+ {k:"路",g:"供人或车通行的路",ws:[["道路","并列","道（路）+ 路"],["隧道","偏正","隧（地下通道）+ 道（路）"],["车道","偏正","车 + 道（路）"]],
+  now:"这条道很窄，过马路要小心。",old:{t:"溯洄从之，道阻且长。",src:"《诗经·秦风·蒹葭》",tr:"逆着河流去找她，道路险阻又漫长。"}},
+ {k:"道理",g:"规律、正确的道理",ws:[["道理","并列","道（道理）+ 理（道理）"],["正道","偏正","正（正确的）+ 道（道路、道理）"],["得道","动宾","得（得到）+ 道（正义）"]],
+  now:"妈妈讲的道理我都记住了。",old:{t:"得道者多助，失道者寡助。",src:"《孟子·公孙丑下》",tr:"合乎正义的人得到的帮助多，违背正义的人得到的帮助少。"}},
+ {k:"说",g:"用话表达",ws:[["道谢","动宾","道（说）+ 谢（感谢的话）"],["道歉","动宾","道（说）+ 歉（抱歉的话）"],["说道","并列","说 + 道（说）"]],
+  now:"他接过礼物，连声道谢。",old:{t:"不足为外人道也。",src:"陶渊明《桃花源记》",tr:"（这里的事）不值得对外面的人说啊。"}}
+ ]},
+{c:"长",py:"cháng / zhǎng",note:"<b>长</b>是多音字：表示<b>长短、长处</b>读 <b>cháng</b>；表示<b>生长、首领</b>读 <b>zhǎng</b>。",
+ ss:[
+ {k:"长短",py:"cháng",g:"两端距离大",ws:[["长度","偏正","长（长短）+ 度（程度）"],["长江","偏正","长（长的）+ 江"],["长途","偏正","长（长的）+ 途（路途）"]],
+  now:"长江是中国最长的河。",old:{t:"孤帆远影碧空尽，唯见长江天际流。",src:"李白《黄鹤楼送孟浩然之广陵》",tr:"小船的帆影消失在蓝天尽头，只看见长江向天边流去。"}},
+ {k:"长处",py:"cháng",g:"优点、擅长的方面",ws:[["特长","偏正","特（特别的）+ 长（长处）"],["专长","偏正","专（专门的）+ 长（长处）"],["长处","偏正","长（优点）+ 处（方面）"]],
+  now:"画画是她的特长。",old:{t:"夫尺有所短，寸有所长。",src:"《楚辞·卜居》",tr:"尺虽比寸长，也有不足的地方；寸虽比尺短，也有它的长处。"}},
+ {k:"生长",py:"zhǎng",g:"长大、发育",ws:[["生长","并列","生（生出）+ 长（长大）"],["成长","并列","成（成熟）+ 长（长大）"],["长大","补充","长（生长）+ 大（结果）"]],
+  now:"小树苗一天天长大了。",old:{t:"苟得其养，无物不长。",src:"《孟子·告子上》",tr:"如果得到好的养护，没有什么东西不生长。"}},
+ {k:"首领",py:"zhǎng",g:"领头的人",ws:[["校长","偏正","校（学校）+ 长（领头的人）"],["班长","偏正","班（班级）+ 长（领头的人）"],["家长","偏正","家（家庭）+ 长（领头的人）"]],
+  now:"他被大家选为班长。",old:null}
+ ]},
+{c:"开",py:"kāi",note:"“开门”是<b>打开</b>，“开花”是<b>花朵张开</b>，“开学”是<b>开始</b>。“花开”是主谓，“开花”是动宾，顺序一换，结构就变了。",
+ ss:[
+ {k:"打开",g:"使关着的东西张开",ws:[["开门","动宾","开（打开）+ 门"],["打开","补充","打（动作）+ 开（结果：开了）"],["开窗","动宾","开（打开）+ 窗"]],
+  now:"请把窗户打开，让新鲜空气进来。",old:{t:"开轩面场圃，把酒话桑麻。",src:"孟浩然《过故人庄》",tr:"打开窗户面对谷场菜园，端着酒杯谈论庄稼。"}},
+ {k:"花开放",g:"花朵张开",ws:[["开花","动宾","开（开放）+ 花"],["盛开","偏正","盛（旺盛地）+ 开（开放）"],["花开","主谓","花（谁）+ 开（怎么样）"]],
+  now:"春天到了，公园里的花都开了。",old:{t:"忽如一夜春风来，千树万树梨花开。",src:"岑参《白雪歌送武判官归京》",tr:"好像一夜之间春风吹来，千万棵树上梨花盛开。"}},
+ {k:"开始",g:"从头做起",ws:[["开学","动宾","开（开始）+ 学（上学）"],["开工","动宾","开（开始）+ 工（工作）"],["开始","并列","开（开始）+ 始（起头）"]],
+  now:"九月一日，我们开学了。",old:null}
+ ]},
+{c:"发",py:"fā",note:"“头发”的<b>发</b>读 <b>fà</b>，繁体是“髮”；“发射”的<b>发</b>读 <b>fā</b>，繁体是“發”。它们本来是两个字，简化后才写成一样。",
+ ss:[
+ {k:"射出",g:"把箭、子弹、球等送出去",ws:[["发射","并列","发（射出）+ 射"],["发球","动宾","发（送出）+ 球"],["百发百中","成语","射一百次，中一百次"]],
+  now:"火箭发射成功了！",old:{t:"去柳叶者百步而射之，百发百中。",src:"《战国策·西周策》",tr:"离柳叶一百步远射它，射一百次中一百次。"}},
+ {k:"产生·长出",g:"生出、显出来",ws:[["发芽","动宾","发（长出）+ 芽"],["发光","动宾","发（放出）+ 光"],["发热","动宾","发（产生）+ 热"]],
+  now:"种子喝饱了水，发芽了。",old:null},
+ {k:"送出·表达",g:"送出去或说出来",ws:[["发言","动宾","发（说出）+ 言（话）"],["发信","动宾","发（送出）+ 信"],["发表","并列","发（发出）+ 表（表达）"]],
+  now:"小明举手上台发言。",old:null}
+ ]}
+];
+
+/* 不能拆的词 */
+var MONO=[
+ {w:"葡萄",k:"外来词",t:"一般认为是古代从西域传入的音译词（具体来源语言<span class='dq'>待查</span>）。“葡”“萄”单独都不表示意思。"},
+ {w:"马虎",k:"联绵词",t:"意思是粗心、不认真，和“马”“老虎”没有关系。民间流传的“马虎”来历故事是附会的，不可当真。"},
+ {w:"东西",k:"意义融合",t:"表示“物品”时，不能理解成“东方 + 西方”。从方位变成“物品”的来历说法不一，<span class='dq'>待查</span>。"},
+ {w:"沙发",k:"外来词",t:"英语 sofa 的音译，和“沙子”“头发”都没有关系。"}
+];
+var TYPES=[
+ {t:"偏正",c:"var(--pz)",d:"前一个字修饰后一个字，后面是“主角”。",f:"<b>什么样的</b> + 东西 / <b>怎样地</b> + 动作",e:"明月＝明亮的月亮"},
+ {t:"并列",c:"var(--bl)",d:"两个字意思相同、相近或相关，地位平等。",f:"<b>甲</b> + <b>乙</b>（像好朋友并肩站）",e:"道路＝道＋路"},
+ {t:"动宾",c:"var(--db)",d:"前一个字是动作，后一个字是动作的对象。",f:"<b>做什么</b> + <b>对谁 / 对什么</b>",e:"开门＝开（动作）＋门"},
+ {t:"主谓",c:"var(--zw)",d:"前一个字是“谁/什么”，后一个字说它“怎么样”。",f:"<b>谁</b> + <b>怎么样</b>",e:"头痛＝头＋痛"},
+ {t:"补充",c:"var(--bc)",d:"后一个字补充说明前一个动作的结果或趋向。",f:"<b>动作</b> + <b>结果</b>",e:"长大＝长（动作）＋大（结果）"}
+];
+
+/* 语境辨义练习：a/b=[句子, 正确义项序号] */
+var Q=[
+ {c:"节",a:["春节快到了，家家户户贴春联。",2],b:["我们要节约用水。",1],x:"“春节”是一年中特别的日子，节＝节日；“节约”是少用、控制，节＝节省。"},
+ {c:"节",a:["竹子一节一节地往上长。",0],b:["妈妈总是很节俭。",1],x:"“一节一节”说的是竹子分段的地方；“节俭”是节省、不浪费。"},
+ {c:"成",a:["经过努力，他终于成功了。",0],b:["冰慢慢化成了水。",1],x:"“成功”是把事情完成；“化成”表示变化的结果，成＝变成。"},
+ {c:"成",a:["“守株待兔”是一个成语。",2],b:["这座大桥已经建成了。",0],x:"成语是现成的、定型的话，成＝现成的；“建成”是建好了，成＝完成。"},
+ {c:"明",a:["今晚的月亮又圆又明。",0],b:["老师讲得很明白。",1],x:"月亮“明”是亮；“明白”是心里清楚。"},
+ {c:"明",a:["明天我们去春游。",2],b:["这间教室宽敞明亮。",0],x:"“明天”是今天的下一天，明＝下一个；“明亮”是光线足。"},
+ {c:"保",a:["解放军保卫祖国。",0],b:["图书馆里请保持安静。",1],x:"“保卫”是守护不让受伤害；“保持”是守住原样不变。"},
+ {c:"头",a:["他高兴地点了点头。",0],b:["我们走到了小路的尽头。",1],x:"“点头”的头是脑袋；“尽头”的头是路的最末端。"},
+ {c:"头",a:["她在比赛中得了头名。",2],b:["我的头有点痛。",0],x:"“头名”是第一名，头＝第一；“头痛”的头是脑袋。"},
+ {c:"走",a:["兔走触株，折颈而死。",0],b:["我每天走路上学。",1],x:"文言里的“走”多是跑，兔子是跑着撞上树桩的；今天的“走路”是步行。"},
+ {c:"走",a:["小猫被我赶走了。",2],b:["山林里有许多飞禽走兽。",0],x:"“赶走”是让它离开；“走兽”是会奔跑的野兽，走＝跑。"},
+ {c:"道",a:["这条道很窄。",0],b:["他向老师道了谢。",2],x:"“这条道”说的是路；“道谢”是说感谢的话，道＝说。"},
+ {c:"道",a:["这个道理很简单。",1],b:["不足为外人道也。",2],x:"“道理”的道是规律、道理；《桃花源记》里“为外人道”是对外人说。"},
+ {c:"长",a:["长江是中国最长的河。",0],b:["小树苗慢慢长大了。",2],x:"“长江、最长”读 cháng，说长短；“长大”读 zhǎng，是生长。"},
+ {c:"长",a:["画画是她的特长。",1],b:["他被选为班长。",3],x:"“特长”读 cháng，是擅长的地方；“班长”读 zhǎng，是领头的人。"},
+ {c:"开",a:["请把窗户打开。",0],b:["公园里的花都开了。",1],x:"“打开窗户”是让关着的东西张开；“花开了”是花朵开放。"},
+ {c:"开",a:["九月一日开学了。",2],b:["他轻轻开门走了进来。",0],x:"“开学”是开始上学，开＝开始；“开门”是把门打开。"},
+ {c:"发",a:["他射箭百发百中。",0],b:["种子喝饱水发芽了。",1],x:"“百发百中”的发是射出；“发芽”的发是长出来。"},
+ {c:"发",a:["小明举手上台发言。",2],b:["萤火虫一闪一闪地发光。",1],x:"“发言”是说出自己的话；“发光”是放出光，产生光亮。"}
+];
+
+/* ===================== 工具 ===================== */
+var $=function(s){return document.querySelector(s)},$$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+var cur=0;
+function mark(s,c){return s.split(c).join("<em>"+c+"</em>")}
+function tag(t){return '<span class="tag t-'+t+'">'+t+'</span>'}
+function byChar(c){for(var i=0;i<D.length;i++)if(D[i].c===c)return D[i]}
+
+/* 顶部一级菜单 */
+var TOP=["字义扩展图","偏旁部首","声旁音部","字词句","汉字密码","易错诊所","记忆复习","学习路径"];
+$("#topnav").innerHTML=TOP.map(function(t,i){return '<button class="tn'+(i===3?" on":"")+'" data-i="'+i+'">'+t+'</button>'}).join("");
+$$(".tn").forEach(function(b){b.onclick=function(){
+  $$(".tn").forEach(function(x){x.classList.toggle("on",x===b)});
+  var z=+b.dataset.i===3;$("#zcjView").style.display=z?"":"none";$("#wipView").style.display=z?"none":"grid";
+  $("#wipTitle").textContent=TOP[+b.dataset.i]+" · 建设中";window.scrollTo(0,0);
+}});
+
+/* 左侧二级菜单 */
+var SIDE=[["p-family","🌳","义项词族"],["p-types","🧱","构词方式"],["p-split","✂️","词的拆解"],["p-oldnew","📜","例句古今对照"],["p-quiz","🎯","语境辨义练习"]];
+$("#side").innerHTML=SIDE.map(function(s,i){return '<button class="sn'+(i===0?" on":"")+'" data-p="'+s[0]+'"><span class="ic">'+s[1]+'</span>'+s[2]+'</button>'}).join("");
+$$(".sn").forEach(function(b){b.onclick=function(){go(b.dataset.p)}});
+function go(p){$$(".sn").forEach(function(x){x.classList.toggle("on",x.dataset.p===p)});$$(".panel").forEach(function(x){x.classList.toggle("on",x.id===p)});
+  if(window.innerWidth<820)window.scrollTo({top:$("#zcjView").offsetTop-60,behavior:"smooth"})}
+
+/* 选字条 */
+function renderChars(){$$("[data-chars]").forEach(function(box){
+  box.innerHTML=D.map(function(d,i){return '<button class="ch kai'+(i===cur?" on":"")+'" data-i="'+i+'">'+d.c+'</button>'}).join("");
+  $$("[data-chars] .ch").forEach(function(b){b.onclick=function(){cur=+b.dataset.i;renderAll()}});
+})}
+function hero(d){return '<div class="hero"><div class="big kai"><span>'+d.c+'</span></div><div class="meta">拼音 <b>'+d.py+'</b><br>'+d.ss.length+' 个常用义项 · '+d.ss.reduce(function(n,s){return n+s.ws.length},0)+' 个词语</div></div>'}
+
+/* 1 义项词族 */
+function renderFamily(){var d=D[cur];
+  $("#familyBox").innerHTML=hero(d)+'<div class="grid">'+d.ss.map(function(s,i){
+    return '<div class="card"><div class="no">'+(i+1)+'</div><div class="sense-h"><span class="sk">'+s.k+'</span>'+(s.py?'<span class="py">'+s.py+'</span>':'')+'</div><div class="gl">'+s.g+'</div><div class="words">'+
+      s.ws.map(function(w){return '<button class="wd kai" data-w="'+w[0]+'" data-s="'+i+'">'+w[0]+tag(w[1])+'</button>'}).join("")+'</div></div>'}).join("")+'</div><div class="note">💡 '+d.note+'</div>';
+  $$("#familyBox .wd").forEach(function(b){b.onclick=function(){showWord(cur,+b.dataset.s,b.dataset.w)}});
+}
+function showWord(ci,si,w){var d=D[ci],s=d.ss[si],x=s.ws.filter(function(v){return v[0]===w})[0];
+  $("#pop").innerHTML='<button class="x" onclick="closePop()">✕</button><div class="w kai">'+x[0]+'</div><p style="margin:6px 0">'+tag(x[1])+' <span style="color:var(--soft)">「'+d.c+'」在这里是：<b style="color:var(--pri)">'+s.k+'</b></span></p><div class="formula" style="font-size:20px">'+x[2]+'</div><p style="color:var(--soft);font-size:15px">同一义项的词：'+s.ws.map(function(v){return v[0]}).join("、")+'</p>';
+  $("#mask").classList.add("show")}
+function closePop(){$("#mask").classList.remove("show")}
+$("#mask").onclick=function(e){if(e.target===this)closePop()};
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closePop()});
+
+/* 2 构词方式 */
+function renderTypes(){
+  var col={};D.forEach(function(d,ci){d.ss.forEach(function(s,si){s.ws.forEach(function(w){(col[w[1]]=col[w[1]]||[]).push([w[0],ci,si])})})});
+  var html=TYPES.map(function(t){return '<div class="card type-card" style="border-top-color:'+t.c+'"><h3>'+tag(t.t)+' '+t.t+'式</h3><p>'+t.d+'</p><div class="formula">'+t.f+'</div><p style="font-size:16px;color:var(--soft)">例：'+t.e+'</p><div class="mini kai">'+
+    (col[t.t]||[]).map(function(w){return '<span data-ci="'+w[1]+'" data-si="'+w[2]+'" data-w="'+w[0]+'">'+w[0]+'</span>'}).join("")+'</div></div>'}).join("");
+  html+='<div class="card type-card" style="border-top-color:var(--cy)"><h3>'+tag("成语")+' 成语</h3><p>四个字的固定说法，可以分成两半来看结构。</p><div class="mini kai">'+(col["成语"]||[]).map(function(w){return '<span data-ci="'+w[1]+'" data-si="'+w[2]+'" data-w="'+w[0]+'">'+w[0]+'</span>'}).join("")+'</div></div>';
+  html+='<div class="card type-card" style="border-top-color:var(--fj)"><h3>'+tag("附加")+' 附加式（词尾）</h3><p>“头”读轻声时只是词尾，没有实在意思。</p><div class="mini kai"><span>石头</span><span>木头</span><span>念头</span></div><p style="font-size:14px;color:var(--soft)">本模块重点是上面五种结构，附加式作补充了解。</p></div>';
+  $("#typeBox").innerHTML=html;
+  $$("#typeBox .mini span[data-w]").forEach(function(s){s.onclick=function(){showWord(+s.dataset.ci,+s.dataset.si,s.dataset.w)}});
+  $("#monoBox").innerHTML=MONO.map(function(m){return '<div class="mono"><span class="w kai">'+m.w+'</span><span class="k">'+m.k+'</span><p style="margin-top:6px">'+m.t+'</p></div>'}).join("");
+}
+
+/* 3 词的拆解 */
+function eqHTML(w,c){var parts=w[2].split(" + ");
+  return '<div class="eq"><span class="whole kai">'+w[0]+'</span>'+tag(w[1])+'<span class="eqs">'+parts.map(function(p){
+    var m=p.match(/^(.+?)（(.+)）$/);return m?'<span class="pc"><b class="kai">'+m[1]+'</b>（'+m[2]+'）</span>':'<span class="pc"><b class="kai">'+p+'</b></span>'}).join('<span class="op">+</span>')+'</span></div>'}
+function renderSplit(){var d=D[cur],h=hero(d);
+  h+=d.ss.map(function(s,i){return '<div class="card" style="margin-bottom:14px"><div class="sense-h"><span class="sk">义项'+(i+1)+'：'+s.k+'</span>'+(s.py?'<span class="py">'+s.py+'</span>':'')+'<span style="color:var(--soft);font-size:15px">这一组里的「'+d.c+'」都是这个意思</span></div>'+s.ws.map(function(w){return eqHTML(w,d.c)}).join("")+'</div>'}).join("");
+  if(d.cmp){h+='<div class="card"><h3 style="font-size:22px">🔍 找不同：同一个「'+d.c+'」</h3><div class="cmp">'+
+    d.cmp.same.map(function(x){return '<div class="same"><div class="w kai">'+x[0]+'</div>✅ '+x[1]+'</div>'}).join("")+
+    d.cmp.diff.map(function(x){return '<div class="diff"><div class="w kai">'+x[0]+'</div>⚠️ '+x[1]+'</div>'}).join("")+'</div></div>'}
+  h+='<div class="note">💡 '+d.note+'</div>';
+  $("#splitBox").innerHTML=h}
+
+/* 4 例句古今对照 */
+function renderOldNew(){var d=D[cur];
+  $("#oldnewBox").innerHTML=hero(d)+d.ss.map(function(s,i){
+    var o=s.old?'<div class="sent kai">'+mark(s.old.t,d.c)+'</div><div class="src">—— '+s.old.src+'</div><div class="tr">译文：'+s.old.tr+'</div>':'<div class="pend">文言例句 <span class="dq">待查</span></div><div class="tr">暂未找到可靠出处，宁缺勿编。</div>';
+    return '<div class="card" style="margin-bottom:14px"><div class="sense-h"><span class="sk">义项'+(i+1)+'：'+s.k+'</span>'+(s.py?'<span class="py">'+s.py+'</span>':'')+'</div><div class="gl">'+s.g+'</div><div class="pair"><div class="now"><div class="lab">🏙️ 现代 <span class="ex-tag">示例</span></div><div class="sent kai">'+mark(s.now,d.c)+'</div></div><div class="old"><div class="lab">📜 文言</div>'+o+'</div></div></div>'}).join("")}
+
+/* 5 语境辨义练习 */
+var qi=0,score=0,wrongs=[],pick={};
+function renderQuiz(){
+  if(qi>=Q.length){var star=score>=Q.length-1?"🏆":score>=Q.length*0.7?"🎉":"💪";
+    $("#quizBox").innerHTML='<div class="qcard result"><div class="em">'+star+'</div><div class="score">'+score+' / '+Q.length+'</div><p style="font-size:20px">'+(score===Q.length?"全部答对，你是辨义小达人！":"再看看下面的题，记住它们的区别吧！")+'</p>'+
+      (wrongs.length?'<div class="review">'+wrongs.map(function(k){var q=Q[k];return '<div><b class="kai" style="font-size:22px">'+q.c+'</b>　'+q.x+'</div>'}).join("")+'</div>':'')+'<div class="qact"><button class="bigbtn" id="restart">🔁 再练一遍</button></div></div>';
+    $("#restart").onclick=function(){qi=0;score=0;wrongs=[];renderQuiz()};return}
+  var q=Q[qi],d=byChar(q.c);pick={};
+  var row=function(id,s){return '<div class="qs"><div class="sent kai"><span class="num">'+id+'</span>'+mark(s[0],q.c)+'</div><div class="opts" data-row="'+id+'">'+d.ss.map(function(x,i){return '<button class="opt" data-i="'+i+'">'+x.k+(x.py?' ('+x.py+')':'')+'</button>'}).join("")+'</div></div>'};
+  $("#quizBox").innerHTML='<div class="qbar"><div class="bar"><i style="width:'+(qi/Q.length*100)+'%"></i></div><span class="n">'+(qi+1)+' / '+Q.length+'</span></div>'+
+   '<div class="qcard"><div class="qhead"><div class="big kai">'+q.c+'</div><p>两个句子里的「'+q.c+'」分别是什么意思？</p></div>'+row(1,q.a)+row(2,q.b)+
+   '<div class="explain" id="exp"></div><div class="qact"><button class="bigbtn" id="chk" disabled>检查答案</button></div></div>';
+  $$(".opts .opt").forEach(function(b){b.onclick=function(){var r=b.parentNode.dataset.row;pick[r]=+b.dataset.i;
+    $$('.opts[data-row="'+r+'"] .opt').forEach(function(x){x.classList.toggle("sel",x===b)});$("#chk").disabled=!(pick[1]!=null&&pick[2]!=null)}});
+  $("#chk").onclick=function(){
+    if(this.dataset.done){qi++;renderQuiz();return}
+    var ans={1:q.a[1],2:q.b[1]},ok=true;
+    [1,2].forEach(function(r){$$('.opts[data-row="'+r+'"] .opt').forEach(function(x){var i=+x.dataset.i;x.disabled=true;x.classList.remove("sel");
+      if(i===ans[r])x.classList.add("ok");else if(i===pick[r]){x.classList.add("bad");ok=false}})});
+    if(ok)score++;else wrongs.push(qi);
+    var e=$("#exp");e.className="explain show "+(ok?"good":"wrong");
+    e.innerHTML='<h4>'+(ok?"✅ 全对，真棒！":"❌ 再想想：")+'</h4>①「'+q.c+'」＝'+d.ss[q.a[1]].k+'　②「'+q.c+'」＝'+d.ss[q.b[1]].k+'<p style="margin-top:6px">'+q.x+'</p>';
+    this.dataset.done="1";this.textContent=qi===Q.length-1?"看成绩 🏁":"下一题 ▶";
+  };
+}
+
+function renderAll(){renderChars();renderFamily();renderSplit();renderOldNew()}
+renderAll();renderTypes();renderQuiz();
+</script>
+</body>
+</html>

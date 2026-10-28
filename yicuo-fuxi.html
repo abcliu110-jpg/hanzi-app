@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>识字星球 · 易错诊所 & 记忆复习</title>
+<style>
+:root{
+  --bg:#FFF8EE;--ink:#2B2A4C;--muted:#7A7896;--card:#FFFFFF;--line:#F0E6D6;
+  --red:#E8505B;--red-soft:#FFE8E9;--orange:#F59E3A;--orange-soft:#FFF0DC;
+  --green:#22A98F;--green-soft:#DDF5EF;--blue:#4C7DF0;--blue-soft:#E4ECFF;
+  --purple:#8B6CEF;--purple-soft:#EEE8FF;
+  --kai:"STKaiti","KaiTi","Kaiti SC","KaiTi_GB2312","楷体",serif;
+  --shadow:0 6px 0 rgba(43,42,76,.06),0 10px 30px rgba(43,42,76,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;color:var(--ink);
+  background:var(--bg);
+  background-image:radial-gradient(circle at 8% -5%,#FFE3C6 0,transparent 38%),radial-gradient(circle at 105% 18%,#D9F3EC 0,transparent 32%),radial-gradient(circle at 50% 120%,#E9E3FF 0,transparent 40%);
+  background-attachment:fixed;min-height:100vh;line-height:1.6}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+/* header */
+header{padding:18px 0 6px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#FF8A5C,#F7B733);display:grid;place-items:center;color:#fff;font-family:var(--kai);font-size:28px;font-weight:700;box-shadow:0 4px 0 #D9772F}
+.brand h1{margin:0;font-size:22px;letter-spacing:1px}
+.brand small{display:block;color:var(--muted);font-size:13px;font-weight:400;letter-spacing:0}
+
+/* top nav */
+.topnav{display:flex;gap:8px;overflow-x:auto;padding:14px 2px 10px;scrollbar-width:none}
+.topnav::-webkit-scrollbar{display:none}
+.topnav button{flex:0 0 auto;border:2px solid transparent;background:rgba(255,255,255,.7);color:var(--muted);padding:9px 16px;border-radius:999px;font-size:15px;font-weight:600;transition:.2s}
+.topnav button:hover{color:var(--ink);background:#fff}
+.topnav button.on{background:var(--ink);color:#fff;box-shadow:0 4px 0 #15142E}
+.topnav button.live:not(.on)::after{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--orange);margin-left:6px;vertical-align:middle}
+
+/* hero */
+.hero{border-radius:26px;padding:24px 26px;margin:6px 0 16px;color:#fff;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.hero.clinic{background:linear-gradient(120deg,#EE5D6C,#F78F5B)}
+.hero.review{background:linear-gradient(120deg,#1FA58C,#4CC3A6)}
+.hero h2{margin:0 0 4px;font-size:26px}
+.hero p{margin:0;opacity:.92;max-width:640px;font-size:15px}
+.hero .big{position:absolute;right:22px;top:-18px;font-family:var(--kai);font-size:150px;opacity:.16;line-height:1}
+.hero .chips{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.hero .chip{background:rgba(255,255,255,.22);padding:5px 12px;border-radius:999px;font-size:13px;font-weight:600}
+
+/* sub nav */
+.subnav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.subnav button{border:2px solid var(--line);background:#fff;color:var(--ink);padding:8px 14px;border-radius:14px;font-size:15px;font-weight:600;transition:.15s;display:flex;align-items:center;gap:6px}
+.subnav button:hover{transform:translateY(-1px)}
+.subnav button .n{background:var(--red);color:#fff;font-size:11px;border-radius:999px;padding:0 7px;line-height:18px}
+.clinicT .subnav button.on{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 4px 0 #C23B46}
+.reviewT .subnav button.on{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 4px 0 #17836F}
+.subnav button.on .n{background:#fff;color:var(--red)}
+
+/* bar */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#fff;border-radius:18px;padding:14px 18px;margin-bottom:18px;box-shadow:var(--shadow)}
+.bar .t{font-weight:700;font-size:17px}
+.bar .d{color:var(--muted);font-size:14px}
+.btn{border:none;border-radius:14px;padding:10px 18px;font-size:15px;font-weight:700;color:#fff;background:var(--ink);box-shadow:0 4px 0 #15142E;transition:.12s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #15142E}
+.btn.red{background:var(--red);box-shadow:0 4px 0 #C23B46}
+.btn.green{background:var(--green);box-shadow:0 4px 0 #17836F}
+.btn.orange{background:var(--orange);box-shadow:0 4px 0 #C97A22}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:none}
+.btn.sm{padding:6px 12px;font-size:13px;border-radius:10px}
+
+/* grid & cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.grid.wide{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
+.card{background:var(--card);border-radius:20px;padding:18px;box-shadow:var(--shadow);position:relative}
+.card .add{position:absolute;right:12px;top:12px;border:none;background:var(--green-soft);color:var(--green);font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px}
+.card .add.done{background:#eee;color:#999}
+.hz{font-family:var(--kai);font-size:54px;line-height:1.1;font-weight:700}
+.row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px dashed var(--line)}
+.row:first-of-type{border-top:none}
+.py{display:inline-block;min-width:54px;text-align:center;font-weight:700;border-radius:10px;padding:2px 8px;font-size:15px;font-family:"Segoe UI","PingFang SC",sans-serif}
+.py.c0{background:var(--blue-soft);color:var(--blue)}.py.c1{background:var(--orange-soft);color:#C46F0E}.py.c2{background:var(--purple-soft);color:var(--purple)}.py.c3{background:var(--green-soft);color:var(--green)}
+.mean{font-size:14px;color:var(--muted)}
+.ex{font-size:15px}
+.tag{display:inline-block;font-size:12px;font-weight:700;border-radius:8px;padding:1px 8px;margin-right:4px}
+.tip{background:#FFFAF0;border:1.5px solid #F7E3BF;border-radius:14px;padding:10px 12px;font-size:14px;margin-top:10px}
+.tip b{color:#B5651D}
+.chars{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.chars .one{text-align:center}
+.chars .one .hz{font-size:48px}
+.chars .one .p{font-size:13px;color:var(--muted);font-weight:700}
+.exs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.exs span{background:#F6F3FF;border-radius:10px;padding:3px 10px;font-size:14px}
+.exs span em{font-style:normal;color:var(--red);font-weight:700}
+.dot{font-weight:800;color:var(--red);-webkit-text-emphasis:dot;text-emphasis:dot;-webkit-text-emphasis-position:under;text-emphasis-position:under right}
+.wrongpy{color:var(--red);text-decoration:line-through;font-weight:700}
+.okpy{color:var(--green);font-weight:800;font-size:20px}
+.strokes{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.strokes span{background:var(--blue-soft);color:var(--blue);border-radius:10px;padding:2px 8px;font-size:13px;font-weight:600}
+.strokes span i{font-style:normal;opacity:.6;margin-right:3px}
+
+/* empty */
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty .e{font-size:54px}
+
+/* wrong list */
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters button{border:2px solid var(--line);background:#fff;border-radius:999px;padding:4px 12px;font-weight:600;font-size:13px;color:var(--ink)}
+.filters button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.witem{display:flex;gap:14px;align-items:center;background:#fff;border-radius:16px;padding:12px 16px;box-shadow:var(--shadow);margin-bottom:10px}
+.witem .q{flex:1;font-size:15px}
+.witem .meta{font-size:12px;color:var(--muted)}
+.witem .ans{font-size:14px}
+
+/* modal */
+.mask{position:fixed;inset:0;background:rgba(30,28,60,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px;backdrop-filter:blur(3px)}
+.mask.show{display:flex}
+.modal{background:#fff;border-radius:26px;width:min(560px,100%);padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:pop .25s ease}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mhead .x{border:none;background:#F3F0EA;border-radius:50%;width:34px;height:34px;font-size:18px}
+.prog{height:10px;background:#F3EFE7;border-radius:99px;overflow:hidden;margin-bottom:18px}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,#F7A440,#E8505B);border-radius:99px;transition:width .3s}
+.qtext{font-size:22px;margin:4px 0 18px;line-height:1.7}
+.qtext u{display:inline-block;min-width:2em;border-bottom:3px solid var(--ink);text-decoration:none}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+.opt{border:2.5px solid var(--line);background:#fff;border-radius:16px;padding:12px;font-size:22px;font-weight:700;transition:.12s;color:var(--ink)}
+.opt.hzopt{font-family:var(--kai);font-size:34px}
+.opt:hover:not(:disabled){border-color:var(--ink);transform:translateY(-2px)}
+.opt.right{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+.opt.bad{border-color:var(--red);background:var(--red-soft);color:var(--red)}
+.fb{margin-top:16px;border-radius:14px;padding:12px 14px;font-size:14px;display:none}
+.fb.show{display:block}
+.fb.ok{background:var(--green-soft)}
+.fb.no{background:var(--red-soft)}
+.mfoot{display:flex;justify-content:flex-end;margin-top:16px}
+.result{text-align:center}
+.result .stars{font-size:44px;letter-spacing:6px}
+.result .score{font-size:46px;font-weight:800}
+
+/* flashcard */
+.flash{max-width:560px;margin:0 auto}
+.fc{background:#fff;border-radius:26px;box-shadow:var(--shadow);padding:30px 24px;text-align:center;min-height:260px;display:flex;flex-direction:column;justify-content:center}
+.fc .front{font-size:28px;line-height:1.6}
+.fc .front .hz{font-size:72px}
+.fc .back{margin-top:16px;padding-top:16px;border-top:2px dashed var(--line);font-size:16px;text-align:left;display:none}
+.fc.open .back{display:block}
+.stages{display:flex;justify-content:center;gap:8px;margin:14px 0 4px}
+.stages span{width:44px;text-align:center;font-size:12px;font-weight:700;border-radius:10px;padding:3px 0;background:#F1EEE8;color:#A9A5B8}
+.stages span.done{background:var(--green);color:#fff}
+.stages span.cur{background:var(--orange);color:#fff}
+.fcbtns{display:flex;gap:12px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+
+/* plan */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:18px}
+.stat{background:#fff;border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:30px}
+.stat span{color:var(--muted);font-size:13px}
+.days{display:grid;grid-template-columns:repeat(16,1fr);gap:6px;align-items:end;height:150px;padding:10px 0}
+.day{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px;color:var(--muted)}
+.day i{display:block;width:100%;max-width:30px;background:linear-gradient(180deg,#4CC3A6,#1FA58C);border-radius:8px 8px 4px 4px;min-height:4px}
+.day i.today{background:linear-gradient(180deg,#F7A440,#E8505B)}
+.day b{color:var(--ink);font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600;font-size:13px}
+
+.section-title{font-size:17px;font-weight:800;margin:22px 0 10px}
+.note{font-size:13px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;transition:.25s;z-index:60;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.contrast{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.contrast .side{border-radius:14px;padding:12px}
+.contrast .side.a{background:var(--blue-soft)}
+.contrast .side.b{background:var(--orange-soft)}
+.contrast .side .r{font-family:var(--kai);font-size:40px;font-weight:700;line-height:1.1}
+.contrast .side .m{font-size:13px;font-weight:700;margin:2px 0 6px}
+.contrast .side .w{font-family:var(--kai);font-size:22px;letter-spacing:4px}
+.fam .root{display:flex;align-items:center;gap:12px}
+.fam .root .hz{width:70px;height:70px;border-radius:18px;background:var(--purple-soft);color:var(--purple);display:grid;place-items:center;font-size:46px}
+.mem{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:12px}
+.mem div{background:#FAF8F4;border-radius:12px;padding:6px;text-align:center}
+.mem div .hz{font-size:30px}
+.mem div small{display:block;font-size:12px;color:var(--muted);line-height:1.3}
+.mem div .rad{color:var(--red)}
+.placeholder{background:#fff;border-radius:24px;padding:50px 20px;text-align:center;box-shadow:var(--shadow)}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:30px 0 40px}
+@media(max-width:640px){.hero .big{font-size:100px}.qtext{font-size:19px}.days{grid-template-columns:repeat(8,1fr);height:auto}.days .day{height:110px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><div class="logo">字</div><h1>识字星球<small>返回首页</small></h1></a>
+    <nav class="topnav" id="topnav"></nav>
+  </header>
+  <main id="main"></main>
+  <footer>学习记录保存在本浏览器（localStorage），换浏览器或清除缓存后会重置。</footer>
+</div>
+<div class="mask" id="mask"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ 存储 ============ */
+const MEM={};
+const LS={
+  get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return k in MEM?MEM[k]:d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){MEM[k]=v}}
+};
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>ymd(new Date());
+function addDays(s,n){const [y,m,d]=s.split('-').map(Number);const t=new Date(y,m-1,d);t.setDate(t.getDate()+n);return ymd(t)}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),1800)}
+const hl=(w,c)=>{const i=w.indexOf(c);return i<0?w:w.slice(0,i)+'<b class="dot">'+c+'</b>'+w.slice(i+1)};
+
+/* ============ 数据：多音字（25个） ============ */
+const POLY=[
+ {c:'好',r:[['hǎo','优点多，令人满意','好人 好看 友好'],['hào','喜爱','爱好 好奇 好学']]},
+ {c:'长',r:[['cháng','两端距离大','长短 长江'],['zhǎng','生长；领头的人','长大 校长']]},
+ {c:'行',r:[['xíng','走；可以','行走 步行'],['háng','行列；行业','银行 行业']]},
+ {c:'发',r:[['fā','送出；产生','发现 出发'],['fà','头发','头发 理发']]},
+ {c:'重',r:[['zhòng','分量大；要紧','重量 重要'],['chóng','再一次','重复 重新']]},
+ {c:'还',r:[['huán','归还，回到原处','还书 归还'],['hái','仍然；更','还有 还是']]},
+ {c:'和',r:[['hé','平和；连接','和平 我和你'],['hè','跟着唱或说','应和 曲高和寡'],['huó','在粉里加水揉','和面 和泥'],['huo','（轻声）温暖','暖和']]},
+ {c:'乐',r:[['lè','快乐','快乐 乐观'],['yuè','音乐','音乐 乐器']]},
+ {c:'为',r:[['wéi','做；成为','成为 作为'],['wèi','表示原因、目的','因为 为了']]},
+ {c:'着',r:[['zháo','接触到；有了结果','着急 睡着 着火'],['zhe','（轻声）动作在进行','看着 走着'],['zhuó','穿；接触','着装 着陆']]},
+ {c:'少',r:[['shǎo','数量小','多少 少数'],['shào','年轻','少年 少先队']]},
+ {c:'数',r:[['shǔ','一个个地点数','数一数 数星星'],['shù','数目','数学 数字'],['shuò','屡次','数见不鲜']]},
+ {c:'传',r:[['chuán','传递，传播','传说 传递'],['zhuàn','记录人一生的文字','传记 自传']]},
+ {c:'差',r:[['chà','不够；不好','差不多 差点儿'],['chā','不同','差别 误差'],['chāi','派去办事','出差 差事'],['cī','不整齐','参差']]},
+ {c:'背',r:[['bèi','身体后面；凭记忆念出','背后 背诵'],['bēi','用背驮','背书包 背包袱']]},
+ {c:'便',r:[['biàn','方便','方便 便利'],['pián','价钱低','便宜']]},
+ {c:'朝',r:[['cháo','面对；朝代','朝向 朝代'],['zhāo','早晨','朝阳 朝气']]},
+ {c:'种',r:[['zhǒng','种子；种类','种子 品种'],['zhòng','栽种','种树 种地']]},
+ {c:'觉',r:[['jué','感到','感觉 觉得'],['jiào','睡眠','睡觉 午觉']]},
+ {c:'都',r:[['dōu','全部','都是 全都'],['dū','大城市','首都 都市']]},
+ {c:'角',r:[['jiǎo','角落；兽角','角落 牛角'],['jué','演员扮演的人物','角色 主角']]},
+ {c:'降',r:[['jiàng','落下','降落 下降'],['xiáng','投降；制服','投降 降服']]},
+ {c:'薄',r:[['báo','厚度小（口语）','薄饼 薄纸'],['bó','不强；少','薄弱 单薄'],['bò','植物名','薄荷']]},
+ {c:'空',r:[['kōng','什么都没有；天空','天空 空气'],['kòng','空闲；空出','空白 有空']]},
+ {c:'教',r:[['jiāo','传授知识','教书 教唱歌'],['jiào','教育','教室 教育']]}
+];
+
+/* ============ 数据：易读错字（26个） ============ */
+const MISREAD=[
+ {w:'胳膊',c:'胳',ok:'gē',bad:'gé',full:'gē bo'},
+ {w:'档案',c:'档',ok:'dàng',bad:'dǎng',full:'dàng àn'},
+ {w:'友谊',c:'谊',ok:'yì',bad:'yí',full:'yǒu yì'},
+ {w:'符合',c:'符',ok:'fú',bad:'fǔ',full:'fú hé'},
+ {w:'处理',c:'处',ok:'chǔ',bad:'chù',full:'chǔ lǐ',n:'动词“处理、相处”读 chǔ；名词“处所、到处”读 chù。'},
+ {w:'氛围',c:'氛',ok:'fēn',bad:'fèn',full:'fēn wéi'},
+ {w:'剖析',c:'剖',ok:'pōu',bad:'pāo',full:'pōu xī'},
+ {w:'粗糙',c:'糙',ok:'cāo',bad:'zào',full:'cū cāo'},
+ {w:'酝酿',c:'酿',ok:'niàng',bad:'rǎng',full:'yùn niàng'},
+ {w:'憎恨',c:'憎',ok:'zēng',bad:'zèng',full:'zēng hèn'},
+ {w:'刹那',c:'刹',ok:'chà',bad:'shā',full:'chà nà',n:'“刹车”才读 shā。'},
+ {w:'潜力',c:'潜',ok:'qián',bad:'qiǎn',full:'qián lì'},
+ {w:'赡养',c:'赡',ok:'shàn',bad:'zhān',full:'shàn yǎng'},
+ {w:'惩罚',c:'惩',ok:'chéng',bad:'chěng',full:'chéng fá'},
+ {w:'暂时',c:'暂',ok:'zàn',bad:'zhàn',full:'zàn shí'},
+ {w:'塑料',c:'塑',ok:'sù',bad:'suò',full:'sù liào'},
+ {w:'质量',c:'质',ok:'zhì',bad:'zhǐ',full:'zhì liàng'},
+ {w:'挫折',c:'挫',ok:'cuò',bad:'cuō',full:'cuò zhé'},
+ {w:'果脯',c:'脯',ok:'fǔ',bad:'pú',full:'guǒ fǔ',n:'“胸脯”才读 pú。'},
+ {w:'埋怨',c:'埋',ok:'mán',bad:'mái',full:'mán yuàn',n:'“埋”只在“埋怨”里读 mán，其他读 mái（埋藏）。'},
+ {w:'一模一样',c:'模',ok:'mú',bad:'mó',full:'yì mú yí yàng',n:'“模样、模具”读 mú；“模范、模仿”读 mó。'},
+ {w:'召开',c:'召',ok:'zhào',bad:'zhāo',full:'zhào kāi'},
+ {w:'纤维',c:'纤',ok:'xiān',bad:'qiān',full:'xiān wéi',n:'“纤夫”才读 qiàn。'},
+ {w:'混淆',c:'淆',ok:'xiáo',bad:'yáo',full:'hùn xiáo'},
+ {w:'绯红',c:'绯',ok:'fēi',bad:'fěi',full:'fēi hóng'},
+ {w:'机械',c:'械',ok:'xiè',bad:'jiè',full:'jī xiè'}
+];
+
+/* ============ 数据：形近字（22组） ============ */
+const SIMILAR=[
+ {g:['已','己','巳'],p:['yǐ','jǐ','sì'],tip:'看右上角的口：<b>己</b>完全不封口（自己），<b>已</b>封住一半（已经），<b>巳</b>完全封口（地支“巳”）。',q:[['自__','己'],['__经','已'],['辰__午未','巳']]},
+ {g:['未','末'],p:['wèi','mò'],tip:'<b>末</b>是指事字：在“木”的上端加一长横，指出树梢，表示“末端、末尾”，所以上横长；<b>未</b>上横短、下横长。',q:[['周__','末'],['__来','未'],['期__考试','末']]},
+ {g:['戊','戌','戍'],p:['wù','xū','shù'],tip:'看里面：<b>戊</b>里面空；<b>戌</b>里面一横；<b>戍</b>里面一点——戍由“人”和“戈”组成，表示人拿着兵器守卫，所以是“戍边”。',q:[['__边','戍'],['甲乙丙丁__','戊'],['申酉__亥','戌']]},
+ {g:['辨','辩','辫','瓣'],p:['biàn','biàn','biàn','bàn'],tip:'看中间：点撇（由“刀”变来，用刀分开）→<b>辨</b>别；言字旁→<b>辩</b>论；绞丝→<b>辫</b>子；“瓜”→花<b>瓣</b>。',q:[['分__','辨'],['__论','辩'],['小__子','辫'],['花__','瓣']]},
+ {g:['即','既'],p:['jí','jì'],tip:'古文字里左边都是盛饭的器皿。<b>即</b>的右边是人面向食器准备吃，表示“靠近、马上”（立即）；<b>既</b>的右边是人吃完把头转开，表示“已经”（既然）。',q:[['立__','即'],['__然','既'],['__使','即']]},
+ {g:['拔','拨'],p:['bá','bō'],tip:'<b>拔</b>右边是“犮”（右上有一点）；<b>拨</b>右边是“发”。',q:[['__河比赛','拔'],['__打电话','拨'],['__草','拔']]},
+ {g:['侯','候'],p:['hóu','hòu'],tip:'<b>候</b>中间多一短竖：时候、等候、气候；<b>侯</b>没有：王侯、侯爵。',q:[['时__','候'],['王__','侯'],['气__','候']]},
+ {g:['买','卖'],p:['mǎi','mài'],tip:'繁体“賣”由“出”和“買”组成，卖就是把东西拿出去，所以<b>卖</b>头上多了“十”（从“出”简化而来）。',q:[['出__','卖'],['__单','买'],['拍__','卖']]},
+ {g:['免','兔'],p:['miǎn','tù'],tip:'<b>兔</b>比免多一点，那一点像兔子的短尾巴（象形）。',q:[['小白__','兔'],['__费','免'],['避__','免']]},
+ {g:['鸟','乌'],p:['niǎo','wū'],tip:'<b>乌</b>比鸟少一点。清代学者段玉裁解释：乌鸦全身纯黑，看不清眼睛，所以“乌”字没有表示眼睛的那一点。',q:[['小__','鸟'],['__鸦','乌'],['__云','乌']]},
+ {g:['孤','狐'],p:['gū','hú'],tip:'看偏旁：<b>孤</b>是“子”旁，和人（孩子）有关：孤儿、孤独；<b>狐</b>是反犬旁，是动物：狐狸。',q:[['__独','孤'],['__狸','狐'],['__儿','孤']]},
+ {g:['栽','载','裁'],p:['zāi','zài','cái'],tip:'看左下角：“木”→<b>栽</b>树；“车”→<b>载</b>重；“衣”→<b>裁</b>剪衣服。',q:[['__树','栽'],['__重','载'],['__缝','裁']]},
+ {g:['驶','使'],p:['shǐ','shǐ'],tip:'<b>驶</b>是马字旁，本指马跑得快，现在指开车船：驾驶；<b>使</b>是单人旁，和人有关：使用、大使。',q:[['驾__','驶'],['__用','使'],['行__','驶']]},
+ {g:['渴','喝'],p:['kě','hē'],tip:'<b>渴</b>是三点水，缺水所以口渴；<b>喝</b>是口字旁，用嘴喝。',q:[['口__','渴'],['__水','喝'],['__望','渴']]},
+ {g:['烧','浇'],p:['shāo','jiāo'],tip:'<b>烧</b>是火字旁：燃烧；<b>浇</b>是三点水：浇花。',q:[['燃__','烧'],['__花','浇'],['发__','烧']]},
+ {g:['晴','睛','请','清','情','蜻'],p:['qíng','jīng','qǐng','qīng','qíng','qīng'],tip:'都用“青”作声旁，读音相近；看形旁定意思：日→天气，目→眼睛，讠→说话，氵→水，忄→心，虫→昆虫。',q:[['__天','晴'],['眼__','睛'],['__客','请'],['__水','清'],['心__','情'],['__蜓','蜻']]},
+ {g:['析','折'],p:['xī','zhé'],tip:'都有“斤”（斧头）。<b>析</b>是木+斤，本义用斧头劈木头，引申为分开：分析；<b>折</b>是扌+斤，用手弄断：折断。',q:[['分__','析'],['__断','折'],['骨__','折']]},
+ {g:['券','卷'],p:['quàn','juàn'],tip:'<b>券</b>下面是“刀”——古代契约刻在木片上，用刀剖开各拿一半；<b>卷</b>下面是“㔾”，表示弯曲：卷尺、试卷。',q:[['入场__','券'],['试__','卷'],['__尺','卷']]},
+ {g:['土','士'],p:['tǔ','shì'],tip:'<b>土</b>下横长，像地面；<b>士</b>上横长。',q:[['__地','土'],['战__','士'],['护__','士']]},
+ {g:['汨','汩'],p:['mì','gǔ'],tip:'<b>汨</b>右边是“日”（较瘦长）：汨罗江；<b>汩</b>右边是“曰”（较扁宽）：形容水流声“汩汩”。',q:[['__罗江','汨'],['流水__汩','汩']]},
+ {g:['幕','墓','暮','慕','募'],p:['mù','mù','mù','mù','mù'],tip:'都以“莫”为声旁，看下部：巾（布）→银<b>幕</b>；土→坟<b>墓</b>；日→<b>暮</b>色（傍晚）；㣺（心）→羡<b>慕</b>；力→招<b>募</b>。',q:[['屏__','幕'],['坟__','墓'],['__色','暮'],['羡__','慕'],['招__','募']]},
+ {g:['防','妨','访','纺','仿'],p:['fáng','fáng','fǎng','fǎng','fǎng'],tip:'都以“方”为声旁，看形旁：阝（土山）→堤<b>防</b>；女→<b>妨</b>碍；讠→<b>访</b>问；纟→<b>纺</b>织；亻→模<b>仿</b>。',q:[['__守','防'],['__碍','妨'],['__问','访'],['__织','纺'],['模__','仿']]}
+];
+
+/* ============ 数据：笔画笔顺（20字） ============ */
+const STROKE=[
+ {c:'火',s:['点','撇','撇','捺'],r:'先写两边的点和撇，再写中间。'},
+ {c:'门',s:['点','竖','横折钩'],r:'先写点。'},
+ {c:'万',s:['横','横折钩','撇'],r:'横折钩在撇前面。'},
+ {c:'方',s:['点','横','横折钩','撇'],r:'横折钩在撇前面。'},
+ {c:'九',s:['撇','横折弯钩'],r:'先撇后横折弯钩。'},
+ {c:'力',s:['横折钩','撇'],r:'先横折钩，后撇。'},
+ {c:'及',s:['撇','横折折撇','捺'],r:'只有3画，中间是一笔“横折折撇”。'},
+ {c:'女',s:['撇点','撇','横'],r:'第一笔是撇点。'},
+ {c:'母',s:['竖折','横折钩','点','横','点'],r:'先外框，再点、横、点。'},
+ {c:'长',s:['撇','横','竖提','捺'],r:'第三笔是竖提，只有4画。'},
+ {c:'车',s:['横','撇折','横','竖'],r:'贯穿的竖最后写。'},
+ {c:'里',s:['竖','横折','横','横','竖','横','横'],r:'先写“日”，中间的竖第5笔写。'},
+ {c:'鸟',s:['撇','横折钩','点','竖折折钩','横'],r:'最后一笔是横。'},
+ {c:'小',s:['竖钩','点','点'],r:'先中间，后两边。'},
+ {c:'山',s:['竖','竖折','竖'],r:'先中间，后两边。'},
+ {c:'雨',s:['横','竖','横折钩','竖','点','点','点','点'],r:'先外后内。'},
+ {c:'田',s:['竖','横折','横','竖','横'],r:'先外后内再封口。'},
+ {c:'区',s:['横','撇','点','竖折'],r:'先上后内再封口，竖折最后写。'},
+ {c:'比',s:['横','竖提','撇','竖弯钩'],r:'左边第二笔是竖提。'},
+ {c:'必',s:['点','卧钩','点','撇','点'],r:'先写左上的点，再写卧钩。'}
+];
+const STROKE_POOL=['点','横','竖','撇','捺','提','横折','竖折','竖钩','撇点','竖提','卧钩','横折钩','竖弯钩','横折弯钩','竖折折钩','撇折'];
+
+/* ============ 数据：同音别字（18组） ============ */
+const HOMO=[
+ {g:['再','在'],p:'zài',tip:'<b>再</b>＝又一次（再见、再读一遍）；<b>在</b>＝在某处、正在（在家、在看书）。',q:[['我们明天__见。','再'],['他__教室里写作业。','在'],['请你__读一遍。','再']]},
+ {g:['的','地','得'],p:'de',tip:'<b>的</b>＋名词（美丽的花）；<b>地</b>＋动词（慢慢地走）；动词/形容词＋<b>得</b>（跑得快）。',q:[['蓝蓝__天空','的'],['认真__学习','地'],['跑__飞快','得'],['高兴__跳起来','地']]},
+ {g:['做','作'],p:'zuò',tip:'<b>做</b>多用于具体动作、制造东西（做饭、做手工、做作业）；<b>作</b>多用于抽象、书面的词（作文、工作、作用）。',q:[['妈妈在__饭。','做'],['写__文','作'],['工__','作'],['__手工','做']]},
+ {g:['他','她','它'],p:'tā',tip:'<b>他</b>：男性或泛指人；<b>她</b>：女性；<b>它</b>：动物或事物。',q:[['妹妹说__想去公园。','她'],['小猫饿了，__一直在叫。','它'],['哥哥说__会游泳。','他']]},
+ {g:['象','像'],p:'xiàng',tip:'<b>象</b>：大象、形象、现象；<b>像</b>：好像、像……一样、画像（和人有关，亻旁）。',q:[['动物园里的大__','象'],['天阴了，好__要下雨。','像'],['自然现__','象'],['一幅画__','像']]},
+ {g:['必','毕'],p:'bì',tip:'<b>必</b>＝一定（必须）；<b>毕</b>＝完结（毕业、完毕）。',q:[['__须','必'],['__业','毕'],['完__','毕']]},
+ {g:['已','以'],p:'yǐ',tip:'<b>已</b>＝已经；<b>以</b>：可以、以为、以后。',q:[['__经','已'],['可__','以'],['__为','以']]},
+ {g:['坐','座'],p:'zuò',tip:'<b>坐</b>是动作（坐下）；<b>座</b>有广字头，指座位或作量词（一座山）。',q:[['请__下。','坐'],['__位','座'],['一__桥','座']]},
+ {g:['带','戴'],p:'dài',tip:'<b>戴</b>：把东西放在头、脸、手等身上（戴帽子、戴手表）；<b>带</b>：随身拿着、领着（带雨伞、带路）。',q:[['__帽子','戴'],['__雨伞','带'],['__眼镜','戴'],['__路','带']]},
+ {g:['进','近'],p:'jìn',tip:'<b>进</b>＝向前、进入（进步、走进）；<b>近</b>＝距离短（远近）。',q:[['__步','进'],['远__','近'],['走__教室','进']]},
+ {g:['历','厉'],p:'lì',tip:'<b>历</b>：经过（历史、经历）；<b>厉</b>：严格、猛烈（厉害、严厉）。',q:[['__史','历'],['__害','厉'],['经__','历']]},
+ {g:['渡','度'],p:'dù',tip:'<b>渡</b>是三点水，和过水有关（渡河、渡口）；<b>度</b>和时间、程度有关（度假、温度、度过）。',q:[['__河','渡'],['__假','度'],['温__','度'],['__过难忘的一天','度']]},
+ {g:['竟','竞'],p:'jìng',tip:'<b>竞</b>繁体“競”像两人并排争先：竞赛、竞争；<b>竟</b>：竟然、毕竟。',q:[['__赛','竞'],['__然','竟'],['毕__','竟']]},
+ {g:['须','需'],p:'xū',tip:'<b>须</b>：必须（一定要）；<b>需</b>：需要（要用）。',q:[['必__','须'],['__要','需']]},
+ {g:['园','圆'],p:'yuán',tip:'<b>园</b>指种植或游玩的场地（公园、花园）；<b>圆</b>指形状（圆形、团圆）。',q:[['公__','园'],['__形','圆'],['花__','园'],['团__','圆']]},
+ {g:['副','幅'],p:'fù',tip:'<b>幅</b>是巾字旁，和布帛有关：一幅画；<b>副</b>：成套的（一副手套）、辅助的（副班长）。',q:[['一__画','幅'],['一__眼镜','副'],['__班长','副']]},
+ {g:['反','返'],p:'fǎn',tip:'<b>返</b>有走之，和行走有关：返回、往返；<b>反</b>：相反、反对。',q:[['__回','返'],['相__','反'],['__对','反'],['往__','返']]},
+ {g:['蓝','篮'],p:'lán',tip:'<b>蓝</b>是草字头，本指能做染料的蓼蓝草：蓝色；<b>篮</b>是竹字头，竹子编的：篮子、篮球。',q:[['__天','蓝'],['__球','篮'],['菜__','篮']]}
+];
+
+/* ============ 数据：字族 ============ */
+const FAMILY=[
+ {root:'青',py:'qīng',m:[['清','qīng','清水','氵'],['晴','qíng','晴天','日'],['睛','jīng','眼睛','目'],['请','qǐng','请客','讠'],['情','qíng','心情','忄'],['蜻','qīng','蜻蜓','虫'],['精','jīng','精神','米'],['静','jìng','安静','争']]},
+ {root:'包',py:'bāo',m:[['抱','bào','拥抱','扌'],['跑','pǎo','跑步','𧾷'],['泡','pào','泡泡','氵'],['炮','pào','鞭炮','火'],['饱','bǎo','吃饱','饣'],['袍','páo','长袍','衤'],['苞','bāo','花苞','艹']]},
+ {root:'方',py:'fāng',m:[['芳','fāng','芬芳','艹'],['放','fàng','放学','攵'],['房','fáng','房子','户'],['防','fáng','防守','阝'],['访','fǎng','访问','讠'],['纺','fǎng','纺织','纟'],['仿','fǎng','模仿','亻']]},
+ {root:'皮',py:'pí',m:[['披','pī','披风','扌'],['坡','pō','山坡','土'],['波','bō','波浪','氵'],['破','pò','破坏','石'],['被','bèi','被子','衤'],['疲','pí','疲劳','疒']]},
+ {root:'交',py:'jiāo',m:[['郊','jiāo','郊外','阝'],['胶','jiāo','胶水','月'],['饺','jiǎo','饺子','饣'],['较','jiào','比较','车'],['校','xiào','学校','木'],['效','xiào','效果','攵'],['咬','yǎo','咬一口','口']]},
+ {root:'巴',py:'bā',m:[['爸','bà','爸爸','父'],['吧','ba','好吧','口'],['把','bǎ','把手','扌'],['爬','pá','爬山','爪'],['疤','bā','伤疤','疒'],['芭','bā','芭蕉','艹']]},
+ {root:'莫',py:'mò',m:[['摸','mō','摸一摸','扌'],['模','mó','模范','木'],['漠','mò','沙漠','氵'],['寞','mò','寂寞','宀'],['幕','mù','银幕','巾'],['墓','mù','坟墓','土'],['暮','mù','暮色','日'],['慕','mù','羡慕','㣺']]},
+ {root:'马',py:'mǎ',m:[['妈','mā','妈妈','女'],['吗','ma','好吗','口'],['码','mǎ','号码','石'],['骂','mà','骂人','口口'],['蚂','mǎ','蚂蚁','虫'],['玛','mǎ','玛瑙','王']]},
+ {root:'工',py:'gōng',m:[['江','jiāng','长江','氵'],['红','hóng','红色','纟'],['功','gōng','成功','力'],['攻','gōng','进攻','攵'],['空','kōng','天空','穴'],['贡','gòng','贡献','贝'],['虹','hóng','彩虹','虫']]}
+];
+
+/* ============ 数据：偏旁联想 ============ */
+const RADICAL=[
+ {r:'氵',n:'三点水',f:'水',m:'和水有关',e:['江','河','湖','海','洗','泪','流']},
+ {r:'扌',n:'提手旁',f:'手',m:'用手做的动作',e:['打','拍','提','推','拉','捡','握']},
+ {r:'讠',n:'言字旁',f:'言',m:'和说话、语言有关',e:['说','话','语','读','讲','请','谢']},
+ {r:'忄',n:'竖心旁',f:'心',m:'和心情、想法有关',e:['情','怕','快','慢','恨','忙','懂']},
+ {r:'木',n:'木字旁',f:'木',m:'和树木、木头有关',e:['林','树','桥','板','椅','柳','杨']},
+ {r:'艹',n:'草字头',f:'草',m:'和草本植物有关',e:['花','草','芽','苗','茶','菜','药']},
+ {r:'纟',n:'绞丝旁',f:'丝',m:'和丝线、纺织有关',e:['红','线','结','织','绳','纸','绿']},
+ {r:'钅',n:'金字旁',f:'金',m:'和金属有关',e:['铁','钢','针','钉','铜','锅','钟']},
+ {r:'宀',n:'宝盖',f:'房屋',m:'和房屋有关',e:['家','室','宿','安','宫','宅','窗']},
+ {r:'礻',n:'示字旁',f:'示',m:'和祭祀、神灵、祈福有关',e:['神','祝','福','礼','祖','祈']},
+ {r:'衤',n:'衣字旁',f:'衣',m:'和衣服有关',e:['衫','裤','袖','被','袜','裙']},
+ {r:'月',n:'肉月旁',f:'肉',m:'多和身体有关',e:['肚','腿','胖','脸','肺','胸','肝']},
+ {r:'辶',n:'走之',f:'辵（行走）',m:'和行走有关',e:['进','远','过','追','送','逃','迎']},
+ {r:'犭',n:'反犬旁',f:'犬',m:'多和动物有关',e:['狗','猫','狼','猪','狮','猴']},
+ {r:'贝',n:'贝字旁',f:'贝（古代货币）',m:'和钱财有关',e:['财','货','购','贵','账','费','赚']},
+ {r:'目',n:'目字旁',f:'目',m:'和眼睛有关',e:['眼','睛','看','盯','眨','睡']},
+ {r:'𧾷',n:'足字旁',f:'足',m:'和脚的动作有关',e:['跑','跳','踢','路','踩','跟']},
+ {r:'冫',n:'两点水',f:'冰',m:'和冰、寒冷有关',e:['冰','冷','冻','凉','凝']},
+ {r:'火',n:'火字旁 / 灬',f:'火',m:'和火、热有关',e:['烧','炒','灯','炉','热','煮','熟']},
+ {r:'刂',n:'立刀旁',f:'刀',m:'和刀、切割有关',e:['刻','割','削','利','刺','剑','到']},
+ {r:'疒',n:'病字旁',f:'疒（病床）',m:'和疾病有关',e:['病','疼','痛','疤','痒','疲']},
+ {r:'⺮',n:'竹字头',f:'竹',m:'和竹子、竹制品有关',e:['笔','筷','篮','箱','笼','篇']}
+];
+
+/* ============ 数据：对比辨析 ============ */
+const CONTRAST=[
+ {a:'礻',an:'示字旁 · 来自“示”',am:'祭祀、神灵、祈福',aw:'神 祝 福 礼',b:'衤',bn:'衣字旁 · 来自“衣”',bm:'衣服、布料',bw:'衫 袖 裤 被',k:'衣字旁比示字旁多一点。写“福”还是“被”，先想它和神灵有关还是和衣服有关。'},
+ {a:'冫',an:'两点水 · 来自“冰”',am:'冰、寒冷',aw:'冰 冷 冻 凉',b:'氵',bn:'三点水 · 来自“水”',bm:'水、液体',bw:'江 河 洗 淋',k:'“凉”是冷的感觉，用两点水；“淋”是被水淋湿，用三点水。'},
+ {a:'阝',an:'左耳旁 · 来自“阜”（土山）',am:'地势、山坡、台阶',aw:'阶 陡 险 降',b:'阝',bn:'右耳旁 · 来自“邑”（城邑）',bm:'城市、地名、地区',bw:'都 郊 邮 部',k:'同一个样子，位置不同来源不同：在左边多和山坡地势有关，在右边多和城市地方有关。'},
+ {a:'月',an:'肉月旁 · 来自“肉”',am:'身体部位',aw:'肚 胖 脸 腿',b:'月',bn:'月亮的“月”',bm:'月亮、时间、光亮',bw:'期 朗 朦 朔',k:'表示身体的“月”多在左边或下边；表示月亮的“月”多在右边。'},
+ {a:'目',an:'目字旁 · 眼睛',am:'和眼睛有关',aw:'睛 眼 看 盯',b:'日',bn:'日字旁 · 太阳',bm:'太阳、天气、时间',bw:'晴 明 早 暖',k:'“眼睛”的睛是目字旁，“晴天”的晴是日字旁。'},
+ {a:'扌',an:'提手旁 · 手',am:'用手的动作',aw:'扳 拍 打 推',b:'木',bn:'木字旁 · 树木',bm:'树木、木头',bw:'板 林 村 桥',k:'“扳手”要用手扳，所以是提手旁；“木板”是木头做的，所以是木字旁。'},
+ {a:'艹',an:'草字头 · 草',am:'草本植物',aw:'蓝 花 草 芽',b:'⺮',bn:'竹字头 · 竹',bm:'竹子或竹子做的东西',bw:'篮 笔 筷 箱',k:'“蓝”色来自蓼蓝草，用草字头；“篮”子用竹子编，用竹字头。'},
+ {a:'贝',an:'贝字旁 · 钱财',am:'和钱财有关',aw:'贵 购 财 账',b:'见',bn:'见字旁 · 看见',bm:'和看有关',bw:'视 觉 观 览',k:'“贝”下面是两点，“见”下面是撇和竖弯钩。和钱有关用贝，和看有关用见。'},
+ {a:'疒',an:'病字旁',am:'疾病、伤痛',aw:'病 疼 痛 疤',b:'广',bn:'广字旁 · 房屋',bm:'房屋、场所',bw:'店 库 床 庭',k:'病字旁比广字旁多左边两点，像病人躺的床；和生病有关才用它。'}
+];
+
+const CATS={poly:'多音字',misread:'易读错字',similar:'形近字',stroke:'笔画笔顺',homo:'同音别字'};
+
+/* ============ 生成题目 ============ */
+function questions(cat){
+  const qs=[];
+  if(cat==='poly'){POLY.forEach(it=>{const ops=it.r.map(x=>x[0]);it.r.forEach(rd=>rd[2].split(' ').forEach(w=>{
+    qs.push({key:'poly|'+w,q:'「'+hl(w,it.c)+'」中的“'+it.c+'”读什么？',opts:ops,ans:rd[0],hz:false,exp:'“'+it.c+'”读 '+rd[0]+' 时表示“'+rd[1]+'”，如：'+rd[2].replace(/ /g,'、')+'。'})}))})}
+  if(cat==='misread'){MISREAD.forEach(it=>qs.push({key:'mis|'+it.w,q:'「'+hl(it.w,it.c)+'」中的“'+it.c+'”读什么？',opts:[it.ok,it.bad],ans:it.ok,hz:false,exp:'正确读音：'+it.w+' '+it.full+'；常见误读为 '+it.bad+'。'+(it.n||'')}))}
+  if(cat==='similar'||cat==='homo'){(cat==='similar'?SIMILAR:HOMO).forEach(it=>it.q.forEach(([t,a])=>qs.push({key:cat+'|'+t,q:'选字填空：'+t.replace('__','<u>　</u>'),opts:it.g,ans:a,hz:true,exp:it.tip})))}
+  if(cat==='stroke'){STROKE.forEach(it=>{const n=it.s.length;
+    qs.push({key:'stk|n|'+it.c,q:'<span style="font-family:var(--kai);font-size:44px">'+it.c+'</span>　一共几画？',opts:[n-1,n,n+1].filter(x=>x>0).map(x=>x+'画'),ans:n+'画',hz:false,exp:'“'+it.c+'”共'+n+'画：'+it.s.join('、')+'。'+it.r});
+    const last=it.s[n-1];const others=shuffle(STROKE_POOL.filter(x=>x!==last)).slice(0,2);
+    qs.push({key:'stk|l|'+it.c,q:'<span style="font-family:var(--kai);font-size:44px">'+it.c+'</span>　最后一笔是什么？',opts:[last,...others],ans:last,hz:false,exp:'“'+it.c+'”的笔顺：'+it.s.join('、')+'。'+it.r});})}
+  return qs;
+}
+
+/* ============ 错题本 ============ */
+const getWrong=()=>LS.get('hz_wrong',[]);
+const setWrong=v=>LS.set('hz_wrong',v);
+function addWrong(cat,q,picked){
+  const w=getWrong();let it=w.find(x=>x.key===q.key);
+  if(it){it.times++;it.picked=picked;it.last=today()}
+  else w.unshift({key:q.key,cat,q:q.q,opts:q.opts,ans:q.ans,exp:q.exp,hz:q.hz,picked,times:1,last:today()});
+  setWrong(w);
+  srsAdd({id:'w|'+q.key,tag:CATS[cat]+'错题',front:q.q,back:'答案：<b>'+q.ans+'</b><br>'+q.exp},true);
+}
+function removeWrong(key){setWrong(getWrong().filter(x=>x.key!==key))}
+
+/* ============ 间隔重复（第1、2、4、7、15天） ============ */
+const INT=[1,2,4,7,15];
+const getSRS=()=>LS.get('hz_srs',[]);
+const setSRS=v=>LS.set('hz_srs',v);
+function srsAdd(card,silent){
+  const s=getSRS();
+  if(s.find(x=>x.id===card.id)){if(!silent)toast('已经在复习计划里啦');return false}
+  const t=today();s.push(Object.assign({stage:0,base:t,due:addDays(t,1),added:t},card));setSRS(s);
+  if(!silent)toast('已加入复习计划，明天开始第1次复习');return true;
+}
+const inSRS=id=>getSRS().some(x=>x.id===id);
+function dueCards(){const t=today();return getSRS().filter(x=>x.stage<5&&x.due<=t)}
+function grade(id,ok){
+  const s=getSRS();const c=s.find(x=>x.id===id);if(!c)return;const t=today();
+  if(ok){c.stage++;if(c.stage>=5){c.due=null}else{let d=addDays(c.base,INT[c.stage]);if(d<=t)d=addDays(t,1);c.due=d}}
+  else{c.stage=0;c.base=t;c.due=addDays(t,1)}
+  setSRS(s);
+}
+
+/* ============ 路由 ============ */
+const TOP=[['meaning','字义扩展图'],['radical','偏旁部首'],['phon','声旁音部'],['word','字词句'],['code','汉字密码'],['clinic','易错诊所'],['review','记忆复习'],['path','学习路径']];
+const SUB={
+  clinic:[['poly','🔔 多音字'],['misread','🗣️ 易读错字'],['similar','🔍 形近字'],['stroke','✍️ 笔画笔顺'],['homo','🎧 同音别字'],['wrong','📒 我的错题本']],
+  review:[['today','📅 今日复习'],['family','🌳 字族串记'],['radical','🧩 偏旁联想'],['contrast','⚖️ 对比辨析'],['plan','🗓️ 复习计划']]
+};
+const S={top:'clinic',sub:{clinic:'poly',review:'today'},wf:'all'};
+
+function renderNav(){
+  document.getElementById('topnav').innerHTML=TOP.map(([k,n])=>'<button class="'+(S.top===k?'on ':'')+'" onclick="goTop(\''+k+'\')">'+n+'</button>').join('');
+}
+const LINKS={meaning:'jie-ziyi-kuozhan-tu.html',radical:'pianpang-bushou.html',phon:'pianpang-bushou.html#shengpang',word:'zicijv.html',code:'hanzi-mima.html',path:'index.html#path'};
+function goTop(k){if(LINKS[k]){location.href=LINKS[k];return}S.top=k;history.replaceState(null,'',k==='review'?'#review':'#clinic');render();window.scrollTo({top:0,behavior:'smooth'})}
+window.addEventListener('hashchange',()=>{S.top=location.hash==='#review'?'review':'clinic';render()});
+function goSub(k){S.sub[S.top]=k;render()}
+
+function render(){
+  renderNav();
+  const m=document.getElementById('main');
+  if(S.top!=='clinic'&&S.top!=='review'){
+    const n=TOP.find(x=>x[0]===S.top)[1];
+    m.className='';
+    m.innerHTML='<div class="placeholder"><div style="font-size:60px">🚧</div><h2 style="margin:6px 0">'+n+'</h2><p class="note">这个模块在其他页面实现。本页包含「易错诊所」和「记忆复习」。</p><p><button class="btn red" onclick="goTop(\'clinic\')">去易错诊所</button>　<button class="btn green" onclick="goTop(\'review\')">去记忆复习</button></p></div>';
+    return;
+  }
+  const isC=S.top==='clinic';const sub=S.sub[S.top];
+  const wn=getWrong().length,dn=dueCards().length;
+  m.className=isC?'clinicT':'reviewT';
+  let h=isC
+   ?'<section class="hero clinic"><div class="big">诊</div><h2>易错诊所</h2><p>专治读错、写错、用错。先看“病因”，再做小测；做错的题会自动住进错题本，并排进复习计划。</p><div class="chips"><span class="chip">多音字 '+POLY.length+'</span><span class="chip">易读错字 '+MISREAD.length+'</span><span class="chip">形近字 '+SIMILAR.length+' 组</span><span class="chip">同音别字 '+HOMO.length+' 组</span><span class="chip">错题 '+wn+'</span></div></section>'
+   :'<section class="hero review"><div class="big">忆</div><h2>记忆复习</h2><p>按第 1、2、4、7、15 天的间隔复习；用偏旁意义、字族和对比来记——每个方法都讲得出道理，不靠硬背口诀。</p><div class="chips"><span class="chip">今日待复习 '+dn+'</span><span class="chip">计划中 '+getSRS().length+' 张</span></div></section>';
+  h+='<div class="subnav">'+SUB[S.top].map(([k,n])=>{let badge='';if(k==='wrong'&&wn)badge='<span class="n">'+wn+'</span>';if(k==='today'&&dn)badge='<span class="n">'+dn+'</span>';return '<button class="'+(sub===k?'on':'')+'" onclick="goSub(\''+k+'\')">'+n+badge+'</button>'}).join('')+'</div>';
+  h+='<div id="view"></div>';
+  m.innerHTML=h;
+  const V={poly:vPoly,misread:vMis,similar:vSim,stroke:vStroke,homo:vHomo,wrong:vWrong,today:vToday,family:vFamily,radical:vRadical,contrast:vContrast,plan:vPlan};
+  document.getElementById('view').innerHTML=V[sub]();
+}
+function quizBar(cat,desc){const n=questions(cat).length;return '<div class="bar"><div><div class="t">'+CATS[cat]+' · 小测</div><div class="d">'+desc+'（题库 '+n+' 题，每次随机 10 题）</div></div><button class="btn red" onclick="startQuiz(\''+cat+'\')">开始小测 ▶</button></div>'}
+function addBtn(id,payload){const on=inSRS(id);return '<button class="add'+(on?' done':'')+'" onclick=\'addCard(this,'+JSON.stringify(payload).replace(/'/g,"&#39;")+')\'>'+(on?'✓ 已加入':'＋ 复习')+'</button>'}
+function addCard(btn,p){if(srsAdd(p)){btn.classList.add('done');btn.textContent='✓ 已加入'}}
+
+/* ---- 视图：多音字 ---- */
+function vPoly(){
+  return quizBar('poly','看词语，选出加点字的读音')+'<div class="grid">'+POLY.map(it=>{
+    const back=it.r.map(r=>'<b>'+r[0]+'</b>：'+r[1]+'（'+r[2].replace(/ /g,'、')+'）').join('<br>');
+    return '<div class="card">'+addBtn('poly|'+it.c,{id:'poly|'+it.c,tag:'多音字',front:'<span class="hz">'+it.c+'</span><br>有哪几个读音？',back})+'<div class="hz">'+it.c+'</div>'+
+    it.r.map((r,i)=>'<div class="row"><span class="py c'+i+'">'+r[0]+'</span><div><div class="ex">'+r[2].split(' ').map(w=>hl(w,it.c)).join('　')+'</div><div class="mean">'+r[1]+'</div></div></div>').join('')+'</div>'}).join('')+'</div>';
+}
+/* ---- 视图：易读错字 ---- */
+function vMis(){
+  return quizBar('misread','这些字很容易被“想当然”地读错')+'<div class="grid">'+MISREAD.map(it=>
+    '<div class="card">'+addBtn('mis|'+it.w,{id:'mis|'+it.w,tag:'易读错字',front:'<span class="hz" style="font-size:56px">'+hl(it.w,it.c)+'</span><br>怎么读？',back:'<b>'+it.full+'</b>（不读 '+it.bad+'）'+(it.n?'<br>'+it.n:'')})+
+    '<div class="hz" style="font-size:42px">'+hl(it.w,it.c)+'</div><div style="margin-top:6px"><span class="okpy">'+it.full+'</span></div><div class="mean">✗ 常读成 <span class="wrongpy">'+it.bad+'</span></div>'+(it.n?'<div class="tip">'+it.n+'</div>':'')+'</div>').join('')+'</div>';
+}
+/* ---- 视图：形近字 ---- */
+function vSim(){
+  return quizBar('similar','长得像，但意思和用法不同')+'<div class="grid wide">'+SIMILAR.map(it=>{
+    const id='sim|'+it.g.join('');
+    return '<div class="card">'+addBtn(id,{id,tag:'形近字',front:'<span class="hz">'+it.g.join(' ')+'</span><br>怎么区分？',back:it.tip})+
+    '<div class="chars">'+it.g.map((c,i)=>'<div class="one"><div class="hz">'+c+'</div><div class="p">'+it.p[i]+'</div></div>').join('')+'</div>'+
+    '<div class="tip"><b>辨别：</b>'+it.tip+'</div><div class="exs">'+it.q.map(([t,a])=>'<span>'+t.replace('__','<em>'+a+'</em>')+'</span>').join('')+'</div></div>'}).join('')+'</div>';
+}
+/* ---- 视图：笔画笔顺 ---- */
+function vStroke(){
+  return quizBar('stroke','数清笔画，记准笔顺')+'<div class="grid">'+STROKE.map(it=>
+    '<div class="card">'+addBtn('stk|'+it.c,{id:'stk|'+it.c,tag:'笔顺',front:'<span class="hz">'+it.c+'</span><br>几画？笔顺是？',back:it.s.length+'画：'+it.s.join('、')+'<br>'+it.r})+
+    '<div style="display:flex;align-items:center;gap:14px"><div class="hz" style="font-size:64px">'+it.c+'</div><div><b style="font-size:22px">'+it.s.length+'</b> 画</div></div>'+
+    '<div class="strokes">'+it.s.map((s,i)=>'<span><i>'+(i+1)+'</i>'+s+'</span>').join('')+'</div><div class="tip">'+it.r+'</div></div>').join('')+'</div>';
+}
+/* ---- 视图：同音别字 ---- */
+function vHomo(){
+  return quizBar('homo','读音一样，写法和意思不同')+'<div class="grid wide">'+HOMO.map(it=>{
+    const id='homo|'+it.g.join('');
+    return '<div class="card">'+addBtn(id,{id,tag:'同音别字',front:'<span class="hz">'+it.g.join(' ')+'</span><br>怎么用？',back:it.tip})+
+    '<div class="chars">'+it.g.map(c=>'<div class="one"><div class="hz">'+c+'</div></div>').join('')+'<span class="py c0" style="margin-bottom:12px">'+it.p+'</span></div>'+
+    '<div class="tip"><b>用法：</b>'+it.tip+'</div><div class="exs">'+it.q.map(([t,a])=>'<span>'+t.replace('__','<em>'+a+'</em>')+'</span>').join('')+'</div></div>'}).join('')+'</div>';
+}
+/* ---- 视图：错题本 ---- */
+function vWrong(){
+  const all=getWrong();const list=S.wf==='all'?all:all.filter(x=>x.cat===S.wf);
+  let h='<div class="bar"><div class="filters">'+[['all','全部']].concat(Object.entries(CATS)).map(([k,n])=>{const c=k==='all'?all.length:all.filter(x=>x.cat===k).length;return '<button class="'+(S.wf===k?'on':'')+'" onclick="S.wf=\''+k+'\';render()">'+n+' '+c+'</button>'}).join('')+'</div>'+
+    '<div style="display:flex;gap:8px"><button class="btn red" '+(list.length?'':'disabled style="opacity:.5"')+' onclick="redoWrong()">错题重练 ▶</button><button class="btn ghost" onclick="clearWrong()">清空</button></div></div>';
+  if(!list.length)return h+'<div class="empty"><div class="e">🎉</div><p>这里还没有错题。<br>去做小测吧，做错的题会自动收进来。</p></div>';
+  h+='<p class="note">错题重练时答对，就会从错题本“出院”。错题同时已排进「记忆复习」。</p>';
+  return h+list.map(w=>'<div class="witem"><span class="tag" style="background:var(--red-soft);color:var(--red)">'+CATS[w.cat]+'</span><div class="q">'+w.q.replace(/font-size:44px/g,'font-size:26px')+'<div class="ans">正确：<b style="color:var(--green)">'+w.ans+'</b>　我选：<span class="wrongpy">'+w.picked+'</span></div><div class="meta">错了 '+w.times+' 次 · 最近 '+w.last+'</div></div><button class="btn ghost sm" onclick="removeWrong(\''+w.key.replace(/'/g,"\\'")+'\');render()">移除</button></div>').join('');
+}
+function clearWrong(){if(confirm('确定清空错题本吗？')){setWrong([]);render()}}
+function redoWrong(){const all=getWrong();const list=S.wf==='all'?all:all.filter(x=>x.cat===S.wf);
+  openQuiz('错题重练',shuffle(list).slice(0,10).map(w=>({key:w.key,q:w.q,opts:w.opts,ans:w.ans,exp:w.exp,hz:w.hz,cat:w.cat})),'redo')}
+
+/* ============ 小测弹窗 ============ */
+let Q=null;
+function startQuiz(cat){openQuiz(CATS[cat]+' 小测',shuffle(questions(cat)).slice(0,10).map(q=>Object.assign(q,{cat})),'normal')}
+function openQuiz(title,list,mode){Q={title,list,mode,i:0,score:0,wrong:0};document.getElementById('mask').classList.add('show');drawQ()}
+function closeQuiz(){document.getElementById('mask').classList.remove('show');Q=null;render()}
+function drawQ(){
+  const md=document.getElementById('modal');
+  if(Q.i>=Q.list.length){
+    const n=Q.list.length,p=Math.round(Q.score/n*100),st=p>=90?3:p>=60?2:p>0?1:0;
+    md.innerHTML='<div class="result"><div class="stars">'+'⭐'.repeat(st)+'<span style="opacity:.25">'+'⭐'.repeat(3-st)+'</span></div><div class="score">'+Q.score+' / '+n+'</div><p>'+(p===100?'全对！太棒了！':p>=60?'不错！错的题已收进错题本。':'别灰心，错题已收进错题本，按计划复习就能记牢。')+'</p>'+
+    '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'+(Q.mode==='normal'?'<button class="btn red" onclick="startQuiz(\''+Q.list[0].cat+'\')">再来一组</button>':'')+(Q.wrong?'<button class="btn orange" onclick="S.top=\'clinic\';S.sub.clinic=\'wrong\';closeQuiz()">去错题本</button>':'')+'<button class="btn ghost" onclick="closeQuiz()">关闭</button></div></div>';
+    return;
+  }
+  const q=Q.list[Q.i];
+  md.innerHTML='<div class="mhead"><b>'+Q.title+'　'+(Q.i+1)+' / '+Q.list.length+'</b><button class="x" onclick="closeQuiz()">✕</button></div>'+
+   '<div class="prog"><i style="width:'+(Q.i/Q.list.length*100)+'%"></i></div><div class="qtext">'+q.q+'</div>'+
+   '<div class="opts">'+shuffle(q.opts).map(o=>'<button class="opt'+(q.hz?' hzopt':'')+'" data-o="'+o+'" onclick="pick(this)">'+o+'</button>').join('')+'</div>'+
+   '<div class="fb" id="fb"></div><div class="mfoot" id="mf"></div>';
+}
+function pick(btn){
+  const q=Q.list[Q.i],o=btn.dataset.o,ok=o===String(q.ans);
+  document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;if(b.dataset.o===String(q.ans))b.classList.add('right')});
+  if(!ok)btn.classList.add('bad');
+  if(ok){Q.score++;if(Q.mode==='redo')removeWrong(q.key)}else{Q.wrong++;addWrong(q.cat,q,o)}
+  const fb=document.getElementById('fb');fb.className='fb show '+(ok?'ok':'no');
+  fb.innerHTML=(ok?'✅ <b>答对了！</b> ':'❌ <b>正确答案是“'+q.ans+'”</b>，已收进错题本。<br>')+q.exp;
+  document.getElementById('mf').innerHTML='<button class="btn '+(ok?'green':'red')+'" onclick="Q.i++;drawQ()">'+(Q.i+1<Q.list.length?'下一题 →':'看成绩')+'</button>';
+}
+document.getElementById('mask').addEventListener('click',e=>{if(e.target.id==='mask')closeQuiz()});
+
+/* ============ 记忆复习视图 ============ */
+let RV={queue:null,open:false};
+function stageDots(c){return '<div class="stages">'+INT.map((d,i)=>'<span class="'+(i<c.stage?'done':i===c.stage?'cur':'')+'">第'+d+'天</span>').join('')+'</div>'}
+function vToday(){
+  const due=dueCards();
+  if(!RV.queue||!RV.queue.length)RV.queue=due.map(x=>x.id);
+  RV.queue=RV.queue.filter(id=>due.some(x=>x.id===id));
+  const s=getSRS(),t=today(),newToday=s.filter(x=>x.added===t&&x.stage===0&&x.due>t);
+  let h='<div class="bar"><div><div class="t">今日复习 · '+t+'</div><div class="d">新卡片在加入后第 1、2、4、7、15 天各复习一次；“没记住”会从第 1 天重新开始。</div></div><div class="d">待复习 <b style="color:var(--green);font-size:20px">'+RV.queue.length+'</b> 张</div></div>';
+  if(RV.queue.length){
+    const c=s.find(x=>x.id===RV.queue[0]);
+    h+='<div class="flash"><div class="fc'+(RV.open?' open':'')+'"><div><span class="tag" style="background:var(--green-soft);color:var(--green)">'+(c.tag||'')+'</span></div><div class="front">'+c.front.replace(/font-size:44px/g,'font-size:40px')+'</div><div class="back">'+c.back+'</div></div>'+stageDots(c)+
+    '<div class="fcbtns">'+(RV.open?'<button class="btn red" onclick="rate(false)">😣 没记住</button><button class="btn green" onclick="rate(true)">😄 记住了</button>':'<button class="btn" onclick="RV.open=true;render()">先想一想，再看答案</button>')+'</div></div>';
+  }else{
+    h+='<div class="empty"><div class="e">🌱</div><p>'+(s.length?'今天的复习完成了！明天再来。':'复习计划还是空的。')+'</p><p class="note">在易错诊所、字族、偏旁、对比的卡片上点“＋ 复习”，或者做小测——错题会自动加入。</p>'+
+    '<p><button class="btn green" onclick="seed()">一键加入：10 个多音字 + 10 个易读错字</button></p></div>';
+  }
+  if(newToday.length)h+='<div class="section-title">今天新加入（明天开始第 1 次复习）· '+newToday.length+' 张</div><div class="exs">'+newToday.slice(0,40).map(x=>'<span>'+(x.tag||'')+'：'+x.front.replace(/<[^>]+>/g,'').replace(/有哪几个读音？|怎么读？|怎么区分？|怎么用？|几画？笔顺是？/,'').slice(0,18)+'</span>').join('')+'</div>';
+  return h;
+}
+function rate(ok){const id=RV.queue.shift();grade(id,ok);if(!ok){} RV.open=false;toast(ok?'很好！下次复习时间已排好':'没关系，明天再见它');render()}
+function seed(){let n=0;POLY.slice(0,10).forEach(it=>{if(srsAdd({id:'poly|'+it.c,tag:'多音字',front:'<span class="hz">'+it.c+'</span><br>有哪几个读音？',back:it.r.map(r=>'<b>'+r[0]+'</b>：'+r[1]+'（'+r[2].replace(/ /g,'、')+'）').join('<br>')},true))n++});
+  MISREAD.slice(0,10).forEach(it=>{if(srsAdd({id:'mis|'+it.w,tag:'易读错字',front:'<span class="hz" style="font-size:56px">'+hl(it.w,it.c)+'</span><br>怎么读？',back:'<b>'+it.full+'</b>（不读 '+it.bad+'）'+(it.n?'<br>'+it.n:'')},true))n++});
+  toast('加入了 '+n+' 张卡片，明天开始复习');render()}
+
+function vFamily(){
+  return '<div class="bar"><div><div class="t">字族串记</div><div class="d">同一个声旁串起一串字：声旁提示读音（相同或相近），形旁提示意思。</div></div></div><div class="grid wide">'+FAMILY.map(f=>{
+    const id='fam|'+f.root;
+    return '<div class="card fam">'+addBtn(id,{id,tag:'字族',front:'<span class="hz">'+f.root+'</span><br>说出这个字族里的字',back:f.m.map(x=>x[0]+' '+x[1]+'（'+x[2]+'）').join('　')})+
+    '<div class="root"><div class="hz">'+f.root+'</div><div><b style="font-size:18px">“'+f.root+'”字族</b><div class="mean">声旁 '+f.root+' · '+f.py+'</div></div></div>'+
+    '<div class="mem">'+f.m.map(x=>'<div><div class="hz">'+x[0]+'</div><small><b>'+x[1]+'</b></small><small>'+x[2]+'</small><small class="rad">'+x[3]+'</small></div>').join('')+'</div></div>'}).join('')+'</div><p class="note">红色小字是形旁。注意：声旁只提示读音，很多字读音会有变化（如“方”族里的“放、访”声调不同）。</p>';
+}
+function vRadical(){
+  return '<div class="bar"><div><div class="t">偏旁联想</div><div class="d">偏旁大多来自一个独立的字，它告诉我们这个字的意思和什么有关。</div></div></div><div class="grid">'+RADICAL.map(r=>{
+    const id='rad|'+r.n;
+    return '<div class="card">'+addBtn(id,{id,tag:'偏旁',front:'<span class="hz">'+r.r+'</span><br>'+r.n+'表示什么？举例',back:'来自“'+r.f+'”，'+r.m+'：'+r.e.join(' ')})+
+    '<div style="display:flex;gap:12px;align-items:center"><div class="hz" style="width:64px;height:64px;border-radius:16px;background:var(--orange-soft);color:#C46F0E;display:grid;place-items:center;font-size:42px">'+r.r+'</div><div><b>'+r.n+'</b><div class="mean">来自“'+r.f+'”</div></div></div>'+
+    '<div class="tip">'+r.m+'</div><div class="exs">'+r.e.map(x=>'<span style="font-family:var(--kai);font-size:20px">'+x+'</span>').join('')+'</div></div>'}).join('')+'</div>';
+}
+function vContrast(){
+  return '<div class="bar"><div><div class="t">对比辨析</div><div class="d">把容易混的部件放在一起比：哪里不同？意思为什么不同？</div></div></div><div class="grid wide">'+CONTRAST.map((c,i)=>{
+    const id='con|'+i;
+    return '<div class="card">'+addBtn(id,{id,tag:'对比',front:'<span class="hz">'+c.a+' ／ '+c.b+'</span><br>有什么区别？',back:'<b>'+c.an+'</b>：'+c.am+'（'+c.aw+'）<br><b>'+c.bn+'</b>：'+c.bm+'（'+c.bw+'）<br>'+c.k})+
+    '<div class="contrast" style="margin-top:22px"><div class="side a"><div class="r">'+c.a+'</div><div class="m">'+c.an+'</div><div class="mean">'+c.am+'</div><div class="w">'+c.aw+'</div></div><div class="side b"><div class="r">'+c.b+'</div><div class="m">'+c.bn+'</div><div class="mean">'+c.bm+'</div><div class="w">'+c.bw+'</div></div></div><div class="tip">'+c.k+'</div></div>'}).join('')+'</div>';
+}
+function vPlan(){
+  const s=getSRS(),t=today(),due=dueCards().length,mast=s.filter(x=>x.stage>=5).length;
+  let h='<div class="stats"><div class="stat"><b>'+s.length+'</b><span>计划中的卡片</span></div><div class="stat"><b style="color:var(--orange)">'+due+'</b><span>今天要复习</span></div><div class="stat"><b style="color:var(--green)">'+mast+'</b><span>已完成 5 轮（掌握）</span></div><div class="stat"><b>'+getWrong().length+'</b><span>错题本</span></div></div>';
+  const days=[];for(let i=0;i<16;i++){const d=addDays(t,i);days.push({d,n:s.filter(x=>x.stage<5&&(i===0?x.due<=d:x.due===d)).length})}
+  const mx=Math.max(1,...days.map(x=>x.n));
+  h+='<div class="card"><b>未来 16 天的复习量</b><div class="days">'+days.map((x,i)=>'<div class="day"><b>'+x.n+'</b><i class="'+(i===0?'today':'')+'" style="height:'+(x.n/mx*100)+'px"></i>'+(i===0?'今天':x.d.slice(5))+'</div>').join('')+'</div>'+
+  '<div class="note">每张卡片：加入当天学习 → 第1天 → 第2天 → 第4天 → 第7天 → 第15天复习。间隔逐渐拉长，比一次集中背诵记得更牢（间隔重复）。</div></div>';
+  h+='<div class="section-title">各轮次分布</div><div class="stats">'+INT.map((d,i)=>'<div class="stat"><b>'+s.filter(x=>x.stage===i).length+'</b><span>等待第'+d+'天复习</span></div>').join('')+'</div>';
+  if(s.length){
+    h+='<div class="section-title">全部卡片</div><div class="card" style="overflow-x:auto"><table><tr><th>类型</th><th>内容</th><th>进度</th><th>下次复习</th><th></th></tr>'+
+    s.slice().sort((a,b)=>(a.due||'9')>(b.due||'9')?1:-1).map(x=>'<tr><td>'+(x.tag||'')+'</td><td>'+x.front.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,26)+'</td><td>'+(x.stage>=5?'✅ 掌握':(x.stage+'/5'))+'</td><td>'+(x.due||'—')+'</td><td><button class="btn ghost sm" onclick="delCard(\''+x.id.replace(/'/g,"\\'")+'\')">删除</button></td></tr>').join('')+'</table></div>'+
+    '<p style="text-align:right"><button class="btn ghost" onclick="if(confirm(\'确定清空复习计划吗？\')){setSRS([]);render()}">清空复习计划</button></p>';
+  }else h+='<div class="empty"><div class="e">🗓️</div><p>还没有复习卡片。去「今日复习」一键加入，或者在任意卡片上点“＋ 复习”。</p></div>';
+  return h;
+}
+function delCard(id){setSRS(getSRS().filter(x=>x.id!==id));render()}
+
+if(location.hash==='#review')S.top='review';
+render();
+</script>
+</body>
+</html>

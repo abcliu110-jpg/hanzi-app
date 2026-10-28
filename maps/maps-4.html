@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>字义扩展图 · 汉字学堂</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#f6f1ff;--ink:#2a2547;--sub:#6e678f;--line:#e6defa;--yin:#4f8cff;--bi:#ff7a59;--zhuan:#22b07d;--jia:#b05cff}
+html{font-size:clamp(15px,1vw + 10px,19px)}
+body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;background:radial-gradient(circle at 10% 0%,#fff3e6 0,transparent 40%),radial-gradient(circle at 100% 20%,#e7f0ff 0,transparent 40%),var(--bg);color:var(--ink);min-height:100vh}
+.kai{font-family:"KaiTi","STKaiti","楷体","Kaiti SC",serif}
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.88);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:.6rem;padding:.6rem 1rem .2rem;max-width:1440px;margin:0 auto}
+.logo{width:2.4rem;height:2.4rem;border-radius:.8rem;background:linear-gradient(135deg,#ff9a62,#b05cff);color:#fff;display:grid;place-items:center;font-size:1.5rem;font-weight:900}
+.brand h1{font-size:1.25rem}.brand small{color:var(--sub);font-weight:400;font-size:.85rem;margin-left:.4rem}
+nav.topnav{display:flex;gap:.4rem;overflow-x:auto;padding:.4rem 1rem .6rem;max-width:1440px;margin:0 auto;scrollbar-width:none}
+nav.topnav::-webkit-scrollbar{display:none}
+.tn{flex:none;border:none;background:#f1ecff;color:var(--ink);border-radius:1.2rem;padding:.55rem 1rem;font-size:1rem;cursor:pointer;white-space:nowrap;font-weight:700}
+.tn.on{background:linear-gradient(135deg,#ff8a5c,#b05cff);color:#fff;box-shadow:0 .25rem .8rem rgba(176,92,255,.35)}
+.tn .soon{font-size:.7rem;opacity:.6;margin-left:.2rem}
+.wrap{max-width:1440px;margin:0 auto;display:grid;grid-template-columns:7.5rem minmax(0,1fr) 19rem;gap:1rem;padding:1rem}
+.box{background:#fff;border-radius:1.4rem;box-shadow:0 .4rem 1.4rem rgba(80,60,160,.08)}
+/* 左侧字表 */
+.charnav{position:sticky;top:7.2rem;align-self:start;padding:.6rem;display:flex;flex-direction:column;gap:.4rem;max-height:calc(100vh - 8rem);overflow:auto}
+.charnav .lab{font-size:.8rem;color:var(--sub);text-align:center;font-weight:800;margin:.2rem 0}
+.cb{border:2px solid transparent;background:#faf8ff;border-radius:1rem;padding:.35rem .2rem;cursor:pointer;color:var(--ink);text-align:center}
+.cb b{display:block;font-size:2rem;line-height:1.15}
+.cb span{font-size:.8rem;color:var(--sub)}
+.cb:hover{border-color:var(--line)}
+.cb.on{background:linear-gradient(135deg,#ff8a5c,#b05cff);color:#fff}
+.cb.on span{color:#fff}
+/* 主区 */
+.hero{border-radius:1.6rem;padding:1rem 1.3rem;color:#fff;background:linear-gradient(135deg,#5aa8ff,#7b6cff);display:flex;align-items:center;gap:1rem;margin-bottom:.9rem}
+.hero .big{font-size:4rem;line-height:1;background:rgba(255,255,255,.2);border-radius:1.2rem;width:5.4rem;height:5.4rem;display:grid;place-items:center}
+.hero h2{font-size:1.5rem}.hero p{opacity:.95;font-size:.95rem;margin-top:.2rem}
+.mapbox{position:relative;overflow:hidden}
+#map{width:100%;height:min(72vh,640px);display:block;touch-action:none;cursor:grab;background:radial-gradient(circle at 50% 50%,#fffaf2 0,#fff 60%)}
+#map.drag{cursor:grabbing}
+.zoom{position:absolute;right:.7rem;top:.7rem;display:flex;flex-direction:column;gap:.35rem}
+.zoom button{width:2.6rem;height:2.6rem;border-radius:.9rem;border:none;background:#fff;box-shadow:0 .2rem .6rem rgba(80,60,160,.18);font-size:1.3rem;cursor:pointer;color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:.4rem;padding:.6rem .8rem;border-top:1px solid var(--line);font-size:.85rem;align-items:center}
+.legend .pill{color:#fff;border-radius:1rem;padding:.12rem .6rem;font-weight:700}
+.legend .hint{color:var(--sub);margin-left:auto}
+.node{cursor:pointer}
+.node.sel rect{stroke-width:4}
+/* 详情 */
+.detail{margin-top:.9rem;padding:1.1rem 1.2rem}
+.dhead{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+.dhead h3{font-size:1.5rem}
+.badge{border-radius:.7rem;padding:.12rem .55rem;font-size:.85rem;color:#fff;font-weight:700}
+.cert{border-radius:.7rem;padding:.12rem .55rem;font-size:.85rem;font-weight:700}
+.cert.c1{background:#e3f8ee;color:#138a5e}.cert.c2{background:#fff3cf;color:#8a6100}.cert.c3{background:#ffe3e3;color:#c0392b}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:.8rem}
+.blk{background:#faf8ff;border-radius:1rem;padding:.7rem .85rem}
+.blk.full{grid-column:1/-1}
+.blk h4{font-size:.85rem;color:var(--sub);margin-bottom:.35rem;letter-spacing:.04em}
+.why{font-size:1.05rem;line-height:1.6}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chips span{background:#fff;border:1.5px solid var(--line);border-radius:.8rem;padding:.2rem .65rem;font-size:1.15rem}
+.parse{font-size:1.05rem}
+.ex{font-size:1.1rem;line-height:1.6}
+.tag{display:inline-block;background:#eef1ff;color:#4b5bd6;border-radius:.5rem;padding:0 .4rem;font-size:.75rem;margin-left:.35rem;vertical-align:middle}
+.tag.q{background:#ffe0e0;color:#c0392b}
+.classic .t{font-size:1.25rem;line-height:1.6}
+.classic .s{color:var(--sub);font-size:.9rem;margin:.2rem 0}
+.classic .tr{font-size:1rem;line-height:1.6;border-left:3px solid #ffd27a;padding-left:.6rem}
+.evo{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.evo div{width:4.6rem;height:5.2rem;border:2px dashed #d8cdf5;border-radius:.9rem;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.75rem;color:var(--sub);background:#fff;text-align:center;line-height:1.3}
+.evo div b{font-size:1.9rem;color:var(--ink);font-weight:400}
+.evo i{font-style:normal;color:#b9aee0}
+.sw{font-size:1.25rem;line-height:1.6}
+/* 右侧栏 */
+.side{display:flex;flex-direction:column;gap:.9rem;align-self:start;position:sticky;top:7.2rem}
+.side .box{padding:.9rem 1rem}
+.side h3{font-size:1.05rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
+.part{display:flex;gap:.6rem;align-items:flex-start;padding:.45rem 0;border-bottom:1px dashed var(--line)}
+.part:last-child{border:none}
+.role{flex:none;border-radius:.6rem;padding:.1rem .45rem;font-size:.78rem;font-weight:800;color:#fff;margin-top:.15rem}
+.role.r1{background:#4f8cff}.role.r2{background:#ff7a59}.role.r3{background:#9aa0b8}
+.part b{font-size:1.05rem}.part p{font-size:.85rem;color:var(--sub);line-height:1.45}
+.warn li{list-style:none;font-size:.95rem;line-height:1.5;padding:.25rem 0 .25rem 1.4rem;position:relative}
+.warn li::before{position:absolute;left:0}
+.warn .rd li::before{content:"🔊"}.warn .wr li::before{content:"✏️"}
+.warn h4{font-size:.85rem;color:var(--sub);margin:.3rem 0 .1rem}
+.rule{display:block;background:#f4efff;border-radius:.8rem;padding:.45rem .7rem;margin-bottom:.4rem;font-size:.95rem;color:var(--ink);text-decoration:none}
+.rule::before{content:"🔐 "}
+.soonbox{padding:3rem 1.5rem;text-align:center;grid-column:1/-1}
+.soonbox .em{font-size:4rem}.soonbox h2{margin:.6rem 0}
+.soonbox button{margin-top:1rem;border:none;background:linear-gradient(135deg,#ff8a5c,#b05cff);color:#fff;border-radius:1.2rem;padding:.8rem 1.4rem;font-size:1.05rem;cursor:pointer;font-weight:700}
+@media(max-width:1180px){.wrap{grid-template-columns:7rem minmax(0,1fr)}.side{grid-column:1/-1;position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr))}}
+@media(max-width:760px){
+ .wrap{grid-template-columns:1fr;padding:.6rem}
+ .charnav{position:static;flex-direction:row;overflow-x:auto;max-height:none}
+ .charnav .lab{display:none}
+ .cb{flex:none;width:4.2rem}
+ .grid2{grid-template-columns:1fr}
+ #map{height:62vh}
+ .hero .big{font-size:3rem;width:4.2rem;height:4.2rem}
+}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand"><div class="logo kai">字</div><h1>汉字学堂<small>8–14岁 · 汉字的秘密</small></h1></div>
+ <nav class="topnav" id="topnav"></nav>
+</header>
+<div class="wrap" id="wrap"></div>
+
+<!-- 数据：每个字的说文、本义、义项网、偏旁、易错、相关规律。出处拿不准的一律标"待查"。 -->
+<script type="application/json" id="zi-data">[{"char": "成", "pinyin": "chéng", "structure": "形声（据《说文》）", "shuowen": {"text": "成，就也。从戊，丁声。", "cert": "通行说法"}, "benyi": {"gloss": "完成、做成", "reason": "《说文》解释为“就”，就是事情做成了。古文字学界对字形还有别的分析（待查），但“做成”是大家公认最早、最核心的意思。", "cert": "通行说法"}, "parts": [{"part": "戊（今楷书中已变形）", "role": "表义", "note": "《说文》说“从戊”，戊是古代一种兵器（具体表义关系待查）"}, {"part": "丁", "role": "表音", "note": "《说文》说“丁声”"}, {"part": "部首", "role": "说明", "note": "现代字典一般归入“戈”部"}], "pitfalls": {"read": ["读 chéng，是后鼻音，不要读成 chén"], "write": ["里面的“丁”要写成横折钩加点之前的那一笔，不要漏写", "右上的点不要漏", "斜钩要写得舒展"]}, "rules": ["同义项近义（成功成就）", "同字不同义（成功 vs 成本）"], "senses": [{"id": "0", "gloss": "完成、做成", "parent": null, "rel": null, "reason": "", "family": ["成功", "完成", "落成", "成就"], "parse": "成功 = 成（做成）+ 功（功劳、事业）", "example": {"text": "新教学楼今天落成了。", "tag": "示例"}, "classic": {"text": "有志者事竟成也。", "source": "《后汉书·耿弇传》", "trans": "有志向的人，事情终究能做成。"}, "cert": "通行说法"}, {"id": "1", "gloss": "成为、变成", "parent": "0", "rel": "引申", "reason": "事情做成了，东西就变成了新的样子。", "family": ["成为", "变成", "长成", "成人"], "parse": "变成 = 变（改变）+ 成（成为）", "example": {"text": "小蝌蚪长成了青蛙。", "tag": "示例"}, "classic": {"text": "夫市之无虎明矣，然而三人言而成虎。", "source": "《战国策·魏策二》", "trans": "集市上没有老虎是很明白的，可是三个人都这么说，就成了真有老虎。"}, "cert": "确定"}, {"id": "2", "gloss": "成全、帮人做成", "parent": "0", "rel": "引申", "reason": "帮别人把好事做成，就是“成全”他。", "family": ["成全", "成人之美", "玉成"], "parse": "成全 = 成（帮助做成）+ 全（完整）", "example": {"text": "谢谢你成全了我们的演出计划。", "tag": "示例"}, "classic": {"text": "君子成人之美，不成人之恶。", "source": "《论语·颜渊》", "trans": "君子帮助别人做成好事，不帮别人做成坏事。"}, "cert": "确定"}, {"id": "3", "gloss": "成果、收获", "parent": "0", "rel": "转喻", "reason": "用“做成”这件事，来指做成以后得到的结果。", "family": ["成果", "成绩", "成效", "收成"], "parse": "收成 = 收（收获）+ 成（成果）", "example": {"text": "今年秋天的收成特别好。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "4", "gloss": "现成的、定型的", "parent": "0", "rel": "引申", "reason": "已经做成、定下来的东西，就是现成的。", "family": ["现成", "成语", "成规", "成见"], "parse": "成语 = 成（定型的、现成的）+ 语（话）", "example": {"text": "这句话是一个成语。", "tag": "示例"}, "classic": null, "cert": "通行说法"}, {"id": "5", "gloss": "十分之一（几成）", "parent": "0", "rel": "假借", "reason": "“一成”是十分之一。它和“做成”有没有关系，说法不一，先放在假借位置。", "family": ["一成", "七成熟", "增产两成"], "parse": "七成熟 = 七成（十分之七）+ 熟", "example": {"text": "牛排要七成熟的。", "tag": "示例"}, "classic": null, "cert": "待查"}]}, {"char": "保", "pinyin": "bǎo", "structure": "会意", "shuowen": {"text": "保，养也。", "cert": "通行说法"}, "benyi": {"gloss": "养育、背着护着孩子", "reason": "《说文》解释为“养”。古文字像一个大人把孩子背在背上（通行说法），所以本义是抚养、护着孩子。", "cert": "通行说法"}, "parts": [{"part": "亻（人）", "role": "表义", "note": "表示大人"}, {"part": "呆（古字形像孩子，后变形）", "role": "表义", "note": "今天看起来像“呆”，其实和“呆”的意思无关（字形来源待查）"}], "pitfalls": {"read": ["读 bǎo，第三声"], "write": ["右下是“木”，不要写成“未”", "右上“口”要写小一点"]}, "rules": ["由具体到抽象（头口手）", "同义项近义（成功成就）"], "senses": [{"id": "0", "gloss": "养育、背着护着孩子", "parent": null, "rel": null, "reason": "", "family": ["保育", "保姆", "保育员"], "parse": "保育 = 保（养护）+ 育（养育）", "example": {"text": "幼儿园的保育员照顾小朋友午睡。", "tag": "示例"}, "classic": null, "cert": "通行说法"}, {"id": "1", "gloss": "保护、守卫", "parent": "0", "rel": "引申", "reason": "养孩子就要护着他不受伤，于是有了“保护”的意思。", "family": ["保护", "保卫", "保温", "保佑"], "parse": "保卫 = 保（保护）+ 卫（守卫）", "example": {"text": "我们要保护小动物。", "tag": "示例"}, "classic": {"text": "保民而王，莫之能御也。", "source": "《孟子·梁惠王上》", "trans": "爱护百姓来统一天下，没有谁能阻挡。"}, "cert": "确定"}, {"id": "2", "gloss": "保持、不让失去", "parent": "1", "rel": "引申", "reason": "把一样东西护好，它就能一直保持原来的样子。", "family": ["保持", "保存", "保留", "保鲜"], "parse": "保鲜 = 保（保持）+ 鲜（新鲜）", "example": {"text": "冰箱能让水果保鲜。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "3", "gloss": "担保、保证", "parent": "1", "rel": "引申", "reason": "你护着一件事不出问题，就是向别人“保证”。", "family": ["保证", "担保", "保险", "保准"], "parse": "担保 = 担（承担）+ 保（保证）", "example": {"text": "我保证按时完成作业。", "tag": "示例"}, "classic": null, "cert": "通行说法"}, {"id": "4", "gloss": "做保护工作的人", "parent": "1", "rel": "转喻", "reason": "用“保护”这件事，来指做保护工作的人。", "family": ["保安", "保镖"], "parse": "保安 = 保（保护）+ 安（平安）", "example": {"text": "小区门口的保安叔叔很负责。", "tag": "示例"}, "classic": null, "cert": "通行说法"}]}, {"char": "正", "pinyin": "zhèng", "structure": "会意", "shuowen": {"text": "正，是也。从止，一以止。", "cert": "通行说法"}, "benyi": {"gloss": "朝着目标直直走去（“征”的本字）", "reason": "古文字上面像一座城（方框，后来变成一横），下面是脚“止”，表示朝着目的地前进（通行说法）。《说文》的“是也”（对、正确）是后来的意思。", "cert": "通行说法"}, "parts": [{"part": "一（古字形是方框，像城邑）", "role": "表义", "note": "表示目标"}, {"part": "止（脚）", "role": "表义", "note": "表示走向目标"}], "pitfalls": {"read": ["一般读 zhèng；“正月”读 zhēng"], "write": ["笔顺：横、竖、横、竖、横", "不要和“止”混淆，“正”上面多一横"]}, "rules": ["多音别义（好、长）", "由具体到抽象（头口手）", "古今字（莫暮、然燃、要腰）"], "senses": [{"id": "0", "gloss": "朝着目标直走（征）", "parent": null, "rel": null, "reason": "", "family": ["征途", "长征", "征程"], "parse": "征途 = 征（远行）+ 途（路）", "example": {"text": "红军踏上了长征的路。", "tag": "示例"}, "classic": null, "cert": "通行说法"}, {"id": "1", "gloss": "不偏不斜、端正", "parent": "0", "rel": "引申", "reason": "一直朝着目标走，不歪不斜，就是“正”。", "family": ["端正", "正中", "正面", "正方形"], "parse": "端正 = 端（直）+ 正（不歪）", "example": {"text": "写字时要坐端正。", "tag": "示例"}, "classic": {"text": "苏子愀然，正襟危坐而问客曰……", "source": "苏轼《赤壁赋》", "trans": "苏子神色严肃起来，整理好衣襟端正地坐着，问客人说……"}, "cert": "确定"}, {"id": "2", "gloss": "正直、正确", "parent": "1", "rel": "比喻", "reason": "做人做事像走路一样不走歪，就是正直、正确。", "family": ["正直", "正确", "公正", "正义"], "parse": "公正 = 公（公平）+ 正（不偏）", "example": {"text": "这道题的答案是正确的。", "tag": "示例"}, "classic": {"text": "其身正，不令而行；其身不正，虽令不从。", "source": "《论语·子路》", "trans": "自己行为端正，不下命令别人也会照做；自己不端正，下了命令别人也不听。"}, "cert": "确定"}, {"id": "3", "gloss": "改正、使变正", "parent": "1", "rel": "引申", "reason": "把歪的东西扶直，就是“改正”。", "family": ["改正", "纠正", "正音"], "parse": "纠正 = 纠（矫正）+ 正（使正）", "example": {"text": "老师帮我纠正了读音。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "4", "gloss": "主要的", "parent": "1", "rel": "引申", "reason": "正中间的位置最重要，所以主要的也叫“正”。", "family": ["正门", "正文", "正餐", "正式"], "parse": "正门 = 正（主要的）+ 门", "example": {"text": "请从学校正门进去。", "tag": "示例"}, "classic": null, "cert": "通行说法"}, {"id": "5", "gloss": "恰好、正在", "parent": "1", "rel": "引申", "reason": "不偏不斜正对着，也就是不早不晚“刚好”。", "family": ["正好", "正巧", "正在"], "parse": "正好 = 正（恰好）+ 好", "example": {"text": "我出门的时候正好下雨。", "tag": "示例"}, "classic": null, "cert": "通行说法"}, {"id": "6", "gloss": "正月（zhēng）", "parent": "0", "rel": "引申", "reason": "一年开头的月份叫“正月”，为什么用“正”，说法不一。", "family": ["正月", "正旦"], "parse": "正月 = 正（一年之首）+ 月", "example": {"text": "正月初一是春节。", "tag": "示例"}, "classic": null, "cert": "待查", "pinyin": "zhēng"}]}, {"char": "重", "pinyin": "zhòng", "structure": "形声（据《说文》）", "shuowen": {"text": "重，厚也。从𡈼，东声。", "cert": "通行说法"}, "benyi": {"gloss": "分量大、沉", "reason": "《说文》释为“厚”，东西厚就沉。今天大家通行把“分量大”当作最基本的意思。古字形的分析另有说法（待查）。", "cert": "通行说法"}, "parts": [{"part": "𡈼（今楷书中已变形）", "role": "表义", "note": "《说文》说“从𡈼”"}, {"part": "东（今楷书中已变形）", "role": "表音", "note": "《说文》说“东声”"}, {"part": "部首", "role": "说明", "note": "现代字典归部不一（待查）"}], "pitfalls": {"read": ["分量大读 zhòng（重量）；再一次读 chóng（重复）", "“重新”读 chóng xīn，不读 zhòng"], "write": ["中间是“日”下接“一”，横画多，要写匀", "第一笔是撇，不要写成横"]}, "rules": ["多音别义（好、长）", "由具体到抽象（头口手）", "比喻引申"], "senses": [{"id": "0", "gloss": "分量大、沉", "parent": null, "rel": null, "reason": "", "family": ["重量", "沉重", "笨重", "举重"], "parse": "沉重 = 沉（往下坠）+ 重（分量大）", "example": {"text": "这箱书太重了，我搬不动。", "tag": "示例"}, "classic": null, "cert": "通行说法"}, {"id": "1", "gloss": "重要", "parent": "0", "rel": "比喻", "reason": "分量大的东西沉甸甸的，放在心上也“沉”，就是重要。", "family": ["重要", "重点", "重任", "贵重"], "parse": "重点 = 重（重要）+ 点（地方）", "example": {"text": "这一段是课文的重点。", "tag": "示例"}, "classic": {"text": "人固有一死，或重于泰山，或轻于鸿毛。", "source": "司马迁《报任安书》", "trans": "人总有一死，有的死比泰山还重，有的比鸿毛还轻。"}, "cert": "确定"}, {"id": "2", "gloss": "程度深", "parent": "0", "rel": "引申", "reason": "分量越大，程度就越深。", "family": ["严重", "重病", "重伤", "浓重"], "parse": "重伤 = 重（程度深）+ 伤", "example": {"text": "他只是轻伤，不是重伤。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "3", "gloss": "看重、重视", "parent": "1", "rel": "引申", "reason": "觉得一件事重要，就会重视它。", "family": ["重视", "尊重", "敬重", "器重"], "parse": "尊重 = 尊（敬）+ 重（看重）", "example": {"text": "我们要尊重别人的意见。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "4", "gloss": "重复、再一次（chóng）", "parent": "0", "rel": "引申", "reason": "东西一层层叠起来才厚、才重，于是有了“重叠、再来一次”的意思。", "family": ["重复", "重新", "重叠", "重阳"], "parse": "重叠 = 重（一层又一层）+ 叠", "example": {"text": "这个字我重新写了一遍。", "tag": "示例"}, "classic": {"text": "山重水复疑无路，柳暗花明又一村。", "source": "陆游《游山西村》", "trans": "山一重又一重，水一道又一道，正怀疑没路了，忽然又看见一个村子。"}, "cert": "通行说法", "pinyin": "chóng"}]}, {"char": "通", "pinyin": "tōng", "structure": "形声", "shuowen": {"text": "通，达也。从辵，甬声。", "cert": "通行说法"}, "benyi": {"gloss": "到达、没有阻碍", "reason": "《说文》释为“达”，意思是一路走过去没有阻碍。走之旁“辶”也说明它和走路有关。", "cert": "确定"}, "parts": [{"part": "辶（辵，走之）", "role": "表义", "note": "和走路、行进有关"}, {"part": "甬", "role": "表音", "note": "《说文》说“甬声”，“桶、涌、勇”也有这个部件"}], "pitfalls": {"read": ["读 tōng，第一声"], "write": ["“甬”上面是“マ”，不要写成“了”或“龴”", "走之旁最后写"]}, "rules": ["古今异义（妻子、交通）", "比喻引申", "同字不同义（成功 vs 成本）"], "senses": [{"id": "0", "gloss": "到达、通过", "parent": null, "rel": null, "reason": "", "family": ["通过", "通行", "畅通", "直通"], "parse": "通行 = 通（通过）+ 行（走）", "example": {"text": "这条隧道今天正式通行。", "tag": "示例"}, "classic": {"text": "初极狭，才通人。", "source": "陶渊明《桃花源记》", "trans": "开始非常窄，只能让一个人通过。"}, "cert": "确定"}, {"id": "1", "gloss": "连接、相通", "parent": "0", "rel": "引申", "reason": "两边能走得过去，就连在了一起。", "family": ["相通", "通道", "通风", "沟通"], "parse": "沟通 = 沟（挖沟连接）+ 通（相通）", "example": {"text": "我们要多和家人沟通。", "tag": "示例"}, "classic": {"text": "阡陌交通，鸡犬相闻。", "source": "陶渊明《桃花源记》", "trans": "田间小路交错相通，鸡叫狗叫的声音互相都听得见。"}, "cert": "确定"}, {"id": "2", "gloss": "传达、告诉", "parent": "1", "rel": "比喻", "reason": "消息像人走路一样，“走”到了别人那里。", "family": ["通知", "通报", "通信", "通话"], "parse": "通知 = 通（传达）+ 知（让人知道）", "example": {"text": "老师通知我们明天去春游。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "3", "gloss": "懂得、精通", "parent": "0", "rel": "比喻", "reason": "道理在脑子里畅通无阻，就是弄懂了。", "family": ["精通", "通晓", "一窍不通", "通情达理"], "parse": "精通 = 精（深入）+ 通（懂得）", "example": {"text": "爷爷精通象棋。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "4", "gloss": "顺畅、通顺", "parent": "0", "rel": "引申", "reason": "一路通过没有阻碍，就很顺畅。", "family": ["通顺", "通畅", "政通人和"], "parse": "通顺 = 通（顺畅）+ 顺", "example": {"text": "这篇作文写得很通顺。", "tag": "示例"}, "classic": {"text": "越明年，政通人和，百废具兴。", "source": "范仲淹《岳阳楼记》", "trans": "到了第二年，政事顺利，百姓和乐，各种荒废的事都兴办起来了。"}, "cert": "确定"}, {"id": "5", "gloss": "整个、全部", "parent": "0", "rel": "引申", "reason": "从头一直通到尾，就是“全部”。", "family": ["通宵", "通身", "通盘"], "parse": "通宵 = 通（整个）+ 宵（夜）", "example": {"text": "叔叔通宵守在实验室。", "tag": "示例"}, "classic": null, "cert": "通行说法"}, {"id": "6", "gloss": "普通、一般", "parent": "0", "rel": "引申", "reason": "能通到各处、大家都能用的，就是一般的、普通的。", "family": ["普通", "通常", "通用"], "parse": "通用 = 通（普遍）+ 用", "example": {"text": "普通话是全国通用的语言。", "tag": "示例"}, "classic": null, "cert": "通行说法"}]}, {"char": "和", "pinyin": "hé", "structure": "形声", "shuowen": {"text": "咊，相譍（应）也。从口，禾声。", "cert": "通行说法"}, "benyi": {"gloss": "声音相应（hè）", "reason": "《说文》释为“相应”，就是你唱我跟着唱、你说我跟着应。“口”旁表示和声音有关。", "cert": "通行说法"}, "parts": [{"part": "口", "role": "表义", "note": "和声音、说话有关"}, {"part": "禾", "role": "表音", "note": "《说文》说“禾声”"}], "pitfalls": {"read": ["hé 和平；hè 附和；huó 和面；huò 和稀泥；hú 打牌和了", "“暖和”的“和”读轻声 huo"], "write": ["左边是“禾”，最后一笔是点，不是捺", "禾的第一笔是撇"]}, "rules": ["多音别义（好、长）", "并列近义（道路寒冷）", "由具体到抽象（头口手）"], "senses": [{"id": "0", "gloss": "声音相应（hè）", "parent": null, "rel": null, "reason": "", "family": ["应和", "附和", "唱和"], "parse": "附和 = 附（跟随）+ 和（应和）", "example": {"text": "别人说什么他都附和。", "tag": "示例"}, "classic": {"text": "其曲弥高，其和弥寡。", "source": "宋玉《对楚王问》", "trans": "曲调越高深，能跟着唱的人就越少。"}, "cert": "通行说法", "pinyin": "hè"}, {"id": "1", "gloss": "和谐、协调", "parent": "0", "rel": "引申", "reason": "你唱我应，配合得好听，就是“和谐”。", "family": ["和谐", "和睦", "调和", "人和"], "parse": "和睦 = 和（协调）+ 睦（亲近）", "example": {"text": "我们一家人很和睦。", "tag": "示例"}, "classic": {"text": "天时不如地利，地利不如人和。", "source": "《孟子·公孙丑下》", "trans": "有利的天时不如有利的地势，有利的地势不如人心团结。"}, "cert": "确定"}, {"id": "2", "gloss": "和平、不争斗", "parent": "1", "rel": "引申", "reason": "大家相处协调，就不打仗、不吵架。", "family": ["和平", "和好", "讲和", "和解"], "parse": "和解 = 和（不争）+ 解（解开矛盾）", "example": {"text": "两个好朋友终于和好了。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "3", "gloss": "温和、暖和", "parent": "1", "rel": "比喻", "reason": "人的态度、天气像好听的声音一样柔顺舒服。", "family": ["温和", "和气", "暖和", "风和日丽"], "parse": "温和 = 温（温暖）+ 和（柔和）", "example": {"text": "今天风和日丽，适合去公园。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "4", "gloss": "连接词“和”", "parent": "1", "rel": "引申", "reason": "从“在一起、相应”慢慢变成连接词，把两样东西连起来。具体怎么变的说法不一。", "family": ["我和你", "老师和同学", "和……一样"], "parse": "我和你 = 我 + 和（连接）+ 你", "example": {"text": "我和妹妹一起去上学。", "tag": "示例"}, "classic": null, "cert": "待查"}, {"id": "5", "gloss": "加起来的总数", "parent": "1", "rel": "引申", "reason": "几样东西合在一起，得到的就是“和”。", "family": ["总和", "和数"], "parse": "总和 = 总（全部）+ 和（合起来的数）", "example": {"text": "3 加 5 的和是 8。", "tag": "示例"}, "classic": null, "cert": "通行说法"}]}, {"char": "好", "pinyin": "hǎo", "structure": "会意", "shuowen": {"text": "好，美也。从女、子。", "cert": "确定"}, "benyi": {"gloss": "（女子）容貌美", "reason": "《说文》释为“美”，字由“女”和“子”组成。所以本义和女子容貌美好有关（通行说法）。", "cert": "通行说法"}, "parts": [{"part": "女", "role": "表义", "note": "和女子有关"}, {"part": "子", "role": "表义", "note": "和“女”合在一起表示美好"}], "pitfalls": {"read": ["hǎo 好人；hào 爱好、好奇", "“好学”两读：hǎo xué 容易学，hào xué 爱学习"], "write": ["女字旁最后一笔变成提，不要出头太多", "右边“子”的横要写平"]}, "rules": ["多音别义（好、长）", "重叠变化（看看、红红的、人人）", "由具体到抽象（头口手）"], "senses": [{"id": "0", "gloss": "（女子）容貌美", "parent": null, "rel": null, "reason": "", "family": ["好看", "美好"], "parse": "美好 = 美 + 好（美）", "example": {"text": "花园里的景色真美好。", "tag": "示例"}, "classic": {"text": "秦氏有好女，自名为罗敷。", "source": "汉乐府《陌上桑》", "trans": "秦家有个美丽的姑娘，名叫罗敷。"}, "cert": "通行说法"}, {"id": "1", "gloss": "优点多、令人满意", "parent": "0", "rel": "引申", "reason": "从“长得美”推广到一切让人满意的东西。", "family": ["好人", "好事", "好处", "良好"], "parse": "良好 = 良（好）+ 好", "example": {"text": "他养成了良好的习惯。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "2", "gloss": "友爱、亲近", "parent": "1", "rel": "引申", "reason": "对别人好、彼此满意，就是关系亲近。", "family": ["友好", "好朋友", "和好"], "parse": "友好 = 友（朋友）+ 好（亲近）", "example": {"text": "我们和邻居相处很友好。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "3", "gloss": "容易", "parent": "1", "rel": "引申", "reason": "让人满意的事，做起来也顺手，就是容易。", "family": ["好办", "好懂", "好找"], "parse": "好懂 = 好（容易）+ 懂", "example": {"text": "这道题很好懂。", "tag": "示例"}, "classic": null, "cert": "通行说法"}, {"id": "4", "gloss": "很、多么", "parent": "1", "rel": "引申", "reason": "常用“好”来夸奖，后来放在别的词前面表示程度深。", "family": ["好大", "好冷", "好久"], "parse": "好久 = 好（很）+ 久", "example": {"text": "我们好久没见了！", "tag": "示例"}, "classic": null, "cert": "通行说法"}, {"id": "5", "gloss": "喜爱（hào）", "parent": "1", "rel": "引申", "reason": "觉得一样东西好，就会喜欢它。", "family": ["爱好", "好奇", "好客", "好学"], "parse": "爱好 = 爱（喜欢）+ 好（喜欢）", "example": {"text": "我的爱好是画画。", "tag": "示例"}, "classic": {"text": "知之者不如好之者，好之者不如乐之者。", "source": "《论语·雍也》", "trans": "懂得它的人不如喜爱它的人，喜爱它的人不如以它为乐的人。"}, "cert": "确定", "pinyin": "hào"}]}, {"char": "中", "pinyin": "zhōng", "structure": "指事（一说象形）", "shuowen": {"text": "中，内也。从口。丨，上下通。", "cert": "通行说法"}, "benyi": {"gloss": "中间、正中", "reason": "《说文》释为“内”，一竖从上到下穿过中间。另有一种通行说法认为古字形像一面竖立在中央的旗子。两种说法都指向“中间”。", "cert": "通行说法"}, "parts": [{"part": "口", "role": "表义", "note": "表示一个范围"}, {"part": "丨", "role": "表义", "note": "一竖穿过正中，表示中间"}], "pitfalls": {"read": ["zhōng 中间；zhòng 射中、中奖、中暑"], "write": ["中间一竖要穿过“口”，写在正中", "“口”要写扁一点"]}, "rules": ["由空间到时间（前后长短）", "多音别义（好、长）", "转喻"], "senses": [{"id": "0", "gloss": "中间、正中", "parent": null, "rel": null, "reason": "", "family": ["中间", "中心", "中央", "正中"], "parse": "中央 = 中（中间）+ 央（中心）", "example": {"text": "广场中央有一个喷泉。", "tag": "示例"}, "classic": {"text": "中通外直，不蔓不枝。", "source": "周敦颐《爱莲说》", "trans": "（莲的茎）中间是空的，外面是直的，不生藤蔓，不长枝节。"}, "cert": "确定"}, {"id": "1", "gloss": "里面", "parent": "0", "rel": "引申", "reason": "在一个范围的中间，也就是在它里面。", "family": ["家中", "水中", "心中", "空中"], "parse": "空中 = 空（天空）+ 中（里面）", "example": {"text": "风筝在空中飞。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "2", "gloss": "不高不低、中等", "parent": "0", "rel": "引申", "reason": "处在两头的中间，就是不大不小、不高不低。", "family": ["中等", "中号", "中年", "适中"], "parse": "适中 = 适（合适）+ 中（不偏）", "example": {"text": "这件衣服大小适中。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "3", "gloss": "正在进行", "parent": "0", "rel": "引申", "reason": "一件事的“中间”，就是正在做的时候——从空间变成了时间。", "family": ["进行中", "途中", "中途"], "parse": "中途 = 中（中间）+ 途（路程）", "example": {"text": "比赛中途下起了雨。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "4", "gloss": "正对上、射中（zhòng）", "parent": "0", "rel": "引申", "reason": "箭正好落在靶子中心，就是“中”。", "family": ["射中", "打中", "猜中", "中奖"], "parse": "射中 = 射 + 中（正对上）", "example": {"text": "他一下就射中了靶心。", "tag": "示例"}, "classic": {"text": "去柳叶者百步而射之，百发百中。", "source": "《战国策·西周策》", "trans": "离柳叶一百步远射它，射一百次中一百次。"}, "cert": "确定", "pinyin": "zhòng"}, {"id": "5", "gloss": "遭受（zhòng）", "parent": "4", "rel": "比喻", "reason": "被不好的东西“打中”了，就是遭受。", "family": ["中毒", "中暑", "中计"], "parse": "中暑 = 中（遭受）+ 暑（热）", "example": {"text": "天太热，小心中暑。", "tag": "示例"}, "classic": null, "cert": "确定", "pinyin": "zhòng"}, {"id": "6", "gloss": "中国的简称", "parent": "0", "rel": "转喻", "reason": "古人认为自己住在天下的中央，后来“中”就用来代指中国。", "family": ["中文", "中医", "中式"], "parse": "中文 = 中（中国）+ 文（语言文字）", "example": {"text": "我在学中文。", "tag": "示例"}, "classic": null, "cert": "通行说法"}]}, {"char": "平", "pinyin": "píng", "structure": "会意（据《说文》）", "shuowen": {"text": "平，语平舒也。从亏，从八。八，分也。", "cert": "通行说法"}, "benyi": {"gloss": "平坦、不倾斜", "reason": "《说文》说本义是说话语气平和舒缓，但古文字学家对本义看法不一。今天教学一般以“平坦”为基本义来讲，本义判定待查。", "cert": "待查"}, "parts": [{"part": "亏（于）", "role": "表义", "note": "《说文》说“从亏”，和语气有关"}, {"part": "八", "role": "表义", "note": "《说文》说“八，分也”，表示气息分散舒缓"}], "pitfalls": {"read": ["读 píng，后鼻音"], "write": ["不要写成“乎”：“平”上面是一横，“乎”上面是一撇", "中间两点是左点、右撇"]}, "rules": ["比喻引申", "由具体到抽象（头口手）", "并列近义（道路寒冷）"], "senses": [{"id": "0", "gloss": "平坦、不倾斜", "parent": null, "rel": null, "reason": "", "family": ["平地", "平坦", "平原", "平面"], "parse": "平原 = 平（平坦）+ 原（宽广的地）", "example": {"text": "东北有一大片平原。", "tag": "示例"}, "classic": {"text": "土地平旷，屋舍俨然。", "source": "陶渊明《桃花源记》", "trans": "土地平坦开阔，房屋整整齐齐。"}, "cert": "待查"}, {"id": "1", "gloss": "公平、平等", "parent": "0", "rel": "比喻", "reason": "像地面一样不偏向哪一边，就是公平。", "family": ["公平", "平等", "平分", "持平"], "parse": "平分 = 平（一样多）+ 分", "example": {"text": "我们把苹果平分了。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "2", "gloss": "平静、平安", "parent": "0", "rel": "比喻", "reason": "水面平了就不起浪，心里也就平静了。", "family": ["平静", "平安", "风平浪静"], "parse": "平安 = 平（平静）+ 安（安全）", "example": {"text": "祝你一路平安。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "3", "gloss": "平定、使安定", "parent": "2", "rel": "引申", "reason": "把乱的局面变得平静，就是“平定”。", "family": ["平定", "平息", "平乱"], "parse": "平息 = 平（使平静）+ 息（停止）", "example": {"text": "一场风波终于平息了。", "tag": "示例"}, "classic": {"text": "国治而后天下平。", "source": "《礼记·大学》", "trans": "国家治理好了，天下才能太平。"}, "cert": "确定"}, {"id": "4", "gloss": "普通、平常", "parent": "0", "rel": "引申", "reason": "没有高低起伏，就是普普通通的。", "family": ["平常", "平凡", "平时", "平日"], "parse": "平凡 = 平（普通）+ 凡（一般）", "example": {"text": "平凡的工作也很了不起。", "tag": "示例"}, "classic": null, "cert": "确定"}]}, {"char": "习", "pinyin": "xí", "structure": "会意（繁体“習”）", "shuowen": {"text": "習，数飞也。从羽，从白。", "cert": "通行说法"}, "benyi": {"gloss": "（小鸟）反复练习飞", "reason": "《说文》释为“数飞”，就是一次又一次地飞。繁体“習”上面是“羽”（翅膀），说明和鸟飞有关。简化字“习”是从草书写法变来的。", "cert": "确定"}, "parts": [{"part": "羽（繁体上部）", "role": "表义", "note": "翅膀，表示鸟飞"}, {"part": "白（繁体下部）", "role": "说明", "note": "《说文》说“从白”，具体表义待查"}, {"part": "简化字“习”", "role": "说明", "note": "由“習”的草书写法简化而来"}], "pitfalls": {"read": ["读 xí，第二声"], "write": ["只有三笔：横折钩、点、提", "点和提方向不同，不要写成两点", "不要和“刁”混淆"]}, "rules": ["由具体到抽象（头口手）", "古义留在今词（走马观花、短兵相接）", "重叠变化（看看、红红的、人人）"], "senses": [{"id": "0", "gloss": "小鸟反复练飞", "parent": null, "rel": null, "reason": "", "family": [], "parse": "本义今天已不单用，相关词语见“练习、温习”义项", "example": {"text": "雏鸟在窝边一次次扑扇翅膀，练习飞翔。", "tag": "示例"}, "classic": {"text": "鹰乃学习。", "source": "《礼记·月令》", "trans": "小鹰开始学着飞。"}, "cert": "确定"}, {"id": "1", "gloss": "练习、温习", "parent": "0", "rel": "引申", "reason": "小鸟一遍遍练飞，人一遍遍练本领，也叫“习”。", "family": ["练习", "复习", "学习", "实习", "习题"], "parse": "复习 = 复（再一次）+ 习（练习）", "example": {"text": "考试前要认真复习。", "tag": "示例"}, "classic": {"text": "学而时习之，不亦说乎？", "source": "《论语·学而》", "trans": "学了又按时温习，不也是很快乐的吗？"}, "cert": "确定"}, {"id": "2", "gloss": "习惯", "parent": "1", "rel": "引申", "reason": "一件事练得多了，就变成了习惯。", "family": ["习惯", "习性", "恶习", "风俗习惯"], "parse": "习性 = 习（习惯）+ 性（性情）", "example": {"text": "早睡早起是好习惯。", "tag": "示例"}, "classic": null, "cert": "确定"}, {"id": "3", "gloss": "熟悉、常常", "parent": "1", "rel": "引申", "reason": "天天练、天天见的东西，自然就熟悉了。", "family": ["习以为常", "习见", "熟习"], "parse": "习以为常 = 习（熟悉）+ 以为 + 常（平常）", "example": {"text": "他对早起已经习以为常了。", "tag": "示例"}, "classic": null, "cert": "通行说法"}]}]</script>
+<script>
+const DATA=JSON.parse(document.getElementById("zi-data").textContent);
+const TOP=["字义扩展图","偏旁部首","声旁音部","字词句","汉字密码","易错诊所","记忆复习","学习路径"];
+const REL={"引申":"#4f8cff","比喻":"#ff7a59","转喻":"#22b07d","假借":"#b05cff"};
+const CERT={"确定":"c1","通行说法":"c2","待查":"c3"};
+let top_=0,cur=0,sel="0";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function renderTop(){$("topnav").innerHTML=TOP.map((t,i)=>`<button class="tn ${i===top_?"on":""}" onclick="pickTop(${i})">${t}${i===0?"":'<span class="soon">· 待开放</span>'}</button>`).join("")}
+function pickTop(i){top_=i;renderTop();renderAll()}
+function pickChar(i){cur=i;sel="0";resetView();renderAll();window.scrollTo({top:0,behavior:"smooth"})}
+
+/* ---------- 布局 ---------- */
+const W=900,CX=450,R1=235,R2=375,FS=18,NH=44;
+const nodeW=t=>Math.max(t.length*FS+30,80);
+function layout(d){
+ const pos={},kids=p=>d.senses.filter(s=>s.parent===p);
+ pos["0"]={x:CX,y:CX};
+ const l1=kids("0");
+ l1.forEach((s,i)=>{const a=-Math.PI/2+i*2*Math.PI/l1.length;pos[s.id]={x:CX+R1*Math.cos(a),y:CX+R1*Math.sin(a)};
+  const k2=kids(s.id);k2.forEach((t,j)=>{const b=a+(j-(k2.length-1)/2)*0.5;pos[t.id]={x:CX+R2*Math.cos(b),y:CX+R2*Math.sin(b)}})});
+ return pos;
+}
+function wrapText(s,n){const out=[];for(let i=0;i<s.length;i+=n)out.push(s.slice(i,i+n));return out}
+
+function drawMap(){
+ const d=DATA[cur],pos=layout(d);let E="",L="",N="",R="";
+ const ex=(ux,uy,hw,hh)=>Math.min(hw/Math.max(Math.abs(ux),1e-6),hh/Math.max(Math.abs(uy),1e-6));
+ d.senses.forEach(s=>{if(!s.parent)return;const p=pos[s.parent],q=pos[s.id],col=REL[s.rel];
+  const on=sel===s.id;
+  E+=`<line x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" stroke="${col}" stroke-width="${on?6:3.5}" stroke-linecap="round" opacity="${on?1:.75}" ${s.rel==="假借"?'stroke-dasharray="8 7"':""}/>`;
+  const L0=Math.hypot(q.x-p.x,q.y-p.y),ux=(q.x-p.x)/L0,uy=(q.y-p.y)/L0;
+  const pd=s.parent==="0"?78:ex(ux,uy,nodeW(d.senses.find(z=>z.id===s.parent).gloss)/2,NH/2);
+  const qd=L0-ex(ux,uy,nodeW(s.gloss)/2,NH/2),md=(pd+qd)/2,mx=p.x+ux*md,my=p.y+uy*md;
+  L+=`<g onclick="choose('${s.id}')" style="cursor:pointer"><title>${esc(s.rel+"："+s.reason)}</title><rect x="${mx-24}" y="${my-13}" width="48" height="26" rx="13" fill="${col}" stroke="#fff" stroke-width="2"/><text x="${mx}" y="${my+5}" text-anchor="middle" font-size="14" font-weight="800" fill="#fff">${s.rel}</text></g>`;
+  if(on){const lines=wrapText(s.reason,13),bw=13*15+20,bh=lines.length*20+14;let bx=mx-bw/2,by=my+18;
+   R+=`<g pointer-events="none"><rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="10" fill="#2a2547" opacity=".92"/>${lines.map((t,i)=>`<text x="${bx+10}" y="${by+24+i*20}" font-size="15" fill="#fff">${esc(t)}</text>`).join("")}</g>`}
+ });
+ d.senses.forEach(s=>{const q=pos[s.id];
+  if(s.id==="0"){N+=`<g class="node ${sel==="0"?"sel":""}" onclick="choose('0')"><circle cx="${q.x}" cy="${q.y}" r="${sel==="0"?80:76}" fill="#fff1d6" stroke="#ff9f43" stroke-width="${sel==="0"?6:4}"/>
+   <text x="${q.x}" y="${q.y+14}" text-anchor="middle" font-size="76" class="kai" fill="#7a4b12">${d.char}</text>
+   <text x="${q.x}" y="${q.y+50}" text-anchor="middle" font-size="15" font-weight="800" fill="#c0392b">本义</text></g>`;return}
+  const w=nodeW(s.gloss),x=q.x-w/2,y=q.y-NH/2,col=REL[s.rel];
+  N+=`<g class="node ${sel===s.id?"sel":""}" onclick="choose('${s.id}')"><rect x="${x}" y="${y}" width="${w}" height="${NH}" rx="16" fill="${sel===s.id?"#fff8e8":"#fff"}" stroke="${col}" stroke-width="2.5"/>
+   <text x="${q.x}" y="${q.y+6}" text-anchor="middle" font-size="${FS}" font-weight="700" fill="#2a2547">${esc(s.gloss)}</text>
+   ${s.cert==="待查"?`<circle cx="${x+w-3}" cy="${y+3}" r="9" fill="#e45b5b"/><text x="${x+w-3}" y="${y+7.5}" text-anchor="middle" font-size="12" fill="#fff" font-weight="800">?</text>`:""}</g>`;
+ });
+ $("svgroot").innerHTML=E+L+N+R;
+ applyView();
+}
+function choose(id){if(moved)return;sel=id;drawMap();renderDetail()}
+
+/* ---------- 缩放与拖动 ---------- */
+let vb={x:0,y:0,w:W,h:W},moved=false;
+function resetView(){vb={x:0,y:0,w:W,h:W}}
+function applyView(){const s=$("map");if(s)s.setAttribute("viewBox",`${vb.x} ${vb.y} ${vb.w} ${vb.h}`)}
+function zoomAt(f,cx,cy){const nw=Math.min(Math.max(vb.w*f,250),2000);const k=nw/vb.w;vb.x=cx-(cx-vb.x)*k;vb.y=cy-(cy-vb.y)*k;vb.w=vb.h=nw;applyView()}
+function zoomBtn(f){zoomAt(f,vb.x+vb.w/2,vb.y+vb.h/2)}
+function toSvg(svg,cx,cy){const r=svg.getBoundingClientRect(),sc=Math.max(vb.w/r.width,vb.h/r.height),ox=(r.width*sc-vb.w)/2,oy=(r.height*sc-vb.h)/2;return{x:vb.x-ox+(cx-r.left)*sc,y:vb.y-oy+(cy-r.top)*sc,sc}}
+function bindZoom(){
+ const svg=$("map"),pts=new Map();let start=null,pinch=null;
+ svg.addEventListener("wheel",e=>{e.preventDefault();const p=toSvg(svg,e.clientX,e.clientY);zoomAt(e.deltaY>0?1.12:1/1.12,p.x,p.y)},{passive:false});
+ svg.addEventListener("pointerdown",e=>{pts.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=false;
+  if(pts.size===1){start={x:e.clientX,y:e.clientY,vx:vb.x,vy:vb.y,sc:toSvg(svg,0,0).sc}}
+  if(pts.size===2){const [a,b]=[...pts.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),w:vb.w}}});
+ svg.addEventListener("pointermove",e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pts.size===2&&pinch){const [a,b]=[...pts.values()],dd=Math.hypot(a.x-b.x,a.y-b.y);const c=toSvg(svg,(a.x+b.x)/2,(a.y+b.y)/2);zoomAt((pinch.w*pinch.d/dd)/vb.w,c.x,c.y);moved=true;return}
+  if(start){const dx=e.clientX-start.x,dy=e.clientY-start.y;if(Math.abs(dx)+Math.abs(dy)>6){moved=true;svg.classList.add("drag");try{svg.setPointerCapture(e.pointerId)}catch(_){}}
+   if(moved){vb.x=start.vx-dx*start.sc;vb.y=start.vy-dy*start.sc;applyView()}}});
+ const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch=null;if(pts.size===0){start=null;svg.classList.remove("drag");setTimeout(()=>moved=false,0)}};
+ svg.addEventListener("pointerup",up);svg.addEventListener("pointercancel",up);
+}
+
+/* ---------- 详情 ---------- */
+function certTag(c){return`<span class="cert ${CERT[c]||"c3"}">把握：${c}</span>`}
+function renderDetail(){
+ const d=DATA[cur],s=d.senses.find(x=>x.id===sel),isRoot=s.id==="0";
+ const parent=d.senses.find(x=>x.id===s.parent);
+ const py=s.pinyin||d.pinyin;
+ let h=`<div class="dhead"><h3><span class="kai">${d.char}</span>（${py}）：${esc(isRoot?d.benyi.gloss:s.gloss)}</h3>
+  ${isRoot?'<span class="badge" style="background:#c0392b">本义</span>':`<span class="badge" style="background:${REL[s.rel]}">${s.rel}</span>`}
+  ${certTag(isRoot?d.benyi.cert:s.cert)}</div>`;
+ h+=`<div class="grid2">`;
+ if(isRoot){
+  h+=`<div class="blk full"><h4>📜 《说文解字》原文</h4><div class="sw kai">${esc(d.shuowen.text)}<span class="tag">请老师核对</span></div></div>
+  <div class="blk"><h4>🔍 本义判定理由</h4><div class="why">${esc(d.benyi.reason)}</div></div>
+  <div class="blk"><h4>🧬 字形演变</h4><div class="evo"><div>甲骨文<br>字形待补</div><i>→</i><div>金文<br>字形待补</div><i>→</i><div>小篆<br>字形待补</div><i>→</i><div>楷书<b class="kai">${d.char}</b></div></div></div>`;
+ }else{
+  h+=`<div class="blk full"><h4>🤔 为什么这样变？${parent?`（从“${esc(parent.id==="0"?d.benyi.gloss:parent.gloss)}”变来）`:""}</h4><div class="why">${esc(s.reason)}</div></div>`;
+ }
+ h+=`<div class="blk"><h4>👪 词族</h4>${s.family.length?`<div class="chips kai">${s.family.map(w=>`<span>${esc(w)}</span>`).join("")}</div>`:`<div class="why" style="font-size:.95rem;color:var(--sub)">${esc(s.parse)}</div>`}</div>
+  <div class="blk"><h4>🧩 构词拆解</h4><div class="parse">${s.family.length?esc(s.parse):"—"}</div></div>
+  <div class="blk"><h4>💬 现代例句</h4><div class="ex">${esc(s.example.text)}<span class="tag">${s.example.tag}</span></div></div>
+  <div class="blk classic"><h4>🏮 文言原句</h4>${s.classic?`<div class="t kai">${esc(s.classic.text)}</div><div class="s">—— ${esc(s.classic.source)}<span class="tag">出处请核对</span></div><div class="tr">译：${esc(s.classic.trans)}</div>`:`<div class="why" style="color:var(--sub)">待查<span class="tag q">待查</span></div>`}</div>
+ </div>`;
+ $("detail").innerHTML=h;
+}
+function renderSide(){
+ const d=DATA[cur],rc={"表义":"r1","表音":"r2"};
+ $("side").innerHTML=`
+ <div class="box"><h3>🧱 偏旁拆分 <span style="font-size:.8rem;color:var(--sub);font-weight:400">${esc(d.structure)}</span></h3>
+  ${d.parts.map(p=>`<div class="part"><span class="role ${rc[p.role]||"r3"}">${p.role}</span><div><b class="kai">${esc(p.part)}</b><p>${esc(p.note)}</p></div></div>`).join("")}</div>
+ <div class="box warn"><h3>⚠️ 易读错 · 易写错</h3><h4>读音</h4><ul class="rd">${d.pitfalls.read.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>
+  <h4>书写</h4><ul class="wr">${d.pitfalls.write.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>
+ <div class="box"><h3>🔐 相关汉字密码</h3>${d.rules.map(r=>`<a class="rule" href="javascript:void(0)" onclick="pickTop(4)">${esc(r)}</a>`).join("")}</div>`;
+}
+
+function renderAll(){
+ const w=$("wrap");
+ if(top_!==0){w.style.gridTemplateColumns="1fr";w.innerHTML=`<div class="box soonbox"><div class="em">🚧</div><h2>「${TOP[top_]}」在另一个页面</h2><p style="color:var(--sub)">本页只实现「字义扩展图」。</p><button onclick="pickTop(0)">回到字义扩展图 →</button></div>`;return}
+ w.style.gridTemplateColumns="";
+ const d=DATA[cur],rels=[...new Set(d.senses.filter(s=>s.rel).map(s=>s.rel))];
+ w.innerHTML=`<nav class="box charnav"><div class="lab">选一个字</div>${DATA.map((x,i)=>`<button class="cb ${i===cur?"on":""}" onclick="pickChar(${i})"><b class="kai">${x.char}</b><span>${x.pinyin}</span></button>`).join("")}</nav>
+ <main>
+  <div class="hero"><div class="big kai">${d.char}</div><div><h2>${d.char} · ${d.pinyin}</h2><p>本义：${esc(d.benyi.gloss)}　·　共 ${d.senses.length-1} 个扩展义项　·　点圆框看详情，拖动或双指缩放</p></div></div>
+  <div class="box mapbox"><svg id="map" viewBox="0 0 ${W} ${W}" preserveAspectRatio="xMidYMid meet"><g id="svgroot"></g></svg>
+   <div class="zoom"><button onclick="zoomBtn(1/1.25)" aria-label="放大">＋</button><button onclick="zoomBtn(1.25)" aria-label="缩小">－</button><button onclick="resetView();applyView()" aria-label="复位">⟲</button></div>
+   <div class="legend">${Object.entries(REL).map(([k,c])=>`<span class="pill" style="background:${c}">${k}</span>`).join("")}<span class="pill" style="background:#e45b5b">? 待查</span><span class="hint">点连线上的标签也能看原因</span></div></div>
+  <div class="box detail" id="detail"></div>
+ </main>
+ <aside class="side" id="side"></aside>`;
+ bindZoom();drawMap();renderDetail();renderSide();
+}
+renderTop();renderAll();
+</script>
+</body>
+</html>

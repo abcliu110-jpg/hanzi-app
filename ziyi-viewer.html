@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+ 识字星球 · 字义扩展图统一模板  ziyi-viewer.html
+================================================================================
+ 本文件只是模板，不含正式字库数据。打开后按以下顺序找数据：
+   1. 同目录 char-index.json   形如 {"字":"组号或文件"}
+        值为数字或纯数字串 → 读 data/zi-<组号>.json（找不到时再试补零：zi-01 / zi-001）
+        值为文件名         → "zi-12.json" 读 data/zi-12.json；含 "/" 的按相对路径原样读取
+   2. 没有 char-index.json → 依次试 data/zi-1.json、zi-2.json……连续 3 个读不到就停
+   3. 都读不到 → 用文件内嵌的演示数据（2 个字，内容标“示例”），页面顶部会提示
+   另：浏览器直接双击打开（file://）时，多数浏览器禁止页面读取本地 JSON，
+       可点击“选择本地数据文件夹”手动选 data 目录（或多选 json 文件，可连同 char-index.json）；
+       或在该目录运行本地服务器，例如  python3 -m http.server  后访问。
+
+ URL 参数：?zi=字   直接打开某个字，例如 ziyi-viewer.html?zi=檐
+
+ ------------------------------------------------------------------------------
+ 数据格式  xzq-ziyi-v1
+ ------------------------------------------------------------------------------
+ 每个文件一组字：
+ {
+   "format": "xzq-ziyi-v1",          // 可选，格式标记
+   "group": 12,                       // 组号（数字或字符串）
+   "chars": [ <字对象>, ... ]
+ }
+
+ <字对象>：
+ {
+   "zi":     "檐",                    // 必填，字头
+   "py":     "yán",                   // 拼音（多音字可写 "bā / pá"）
+   "fan":    "",                      // 繁体，无则留空
+   "bu":     "木",                    // 部首（用于“按部首浏览”）
+   "struct": "左右结构",               // 结构
+   "origin": {                        // 本义（显示在义项网中心）
+     "name":  "屋檐",                  // 本义名称（短）
+     "gloss": "屋顶伸出墙外的部分",     // 本义解释
+     "sw":    "檐，㮰也。从木詹聲。",    // 《说文》原文；《说文》未收就写说明，或留空
+     "swSrc": "《说文解字·木部》",       // 原文出处
+     "why":   "本义判定理由",
+     "conf":  "确定"                   // 确定 / 通行说法 / 待查
+   },
+   "evo": [ {"stage":"小篆","desc":"〔字形图待补〕"} ],   // 字形演变（文字占位）
+   "senses": [                        // 义项（中心本义也作为一条，type 为“本义”）
+     {
+       "id":   "r",                   // 唯一 id
+       "name": "屋檐",                 // 义项名（显示在节点上，宜短）
+       "gloss":"屋顶伸出墙外的部分",     // 解释
+       "from": "",                    // 上级义项 id；本义留空
+       "type": "本义",                 // 本义 / 引申 / 比喻 / 转喻 / 假借
+       "why":  "孩子能懂的一句变化原因",  // 显示在连线上
+       "words":["屋檐","房檐","飞檐"],   // 词族 3 个
+       "build":"构词拆解",
+       "example":{"text":"自编现代例句","tag":"示例"},   // 自编的 tag 写“示例”
+       "classic":{"text":"文言原句","src":"出处","trans":"译文"},  // 无可靠出处则留空，不要编
+       "conf": "确定"                  // 确定 / 通行说法 / 待查
+     }
+   ],
+   "parts":   {"meaning":"木：表义说明","sound":"詹：表音说明","note":"补充"},
+   "misread": "易读错说明（字符串或字符串数组）",
+   "miswrite":"易写错说明（字符串或字符串数组）",
+   "codes":   ["相关汉字密码规律", "..."],
+   "extra":   {"任意键":"任意值"}       // 扩展字段，非空时显示在“更多”卡片
+ }
+ 规则：任何字段为空（空串 / 空数组 / 空对象 / 缺失）时，对应区块自动隐藏。
+       senses 为空时，用 origin 自动生成中心节点。
+ ------------------------------------------------------------------------------
+ 主题：<link href="xzq-theme.css">；本文件只引用其中的变量，并给每个变量写了后备值，
+       没有主题文件也能正常显示。用到的变量：
+   --xzq-bg --xzq-surface --xzq-surface-2 --xzq-ink --xzq-ink-soft --xzq-line
+   --xzq-accent --xzq-accent-ink --xzq-meaning(表义) --xzq-sound(表音)
+   --xzq-kai(楷体字体栈) --xzq-font --xzq-radius --xzq-shadow
+   --xzq-type-ben --xzq-type-yin --xzq-type-bi --xzq-type-zhuan --xzq-type-jia
+   --xzq-conf-ok --xzq-conf-mid --xzq-conf-todo
+================================================================================
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>字义扩展图 · 识字星球</title>
+<link rel="stylesheet" href="xzq-theme.css">
+<style>
+:root{
+  --bg:var(--xzq-bg,#fdf7ec);
+  --surface:var(--xzq-surface,#fffdf8);
+  --surface2:var(--xzq-surface-2,#f5ecdb);
+  --ink:var(--xzq-ink,#2b2622);
+  --ink2:var(--xzq-ink-soft,#6e6459);
+  --line:var(--xzq-line,#e7dbc6);
+  --accent:var(--xzq-accent,#e4572e);
+  --accent-ink:var(--xzq-accent-ink,#fff);
+  --meaning:var(--xzq-meaning,#e4572e);
+  --sound:var(--xzq-sound,#2a9d8f);
+  --kai:var(--xzq-kai,"STKaiti","KaiTi","楷体","Kaiti SC","BiauKai",serif);
+  --font:var(--xzq-font,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif);
+  --radius:var(--xzq-radius,18px);
+  --shadow:var(--xzq-shadow,0 8px 28px rgba(90,60,20,.10));
+  --t-ben:var(--xzq-type-ben,#e4572e);
+  --t-yin:var(--xzq-type-yin,#2a9d8f);
+  --t-bi:var(--xzq-type-bi,#f4a222);
+  --t-zhuan:var(--xzq-type-zhuan,#7b61c4);
+  --t-jia:var(--xzq-type-jia,#8a93a0);
+  --c-ok:var(--xzq-conf-ok,#2e9b5f);
+  --c-mid:var(--xzq-conf-mid,#d9a21b);
+  --c-todo:var(--xzq-conf-todo,#c8473a);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--font)}
+.kai{font-family:var(--kai)}
+[hidden]{display:none!important}
+.app{display:grid;grid-template-rows:auto auto 1fr;height:100vh}
+header{display:flex;align-items:center;gap:16px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--line);z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;white-space:nowrap}
+.planet{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd58a,var(--accent) 70%);
+  display:grid;place-items:center;color:#fff;font-size:19px;position:relative;box-shadow:inset -4px -4px 0 rgba(0,0,0,.08)}
+.planet::after{content:"";position:absolute;width:48px;height:12px;border:2px solid rgba(228,87,46,.45);border-radius:50%;transform:rotate(-18deg)}
+nav.top{display:flex;gap:4px;overflow-x:auto;flex:1;scrollbar-width:none}
+nav.top a{padding:9px 14px;border-radius:999px;font-size:14px;color:var(--ink2);text-decoration:none;white-space:nowrap;transition:.15s}
+nav.top a:hover{background:var(--surface2);color:var(--ink)}
+nav.top a.on{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.banner{background:#fff3cf;color:#7a5a00;font-size:13px;padding:7px 20px;display:flex;gap:12px;align-items:center;border-bottom:1px solid #f0dfa6}
+.banner button,.btn{border:1px solid currentColor;background:transparent;color:inherit;border-radius:999px;padding:3px 12px;cursor:pointer;font:inherit;font-size:12px}
+.main{display:grid;grid-template-columns:220px 1fr 340px;min-height:0}
+aside.left{border-right:1px solid var(--line);background:var(--surface2);display:flex;flex-direction:column;min-height:0}
+.search{padding:14px 12px 8px;position:relative}
+.search input{width:100%;border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 12px 10px 36px;font:inherit;font-size:15px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.search::before{content:"🔍";position:absolute;left:24px;top:24px;font-size:13px;opacity:.6}
+.search .msg{font-size:12px;color:var(--c-todo);margin:6px 4px 0;min-height:0}
+.tabs{display:flex;gap:6px;padding:4px 12px 8px}
+.tabs button{flex:1;border:0;background:transparent;padding:7px;border-radius:10px;cursor:pointer;font:inherit;font-size:13px;color:var(--ink2)}
+.tabs button.on{background:var(--surface);color:var(--ink);font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+.browse{overflow-y:auto;padding:0 12px 16px;flex:1}
+.grp{margin-top:10px}
+.grp h5{margin:6px 4px;font-size:12px;color:var(--ink2);font-weight:600;letter-spacing:1px;display:flex;justify-content:space-between}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.grid button{aspect-ratio:1;border:1px solid var(--line);background:var(--surface);border-radius:12px;cursor:pointer;font-family:var(--kai);font-size:22px;color:var(--ink);transition:.12s;padding:0}
+.grid button:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.grid button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.grid button.lazy{opacity:.55;border-style:dashed}
+.legend{margin:10px 12px 14px;padding:10px 12px;background:var(--surface);border-radius:14px;font-size:12px;line-height:1.9}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+section.stage{position:relative;min-width:0;overflow:hidden;
+  background:radial-gradient(circle at 50% 48%,var(--surface) 0,var(--bg) 62%,var(--surface2) 100%)}
+.stars{position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(2px 2px at 12% 18%,#f4c97a 50%,transparent 51%),radial-gradient(2px 2px at 82% 26%,#f4c97a 50%,transparent 51%),
+  radial-gradient(1.5px 1.5px at 66% 82%,#e9a96a 50%,transparent 51%),radial-gradient(1.5px 1.5px at 24% 76%,#e9a96a 50%,transparent 51%),radial-gradient(2px 2px at 48% 8%,#f4c97a 50%,transparent 51%)}
+.stage-head{position:absolute;left:20px;top:14px;z-index:2;display:flex;align-items:flex-end;gap:12px;pointer-events:none}
+.stage-head .big{font-family:var(--kai);font-size:56px;line-height:1}
+.stage-head .meta{font-size:13px;color:var(--ink2);padding-bottom:6px;line-height:1.6}
+.zoom{position:absolute;right:16px;top:14px;z-index:2;display:flex;flex-direction:column;gap:6px}
+.zoom button{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:18px;color:var(--ink);box-shadow:var(--shadow)}
+.hint{position:absolute;left:20px;bottom:12px;font-size:12px;color:var(--ink2);z-index:2}
+.empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink2);text-align:center;font-size:14px}
+svg{width:100%;height:100%;display:block;cursor:grab;user-select:none;touch-action:none}
+svg.drag{cursor:grabbing}
+.node{cursor:pointer}
+.node:hover>.shape{filter:drop-shadow(0 6px 10px rgba(90,60,20,.28))}
+aside.right{border-left:1px solid var(--line);background:var(--bg);overflow-y:auto;padding:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 10px;font-size:15px;display:flex;align-items:center;gap:8px}
+.card h3 .bar{width:6px;height:16px;border-radius:3px;background:var(--accent)}
+.card h4{margin:12px 0 6px;font-size:12px;color:var(--ink2);letter-spacing:1px;font-weight:600}
+.p{font-size:14px;line-height:1.75;margin:0}
+.quote{border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--surface));padding:8px 10px;border-radius:0 12px 12px 0;font-family:var(--kai);font-size:16px;line-height:1.7}
+.src{font-size:12px;color:var(--ink2);margin-top:4px}
+.chip{display:inline-block;font-size:11px;padding:2px 9px;border-radius:999px;color:#fff;margin-right:6px;vertical-align:2px;font-weight:600}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;border:1.5px solid;font-weight:600}
+.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.tag{font-size:11px;background:#fff1c9;color:#8a6200;border-radius:6px;padding:1px 7px;margin-left:6px;font-weight:600}
+.words{display:flex;gap:6px;flex-wrap:wrap}
+.words span{background:var(--surface2);border-radius:10px;padding:5px 12px;font-family:var(--kai);font-size:16px}
+.parts{display:flex;flex-direction:column;gap:8px}
+.part{display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--line);border-radius:12px;padding:9px 10px}
+.part small{flex:none;font-size:11px;padding:2px 8px;border-radius:999px;color:#fff;font-weight:700;margin-top:2px}
+.part p{margin:0;font-size:13.5px;line-height:1.6}
+.facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.facts span{font-size:12px;background:var(--surface2);border-radius:8px;padding:3px 9px;color:var(--ink2)}
+ul.list{margin:0;padding-left:18px;font-size:13.5px;line-height:1.8}
+.evo{display:flex;gap:6px;flex-wrap:wrap}
+.evo div{flex:1;min-width:58px;text-align:center;border:1px solid var(--line);border-radius:10px;padding:6px 3px;font-size:11px;color:var(--ink2);background:var(--bg)}
+.evo div b{display:block;font-size:12px;color:var(--ink);margin-bottom:3px}
+dl.kv{margin:0;font-size:13px;line-height:1.7}
+dl.kv dt{color:var(--ink2);font-size:12px}
+dl.kv dd{margin:0 0 6px}
+/* popup */
+.pop-mask{position:absolute;inset:0;background:rgba(43,38,34,.18);z-index:10;display:grid;place-items:center;padding:20px;animation:fade .15s}
+.pop{width:min(460px,100%);max-height:100%;overflow-y:auto;background:var(--surface);border-radius:22px;box-shadow:0 20px 60px rgba(60,40,10,.25);padding:18px 20px 20px;position:relative;animation:rise .2s}
+.pop .x{position:absolute;right:12px;top:12px;width:32px;height:32px;border-radius:50%;border:0;background:var(--surface2);cursor:pointer;font-size:16px;color:var(--ink)}
+.pop .nm{font-size:22px;font-weight:800;margin:6px 0 4px}
+.pop .from{font-size:12px;color:var(--ink2)}
+@keyframes fade{from{opacity:0}}
+@keyframes rise{from{transform:translateY(10px);opacity:0}}
+@media (max-width:1100px){.main{grid-template-columns:190px 1fr 290px}}
+@media (max-width:820px){.main{grid-template-columns:1fr;grid-template-rows:auto 60vh auto}aside.left{max-height:40vh}}
+</style>
+<script>if(location.protocol==="file:")document.write('<script src="data/char-index.js"><\/script>')</script><script>if(location.protocol==="file:")document.write('<script src="data/bundle.js"><\/script>')</script><script>/* file:// 离线兜底：本地直接打开时从 data/*.js 读数据 */(function(){if(location.protocol!=='file:')return;var of=window.fetch;window.fetch=function(u,o){var k=String(u).replace(/^\.\//,'');var F=window.XZQ_FILES||{};if(k in F)return Promise.resolve(new Response(JSON.stringify(F[k]),{status:200,headers:{'Content-Type':'application/json'}}));if(/\.json$/.test(k))return Promise.resolve(new Response('',{status:404}));return of.apply(this,arguments)}})();</script></head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><div class="planet kai">识</div>识字星球</div>
+    <nav class="top" id="topnav"></nav>
+  </header>
+  <div class="banner" id="banner" hidden>
+    <span id="bannerText"></span>
+    <button id="pickBtn">选择本地数据文件夹</button>
+    <input type="file" id="pickDir" webkitdirectory multiple hidden>
+    <input type="file" id="pickFiles" accept=".json,application/json" multiple hidden>
+    <button id="pickFilesBtn">或多选 JSON 文件</button>
+  </div>
+  <div class="main">
+    <aside class="left">
+      <div class="search"><input id="q" placeholder="输入一个字，回车跳转" maxlength="4"><div class="msg" id="qmsg"></div></div>
+      <div class="tabs"><button class="on" data-mode="group">按组</button><button data-mode="bu">按部首</button></div>
+      <div class="browse" id="browse"></div>
+      <div class="legend">
+        <div><i style="background:var(--t-yin)"></i>引申：意思顺着走远</div>
+        <div><i style="background:var(--t-bi)"></i>比喻：像……一样</div>
+        <div><i style="background:var(--t-zhuan)"></i>转喻：用相关的东西代指</div>
+        <div><i style="background:var(--t-jia)"></i>假借：借音不借义</div>
+      </div>
+    </aside>
+    <section class="stage" id="stage">
+      <div class="stars"></div>
+      <div class="stage-head"><div class="big" id="bigChar"></div><div class="meta" id="bigMeta"></div></div>
+      <div class="zoom"><button id="zin" title="放大">＋</button><button id="zout" title="缩小">－</button><button id="zfit" title="适应窗口">⤢</button></div>
+      <svg id="svg"><defs><filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#5a3c14" flood-opacity=".13"/></filter></defs><g id="world"></g></svg>
+      <div class="empty" id="empty" hidden></div>
+      <div class="hint">滚轮 / 双指缩放 · 拖动平移 · 点击义项看详情</div>
+      <div id="popHost"></div>
+    </section>
+    <aside class="right" id="right"></aside>
+  </div>
+</div>
+
+<!-- 演示数据：仅在读不到 data 目录时使用。内容为示例，不作正式字库。 -->
+<script type="application/json" id="demo-data">
+{
+ "format":"xzq-ziyi-v1","group":"示例",
+ "chars":[
+  {"zi":"檐","py":"yán","fan":"","bu":"木","struct":"左右结构",
+   "origin":{"name":"屋檐","gloss":"屋顶伸出墙外的部分（示例）","sw":"檐，㮰也。从木詹聲。（用字待核）","swSrc":"《说文解字·木部》","why":"字从“木”，古代屋檐由木椽挑出，《说文》以屋檐的别名相释。（示例）","conf":"通行说法"},
+   "evo":[{"stage":"甲骨文","desc":"待查"},{"stage":"金文","desc":"待查"},{"stage":"小篆","desc":"〔字形图待补〕"},{"stage":"隶书","desc":"〔字形图待补〕"},{"stage":"楷书","desc":"檐"}],
+   "senses":[
+    {"id":"r","name":"屋檐","gloss":"屋顶伸出墙外的部分","from":"","type":"本义","why":"","words":["屋檐","房檐","飞檐"],"build":"木（木构件）＋詹（读音）＝屋顶伸出墙外的边","example":{"text":"下雨了，我们在屋檐下躲雨。","tag":"示例"},"classic":{"text":"榆柳荫后檐，桃李罗堂前。","src":"陶渊明《归园田居》（其一）","trans":"榆树柳树遮着后面的屋檐，桃树李树排列在堂屋前面。"},"conf":"确定"},
+    {"id":"s1","name":"像屋檐伸出的边","gloss":"帽子、伞等伸出的边沿","from":"r","type":"比喻","why":"帽子的边伸出来，像屋檐一样","words":["帽檐","伞檐","檐边"],"build":"帽（帽子）＋檐（伸出的边）＝帽子前面伸出的部分","example":{"text":"他把帽檐压得低低的，挡住太阳。","tag":"示例"},"classic":{},"conf":"确定"},
+    {"id":"s2","name":"寄住在别人家","gloss":"借指寄居他人之处","from":"r","type":"转喻","why":"用别人家的屋檐代指住在别人家","words":["屋檐下","寄人檐下","檐下"],"build":"寄（住）＋人（别人）＋檐下＝住在别人家里","example":{"text":"俗话说“人在屋檐下，不得不低头”。","tag":"示例"},"classic":{},"conf":"通行说法"}
+   ],
+   "parts":{"meaning":"木：房屋的木构件","sound":"詹：zhān，古音与 yán 相近","note":"（示例）"},
+   "misread":"读 yán，不读 zhān 或 dàn。","miswrite":"右边“詹”笔画多，里面的“八”和“言”不要漏写。",
+   "codes":["“詹”作声旁读音分化：瞻（zhān）、檐（yán）、赡（shàn）。","木字旁和房屋构件有关：梁、柱、栋、檐。"],"extra":{}},
+  {"zi":"赦","py":"shè","fan":"","bu":"攵","struct":"左右结构",
+   "origin":{"name":"免除罪罚","gloss":"放下不追究，免除处罚（示例）","sw":"赦，置也。从攴赤聲。","swSrc":"《说文解字·攴部》","why":"《说文》训“置”，即放置不追究，引为免除罪罚。（示例）","conf":"确定"},
+   "evo":[{"stage":"金文","desc":"待查"},{"stage":"小篆","desc":"〔字形图待补〕"},{"stage":"楷书","desc":"赦"}],
+   "senses":[
+    {"id":"r","name":"免除罪罚","gloss":"不再处罚","from":"","type":"本义","why":"","words":["赦免","赦罪","宽赦"],"build":"赤（读音）＋攵（处置）＝不再处罚","example":{"text":"国王赦免了这个犯错的人。","tag":"示例"},"classic":{"text":"先有司，赦小过，举贤才。","src":"《论语·子路》","trans":"先让各部门官员做好本职，宽恕他们的小过错，提拔优秀人才。"},"conf":"确定"},
+    {"id":"s1","name":"国家宽免罪犯","gloss":"国家下令普遍减免刑罚","from":"r","type":"引申","why":"从赦免一个人，扩大到国家下令宽免","words":["大赦","特赦","赦令"],"build":"大（普遍）＋赦＝国家一次宽免许多罪犯","example":{"text":"古时候新皇帝登基常常大赦天下。","tag":"示例"},"classic":{},"conf":"确定"},
+    {"id":"s2","name":"饶恕","gloss":"原谅","from":"r","type":"引申","why":"不处罚，也就是原谅了他","words":["罪不容赦","十恶不赦","赦过"],"build":"十恶（大罪）＋不赦（不饶恕）＝坏到不能原谅","example":{"text":"故事里的大坏蛋十恶不赦。","tag":"示例"},"classic":{},"conf":"确定"}
+   ],
+   "parts":{"meaning":"攵（反文旁）：手拿棍子，表示处置的动作","sound":"赤：《说文》说“赤声”","note":""},
+   "misread":"读 shè，不读 chì 或 shì。","miswrite":["左边“赤”不要写成“亦”。","右边是反文旁“攵”。"],
+   "codes":["反文旁“攵”是手拿棍子的样子：教、救、敌、赦。"],"extra":{"说明":"这是演示数据"}}
+ ]
+}
+</script>
+
+<script>
+(function(){
+"use strict";
+/* ---------- 配置 ---------- */
+const NAV=[
+  ["字义扩展图","ziyi-viewer.html",true],
+  ["偏旁部首","pianpang-bushou.html"],
+  ["声旁音部","index.html#shengpang"],
+  ["字词句","zicijv.html"],
+  ["汉字密码","hanzi-mima.html"],
+  ["易错诊所","yicuo-fuxi.html#yicuo"],
+  ["记忆复习","yicuo-fuxi.html#fuxi"],
+  ["学习路径","index.html#lujing"]
+];
+const TYPE_VAR={"本义":"--t-ben","引申":"--t-yin","比喻":"--t-bi","转喻":"--t-zhuan","假借":"--t-jia"};
+const CONF_VAR={"确定":"--c-ok","通行说法":"--c-mid","待查":"--c-todo"};
+const NS="http://www.w3.org/2000/svg";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim()||"#999";
+const typeColor=t=>css(TYPE_VAR[t]||"--t-jia");
+const confColor=c=>css(CONF_VAR[c]||"--c-mid");
+/* 空值判断：空串 / 空数组 / 空对象 / null 都算空 */
+function has(v){
+  if(v==null)return false;
+  if(typeof v==="string")return v.trim()!=="";
+  if(Array.isArray(v))return v.some(has);
+  if(typeof v==="object")return Object.values(v).some(has);
+  return true;
+}
+const arr=v=>Array.isArray(v)?v.filter(has):(has(v)?[v]:[]);
+
+/* ---------- 状态 ---------- */
+const S={chars:{},groups:new Map(),index:null,cur:null,mode:"group",source:"",view:{x:0,y:0,k:1}};
+
+/* ---------- 顶部菜单 ---------- */
+function renderNav(){
+  const z=S.cur?("?zi="+encodeURIComponent(S.cur)):"";
+  $("topnav").innerHTML=NAV.map(([n,href,on])=>{
+    const [p,h]=href.split("#");
+    return `<a href="${esc(p+z+(h?"#"+h:""))}"${on?' class="on" aria-current="page"':""}>${esc(n)}</a>`;
+  }).join("");
+}
+
+/* ---------- 数据读取 ---------- */
+async function getJSON(url){
+  const r=await fetch(url,{cache:"no-cache"});
+  if(!r.ok)throw new Error(r.status);
+  return r.json();
+}
+function addGroup(obj,label){
+  if(!obj||!Array.isArray(obj.chars))return 0;
+  const g=String(obj.group!=null&&obj.group!==""?obj.group:label);
+  if(!S.groups.has(g))S.groups.set(g,[]);
+  let n=0;
+  obj.chars.forEach(c=>{
+    if(!c||!c.zi)return;
+    c._group=g; S.chars[c.zi]=c;
+    const list=S.groups.get(g); if(!list.includes(c.zi))list.push(c.zi);
+    n++;
+  });
+  return n;
+}
+function candidates(v){
+  const s=String(v).trim();
+  if(/^\d+$/.test(s))return [`data/zi-${s}.json`,`data/zi-${s.padStart(2,"0")}.json`,`data/zi-${s.padStart(3,"0")}.json`].filter((x,i,a)=>a.indexOf(x)===i);
+  if(s.includes("/"))return [s];
+  return ["data/"+(s.endsWith(".json")?s:s+".json")];
+}
+const loaded=new Set();
+async function loadRef(v){
+  for(const url of candidates(v)){
+    if(loaded.has(url))return true;
+    try{const o=await getJSON(url);loaded.add(url);addGroup(o,String(v).replace(/^.*\/|\.json$/g,""));return true;}catch(e){}
+  }
+  return false;
+}
+async function boot(){
+  try{
+    const idx=await getJSON("char-index.json");
+    if(idx&&typeof idx==="object"){
+      S.index=idx;
+      const refs=[...new Set(Object.values(idx).map(String))];
+      await Promise.allSettled(refs.map(loadRef));
+    }
+  }catch(e){}
+  if(!Object.keys(S.chars).length){
+    let miss=0;
+    for(let i=1;i<=300&&miss<3;i++){ if(await loadRef(i))miss=0; else miss++; }
+  }
+  if(Object.keys(S.chars).length){S.source="data";}
+  else{
+    addGroup(JSON.parse($("demo-data").textContent),"示例");
+    S.source="demo";
+    showBanner(location.protocol==="file:"
+      ?"当前为演示数据：直接双击打开时浏览器不允许读取本地 data 目录。"
+      :"当前为演示数据：没有找到 char-index.json 或 data/zi-*.json。");
+  }
+  afterLoad();
+}
+function showBanner(t){$("bannerText").textContent=t;$("banner").hidden=false;}
+async function readLocalFiles(files){
+  const list=[...files].filter(f=>/\.json$/i.test(f.name));
+  if(!list.length)return;
+  const parsed=await Promise.all(list.map(f=>f.text().then(t=>{try{return{f,o:JSON.parse(t)}}catch(e){return null}})));
+  if(S.source==="demo"){S.chars={};S.groups=new Map();}
+  let n=0;
+  parsed.filter(Boolean).forEach(({f,o})=>{
+    if(Array.isArray(o.chars))n+=addGroup(o,f.name.replace(/\.json$/i,""));
+    else if(/char-index\.json$/i.test(f.name))S.index=o;
+  });
+  if(n){S.source="local";$("banner").hidden=true;S.cur=null;afterLoad();}
+  else showBanner("所选文件里没有找到 xzq-ziyi-v1 格式的字数据。");
+}
+$("pickBtn").onclick=()=>$("pickDir").click();
+$("pickFilesBtn").onclick=()=>$("pickFiles").click();
+$("pickDir").onchange=e=>readLocalFiles(e.target.files);
+$("pickFiles").onchange=e=>readLocalFiles(e.target.files);
+
+function afterLoad(){
+  const want=new URLSearchParams(location.search).get("zi");
+  const first=[...S.groups.values()][0]?.[0];
+  if(want&&S.chars[want])select(want,false);
+  else{ if(want)$("qmsg").textContent=`“${want}”暂未收录，先看看别的字吧`; select(first,false); }
+  renderBrowse();
+}
+
+/* ---------- 左侧浏览 ---------- */
+function groupSortKey(a,b){const na=+a,nb=+b;if(!isNaN(na)&&!isNaN(nb))return na-nb;return String(a).localeCompare(String(b),"zh");}
+function renderBrowse(){
+  const box=$("browse"); let html="";
+  const btn=z=>`<button class="kai${z===S.cur?" on":""}" data-zi="${esc(z)}" title="${esc(S.chars[z]?.py||"")}">${esc(z)}</button>`;
+  if(S.mode==="group"){
+    [...S.groups.keys()].sort(groupSortKey).forEach(g=>{
+      const list=S.groups.get(g);
+      html+=`<div class="grp"><h5><span>${/^\d+$/.test(g)?"第 "+esc(g)+" 组":esc(g)}</span><span>${list.length} 字</span></h5><div class="grid">${list.map(btn).join("")}</div></div>`;
+    });
+  }else{
+    const by={};
+    Object.values(S.chars).forEach(c=>{const b=has(c.bu)?c.bu:"其他";(by[b]=by[b]||[]).push(c.zi);});
+    Object.keys(by).sort((a,b)=>a==="其他"?1:b==="其他"?-1:a.localeCompare(b,"zh")).forEach(b=>{
+      html+=`<div class="grp"><h5><span>部首 <b class="kai" style="font-size:15px;color:var(--ink)">${esc(b)}</b></span><span>${by[b].length} 字</span></h5><div class="grid">${by[b].map(btn).join("")}</div></div>`;
+    });
+  }
+  box.innerHTML=html||`<p class="p" style="color:var(--ink2);font-size:13px">还没有字。</p>`;
+}
+$("browse").addEventListener("click",e=>{const b=e.target.closest("button[data-zi]");if(b)select(b.dataset.zi);});
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+  S.mode=b.dataset.mode;document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b));renderBrowse();
+  const on=$("browse").querySelector("button.on");if(on)on.scrollIntoView({block:"center"});
+});
+
+/* ---------- 搜索 ---------- */
+$("q").addEventListener("keydown",async e=>{
+  if(e.key!=="Enter")return;
+  const z=[...e.target.value.trim()][0]; const m=$("qmsg"); m.textContent="";
+  if(!z)return;
+  if(S.chars[z]){select(z);e.target.value="";return;}
+  if(S.index&&S.index[z]!=null&&S.source==="data"){
+    m.textContent="正在读取……";
+    if(await loadRef(S.index[z])&&S.chars[z]){m.textContent="";renderBrowse();select(z);e.target.value="";return;}
+  }
+  m.textContent=`“${z}”暂未收录`;
+});
+
+/* ---------- 选择字 ---------- */
+function select(z,push=true){
+  if(!z||!S.chars[z])return;
+  S.cur=z; closePop();
+  const u=new URL(location.href);u.searchParams.set("zi",z);
+  try{history[push?"pushState":"replaceState"]({zi:z},"",u);}catch(e){}
+  renderNav(); renderHead(); renderMap(true); renderSide();
+  document.querySelectorAll("#browse button[data-zi]").forEach(b=>b.classList.toggle("on",b.dataset.zi===z));
+}
+window.addEventListener("popstate",()=>{const z=new URLSearchParams(location.search).get("zi");if(z&&S.chars[z])select(z,false);});
+
+/* ---------- 义项整理 ---------- */
+function senseList(c){
+  let list=(Array.isArray(c.senses)?c.senses:[]).filter(s=>s&&has(s.name)).map((s,i)=>({...s,id:has(s.id)?String(s.id):"s"+i}));
+  let root=list.find(s=>s.type==="本义")||list.find(s=>!has(s.from));
+  if(!root){
+    const o=c.origin||{};
+    root={id:"__root",name:o.name||"本义",gloss:o.gloss||"",type:"本义",from:"",conf:o.conf||""};
+    list.unshift(root);
+  }
+  const ids=new Set(list.map(s=>s.id));
+  list.forEach(s=>{ if(s===root){s.from="";s._root=true;} else if(!has(s.from)||!ids.has(String(s.from))||String(s.from)===s.id) s.from=root.id; else s.from=String(s.from); });
+  return {list,root};
+}
+function layout(list,root){
+  const kids={};list.forEach(s=>{if(!s._root)(kids[s.from]=kids[s.from]||[]).push(s);});
+  const pos={[root.id]:{x:0,y:0,a:0,d:0}}; const RX=1.32;
+  const L1=kids[root.id]||[]; const n=L1.length;
+  L1.forEach((s,i)=>{const a=n<=2?Math.PI+i*Math.PI:-Math.PI/2+i*2*Math.PI/n;pos[s.id]={x:Math.cos(a)*240*RX,y:Math.sin(a)*240,a,d:1};});
+  const seen=new Set([root.id,...L1.map(s=>s.id)]);
+  (function place(ids,depth){
+    const next=[];
+    ids.forEach(pid=>{
+      const ks=(kids[pid]||[]).filter(s=>!seen.has(s.id)); const pa=pos[pid].a;
+      const spread=Math.min(0.55,1.4/Math.max(ks.length,1));
+      ks.forEach((s,i)=>{seen.add(s.id);const a=pa+(i-(ks.length-1)/2)*spread;const R=240+185*(depth-1);
+        pos[s.id]={x:Math.cos(a)*R*RX,y:Math.sin(a)*R,a,d:depth};next.push(s.id);});
+    });
+    if(next.length&&depth<8)place(next,depth+1);
+  })(L1.map(s=>s.id),2);
+  list.forEach((s,i)=>{if(!pos[s.id])pos[s.id]={x:-300+i*40,y:360,a:Math.PI/2,d:9};});
+  return pos;
+}
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)if(attrs[k]!=null)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function wrap(s,n,max){const out=[];const t=[...String(s)];for(let i=0;i<t.length;i+=n)out.push(t.slice(i,i+n).join(""));if(out.length>max){out.length=max;out[max-1]=out[max-1].slice(0,-1)+"…";}return out;}
+
+/* ---------- 义项网 ---------- */
+let curSel=null;
+function renderMap(fit){
+  const c=S.chars[S.cur]; const world=$("world"); world.innerHTML="";
+  if(!c){$("empty").hidden=false;$("empty").textContent="暂无数据";return;}
+  $("empty").hidden=true;
+  const {list,root}=senseList(c); const pos=layout(list,root);
+  const maxD=Math.max(...Object.values(pos).map(p=>p.d));
+  for(let d=1;d<=Math.min(maxD,4);d++){const R=d===1?240:240+185*(d-1);el("ellipse",{cx:0,cy:0,rx:R*1.32,ry:R,fill:"none",stroke:css("--line")||"#e7dbc6","stroke-dasharray":"3 9","stroke-width":1.5},world);}
+  const gE=el("g",{},world),gL=el("g",{},world),gN=el("g",{},world);
+  list.forEach(s=>{
+    if(s._root)return;
+    const p=pos[s.from],q=pos[s.id]; if(!p||!q)return; const col=typeColor(s.type);
+    const mx=(p.x+q.x)/2,my=(p.y+q.y)/2,dx=q.x-p.x,dy=q.y-p.y,cx=mx-dy*.12,cy=my+dx*.12;
+    el("path",{d:`M${p.x},${p.y} Q${cx},${cy} ${q.x},${q.y}`,fill:"none",stroke:col,"stroke-width":curSel===s.id?4:2.4,"stroke-linecap":"round","stroke-dasharray":s.type==="假借"?"7 6":null,opacity:.85},gE);
+    const lx=.25*p.x+.5*cx+.25*q.x,ly=.25*p.y+.5*cy+.25*q.y;
+    const g=el("g",{transform:`translate(${lx},${ly})`},gL);
+    const lines=has(s.why)?wrap(s.why,10,3):[]; const label=has(s.type)?s.type:"变化";
+    const bw=Math.max(label.length*13+18,...lines.map(l=>[...l].length*11.5+18)),bh=24+lines.length*15;
+    el("rect",{x:-bw/2,y:-12,width:bw,height:bh,rx:10,fill:css("--surface")||"#fff",stroke:col,"stroke-width":1.2},g);
+    el("text",{x:0,y:4,"text-anchor":"middle","font-size":12,"font-weight":800,fill:col},g).textContent=label;
+    lines.forEach((l,i)=>{el("text",{x:0,y:19+i*15,"text-anchor":"middle","font-size":11,fill:css("--ink2")||"#666"},g).textContent=l;});
+  });
+  list.forEach(s=>{
+    const p=pos[s.id]; const g=el("g",{class:"node",transform:`translate(${p.x},${p.y})`,tabindex:0,role:"button","aria-label":s.name},gN);
+    const open=e=>{e.stopPropagation();curSel=s.id;renderMap(false);openPop(s,list);};
+    g.addEventListener("click",open);g.addEventListener("keydown",e=>{if(e.key==="Enter")open(e);});
+    if(s._root){
+      el("circle",{class:"shape",r:84,fill:typeColor("本义"),filter:"url(#soft)"},g);
+      el("circle",{r:74,fill:"none",stroke:"#fff","stroke-opacity":.55,"stroke-width":curSel===s.id?3:1.2,"stroke-dasharray":"2 5"},g);
+      el("text",{y:8,"text-anchor":"middle","font-size":62,fill:"#fff","font-family":css("--kai")},g).textContent=c.zi;
+      el("text",{y:44,"text-anchor":"middle","font-size":13,"font-weight":700,fill:"#fff","fill-opacity":.92},g).textContent="本义 · "+wrap(s.name,7,1)[0];
+      if(has(s.conf))el("circle",{cx:60,cy:-60,r:8,fill:confColor(s.conf),stroke:"#fff","stroke-width":2.5},g);
+    }else{
+      const nm=wrap(s.name,9,1)[0]; const w=Math.max(100,[...nm].length*16+40),h=48,col=typeColor(s.type),on=curSel===s.id;
+      el("rect",{class:"shape",x:-w/2,y:-h/2,width:w,height:h,rx:24,fill:on?col:(css("--surface")||"#fff"),stroke:col,"stroke-width":2.4,filter:"url(#soft)"},g);
+      el("text",{y:6,"text-anchor":"middle","font-size":15,"font-weight":700,fill:on?"#fff":(css("--ink")||"#222")},g).textContent=nm;
+      if(has(s.conf))el("circle",{cx:w/2-8,cy:-h/2+8,r:6.5,fill:confColor(s.conf),stroke:"#fff","stroke-width":2},g);
+    }
+  });
+  if(fit)fitView(); else applyView();
+}
+function applyView(){const svg=$("svg");$("world").setAttribute("transform",`translate(${svg.clientWidth/2+S.view.x},${svg.clientHeight/2+S.view.y}) scale(${S.view.k})`);}
+function fitView(){
+  const svg=$("svg"),w=$("world");S.view={x:0,y:0,k:1};applyView();
+  let b;try{b=w.getBBox();}catch(e){return;}
+  if(!b.width)return;
+  const W=svg.clientWidth,H=svg.clientHeight,pad=60,top=70;
+  const k=Math.max(.3,Math.min(1.15,(W-pad*2)/b.width,(H-pad-top)/b.height));
+  S.view={k,x:-(b.x+b.width/2)*k,y:-(b.y+b.height/2)*k+top/2};applyView();
+}
+/* 缩放与拖动 */
+(function bindZoom(){
+  const svg=$("svg");const pts=new Map();let start=null;
+  const zoomAt=(f,cx,cy)=>{const r=svg.getBoundingClientRect();const mx=cx-r.left-r.width/2-S.view.x,my=cy-r.top-r.height/2-S.view.y;
+    const nk=Math.min(3,Math.max(.25,S.view.k*f)),ff=nk/S.view.k;S.view.x-=mx*(ff-1);S.view.y-=my*(ff-1);S.view.k=nk;applyView();};
+  svg.addEventListener("wheel",e=>{e.preventDefault();zoomAt(e.deltaY<0?1.12:1/1.12,e.clientX,e.clientY);},{passive:false});
+  svg.addEventListener("pointerdown",e=>{pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===1)start={x:e.clientX,y:e.clientY,vx:S.view.x,vy:S.view.y,moved:false};
+    if(pts.size===2){const [a,b]=[...pts.values()];start={dist:Math.hypot(a.x-b.x,a.y-b.y)};}});
+  svg.addEventListener("pointermove",e=>{if(!pts.has(e.pointerId)||!start)return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===2&&start.dist){const [a,b]=[...pts.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);zoomAt(d/start.dist,(a.x+b.x)/2,(a.y+b.y)/2);start.dist=d;return;}
+    if(pts.size===1&&start.vx!=null){const dx=e.clientX-start.x,dy=e.clientY-start.y;if(Math.abs(dx)+Math.abs(dy)>4){start.moved=true;svg.classList.add("drag");if(!svg.hasPointerCapture(e.pointerId))svg.setPointerCapture(e.pointerId);}
+      if(start.moved){S.view.x=start.vx+dx;S.view.y=start.vy+dy;applyView();}}});
+  const end=e=>{pts.delete(e.pointerId);if(!pts.size){start=null;svg.classList.remove("drag");}};
+  svg.addEventListener("pointerup",end);svg.addEventListener("pointercancel",end);
+  $("zin").onclick=()=>{const r=svg.getBoundingClientRect();zoomAt(1.2,r.left+r.width/2,r.top+r.height/2);};
+  $("zout").onclick=()=>{const r=svg.getBoundingClientRect();zoomAt(1/1.2,r.left+r.width/2,r.top+r.height/2);};
+  $("zfit").onclick=fitView;
+  window.addEventListener("resize",()=>applyView());
+})();
+
+/* ---------- 弹窗 ---------- */
+const badge=c=>has(c)?`<span class="badge" style="color:${confColor(c)}">${esc(c)}</span>`:"";
+function sec(title,body){return has(body)?`<h4>${title}</h4>${body}`:"";}
+function openPop(s,list){
+  const c=S.chars[S.cur]; const parent=list.find(x=>x.id===s.from);
+  const ex=s.example||{}, cl=s.classic||{};
+  let h=`<button class="x" aria-label="关闭">✕</button>`;
+  h+=`<div><span class="chip" style="background:${typeColor(s._root?"本义":s.type)}">${esc(s._root?"本义":(s.type||"义项"))}</span>${parent?`<span class="from">由「${esc(parent.name)}」而来</span>`:""}</div>`;
+  h+=`<div class="nm">${esc(s.name)}</div>`;
+  if(has(s.gloss))h+=`<p class="p">${esc(s.gloss)}</p>`;
+  if(!s._root&&has(s.why))h+=`<p class="p" style="color:var(--ink2);font-size:13px;margin-top:4px">为什么：${esc(s.why)}</p>`;
+  const words=arr(s.words);
+  h+=sec("词族",words.length?`<div class="words">${words.map(w=>`<span>${esc(w)}</span>`).join("")}</div>`:"");
+  h+=sec("构词拆解",has(s.build)?`<p class="p">${esc(s.build)}</p>`:"");
+  if(has(ex.text))h+=`<h4>例句${has(ex.tag)?`<span class="tag">${esc(ex.tag)}</span>`:""}</h4><p class="p">${esc(ex.text)}</p>`;
+  if(has(cl.text))h+=`<h4>文言原句</h4><div class="quote">${esc(cl.text)}</div>${has(cl.src)?`<div class="src">出处：${esc(cl.src)}</div>`:""}${has(cl.trans)?`<p class="p" style="margin-top:6px;font-size:13px">译文：${esc(cl.trans)}</p>`:""}`;
+  if(s._root){
+    const o=c.origin||{};
+    if(has(o.sw))h+=`<h4>《说文》</h4><div class="quote">${esc(o.sw)}</div>${has(o.swSrc)?`<div class="src">${esc(o.swSrc)}</div>`:""}`;
+    if(has(o.why))h+=`<h4>本义判定理由</h4><p class="p">${esc(o.why)}</p>`;
+  }
+  h+=sec("把握程度",badge(s.conf));
+  $("popHost").innerHTML=`<div class="pop-mask"><div class="pop" role="dialog" aria-modal="true">${h}</div></div>`;
+  const m=$("popHost").firstChild;
+  m.addEventListener("click",e=>{if(e.target===m||e.target.closest(".x"))closePop(true);});
+  m.querySelector(".x").focus();
+}
+function closePop(redraw){$("popHost").innerHTML="";if(redraw&&curSel){curSel=null;renderMap(false);}else curSel=null;}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("popHost").firstChild)closePop(true);});
+
+/* ---------- 头部与侧栏 ---------- */
+function renderHead(){
+  const c=S.chars[S.cur]; $("bigChar").textContent=c.zi;
+  const bits=[c.py&&`<b>${esc(c.py)}</b>`,has(c.fan)&&`繁体 <span class="kai">${esc(c.fan)}</span>`,has(c.bu)&&`部首 <span class="kai">${esc(c.bu)}</span>`,has(c.struct)&&esc(c.struct),
+    has(c._group)&&(/^\d+$/.test(c._group)?`第 ${esc(c._group)} 组`:esc(c._group))].filter(Boolean);
+  $("bigMeta").innerHTML=bits.join(" · ");
+  document.title=`${c.zi} · 字义扩展图 · 识字星球`;
+}
+function card(title,body,color){return has(body)?`<div class="card"><h3><span class="bar"${color?` style="background:${color}"`:""}></span>${title}</h3>${body}</div>`:"";}
+function renderSide(){
+  const c=S.chars[S.cur]; const o=c.origin||{}; let h="";
+  /* 本义溯源 */
+  let ob="";
+  if(has(o.name)||has(o.gloss))ob+=`<p class="p"><b>${esc(o.name||"")}</b>${has(o.gloss)?"：<span>"+esc(o.gloss)+"</span>":""}</p>`;
+  if(has(o.sw))ob+=`<h4>《说文》原文</h4><div class="quote">${esc(o.sw)}</div>${has(o.swSrc)?`<div class="src">${esc(o.swSrc)}</div>`:""}`;
+  const evo=(Array.isArray(c.evo)?c.evo:[]).filter(has);
+  if(evo.length)ob+=`<h4>字形演变（文字占位）</h4><div class="evo">${evo.map(e=>`<div>${has(e.stage)?`<b>${esc(e.stage)}</b>`:""}${esc(e.desc||"")}</div>`).join("")}</div>`;
+  if(has(o.why))ob+=`<h4>本义判定理由</h4><p class="p">${esc(o.why)}</p>`;
+  if(has(ob)&&has(o.conf))ob+=`<div style="margin-top:10px">${badge(o.conf)}</div>`;
+  h+=card("本义溯源",ob);
+  /* 偏旁拆分 */
+  const pt=c.parts||{}; let pb="";
+  if(has(pt.meaning)||has(pt.sound)){
+    pb+=`<div class="parts">`;
+    if(has(pt.meaning))pb+=`<div class="part"><small style="background:var(--meaning)">表义</small><p>${esc(pt.meaning)}</p></div>`;
+    if(has(pt.sound))pb+=`<div class="part"><small style="background:var(--sound)">表音</small><p>${esc(pt.sound)}</p></div>`;
+    pb+=`</div>`;
+  }
+  if(has(pt.note))pb+=`<p class="p" style="margin-top:8px;font-size:13px;color:var(--ink2)">${esc(pt.note)}</p>`;
+  h+=card("偏旁拆分",pb);
+  /* 易错 */
+  const mr=arr(c.misread),mw=arr(c.miswrite); let eb="";
+  const li=a=>a.length===1?`<p class="p">${esc(a[0])}</p>`:`<ul class="list">${a.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+  if(mr.length)eb+=`<h4>🔊 易读错</h4>${li(mr)}`;
+  if(mw.length)eb+=`<h4>✏️ 易写错</h4>${li(mw)}`;
+  h+=card("易读错 · 易写错",eb,"var(--t-bi)");
+  /* 汉字密码 */
+  const cd=arr(c.codes);
+  h+=card("汉字密码",cd.length?`<ul class="list">${cd.map(x=>`<li>${esc(typeof x==="string"?x:JSON.stringify(x))}</li>`).join("")}</ul>`:"","var(--t-zhuan)");
+  /* 更多 */
+  const ex=c.extra&&typeof c.extra==="object"?Object.entries(c.extra).filter(([k,v])=>has(v)):[];
+  h+=card("更多",ex.length?`<dl class="kv">${ex.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(typeof v==="string"?v:Array.isArray(v)?v.join("、"):JSON.stringify(v))}</dd>`).join("")}</dl>`:"","var(--sound)");
+  if(S.source==="demo")h+=`<p style="font-size:11px;color:var(--ink2);padding:0 4px">以上为演示数据，内容为示例。</p>`;
+  $("right").innerHTML=h;
+}
+
+renderNav();
+boot();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>字义扩展图 · 儿童汉字学习</title>
+<style>
+:root{
+  --bg:#f7f2e8; --paper:#fffdf8; --ink:#2d2a26; --sub:#7a7166; --line:#e7dfd0;
+  --brand:#c8553d; --brand-soft:#fbe9e3;
+  --t-yin:#2a9d8f; --t-bi:#e9894a; --t-zhuan:#7b5ea7; --t-jia:#d14d72;
+  --k-ok:#3c9a5f; --k-mid:#d39b2a; --k-q:#9a8f84;
+  --r:16px; --shadow:0 6px 20px rgba(80,60,30,.08);
+  --kai:"Kaiti SC","STKaiti","KaiTi","楷体","BiauKai",serif;
+  --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--sans);color:var(--ink);background:var(--bg);
+  background-image:radial-gradient(#e9e0cf 1px,transparent 1px);background-size:22px 22px;}
+button{font:inherit;cursor:pointer}
+.app{display:grid;grid-template-rows:auto 1fr;height:100vh}
+/* top nav */
+header{display:flex;align-items:center;gap:18px;padding:10px 20px;background:var(--paper);border-bottom:1px solid var(--line);box-shadow:0 2px 10px rgba(80,60,30,.05);z-index:5}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;white-space:nowrap}
+.logo .seal{width:38px;height:38px;border-radius:10px;background:var(--brand);color:#fff;display:grid;place-items:center;font-family:var(--kai);font-size:24px}
+.logo small{display:block;font-weight:400;color:var(--sub);font-size:12px}
+nav.top{display:flex;gap:4px;overflow-x:auto;flex:1}
+nav.top button{border:0;background:transparent;padding:9px 14px;border-radius:999px;color:var(--sub);white-space:nowrap;font-size:14px;position:relative}
+nav.top button:hover{background:#f3ece0;color:var(--ink)}
+nav.top button.on{background:var(--brand);color:#fff;font-weight:600;box-shadow:0 3px 10px rgba(200,85,61,.3)}
+nav.top button.off::after{content:"未开放";font-size:10px;margin-left:4px;color:#b8ad9f}
+/* layout */
+.main{display:grid;grid-template-columns:184px 1fr 320px;gap:16px;padding:16px;min-height:0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+aside.left{display:flex;flex-direction:column;min-height:0;padding:12px}
+aside.left h3,.side h3{margin:2px 4px 10px;font-size:13px;color:var(--sub);font-weight:600;letter-spacing:.08em}
+.search{border:1px solid var(--line);border-radius:10px;padding:7px 10px;margin-bottom:10px;background:#fff;font:inherit;width:100%}
+.clist{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;overflow:auto;padding:2px}
+.clist button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;transition:.15s}
+.clist button b{font-family:var(--kai);font-size:30px;font-weight:400;line-height:1.1}
+.clist button span{font-size:11px;color:var(--sub)}
+.clist button:hover{border-color:var(--brand);transform:translateY(-1px)}
+.clist button.on{background:var(--brand-soft);border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+.clist button.on b{color:var(--brand)}
+/* center column */
+.center{display:grid;grid-template-rows:540px auto;gap:16px;min-height:0;overflow:auto}
+.stage{position:relative;overflow:hidden;min-height:360px}
+.stage svg{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+.stage svg.drag{cursor:grabbing}
+.stage .title{position:absolute;left:16px;top:12px;display:flex;align-items:baseline;gap:10px;pointer-events:none}
+.stage .title b{font-family:var(--kai);font-size:40px;font-weight:400;color:var(--brand)}
+.stage .title span{color:var(--sub);font-size:13px}
+.zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px}
+.zoom button{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:16px;color:var(--ink)}
+.zoom button:hover{border-color:var(--brand);color:var(--brand)}
+.legend{position:absolute;left:14px;bottom:12px;display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--sub);background:rgba(255,253,248,.9);padding:6px 10px;border-radius:999px;border:1px solid var(--line)}
+.legend i{display:inline-block;width:18px;height:4px;border-radius:2px;vertical-align:middle;margin-right:4px}
+.hint{position:absolute;right:14px;bottom:12px;font-size:12px;color:#b0a698}
+.node{cursor:pointer}
+.node rect{transition:filter .15s}
+.node:hover rect{filter:drop-shadow(0 4px 8px rgba(80,60,30,.18))}
+.node.sel rect.box{stroke:var(--brand);stroke-width:3}
+.elabel{pointer-events:none}
+/* detail */
+.detail{padding:18px 20px}
+.dhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.dhead h2{margin:0;font-size:20px}
+.tag{font-size:12px;padding:3px 10px;border-radius:999px;color:#fff;font-weight:600}
+.kbadge{font-size:12px;padding:3px 10px;border-radius:999px;border:1.5px solid;font-weight:600;background:#fff}
+.reason{background:#faf6ee;border-left:4px solid var(--brand);padding:8px 12px;border-radius:8px;margin-bottom:14px;color:#5b5348;font-size:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.blk{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff}
+.blk h4{margin:0 0 8px;font-size:13px;color:var(--sub);font-weight:600}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips span{background:#f3ece0;padding:5px 12px;border-radius:999px;font-size:15px}
+.chips span em{font-style:normal;color:var(--brand);font-weight:700}
+.quote{font-family:var(--kai);font-size:18px;line-height:1.7}
+.src{font-size:12px;color:var(--sub);margin-top:4px}
+.trans{font-size:13px;color:#5b5348;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+.ex{font-size:15px;line-height:1.7}
+.ex .mk{font-size:11px;background:#eef3f7;color:#4d6b85;padding:2px 7px;border-radius:6px;margin-right:6px;vertical-align:2px}
+.pending{color:var(--k-q);font-size:14px}
+.full{grid-column:1/-1}
+.shuowen{font-family:var(--kai);font-size:19px}
+.evo{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px}
+.evo span{border:1px dashed #cdbfa8;border-radius:10px;padding:6px 10px;background:#fffaf0}
+/* right */
+aside.side{display:flex;flex-direction:column;gap:14px;overflow:auto;min-height:0}
+.side section{padding:14px 16px}
+.split{display:flex;align-items:stretch;gap:10px}
+.part{flex:1;border-radius:12px;padding:10px;text-align:center}
+.part b{display:block;font-family:var(--kai);font-size:30px;font-weight:400}
+.part .rl{font-size:12px;font-weight:700;letter-spacing:.1em}
+.part p{margin:6px 0 0;font-size:12px;color:#5b5348;text-align:left;line-height:1.5}
+.part.yi{background:#e8f5f2}.part.yi .rl{color:var(--t-yin)}
+.part.yin{background:#fdf0e6}.part.yin .rl{color:var(--t-bi)}
+.plus{align-self:center;color:#c9bca8;font-size:20px}
+.meta{font-size:12px;color:var(--sub);margin-top:10px}
+.warn{display:flex;gap:10px;margin-bottom:10px;font-size:13.5px;line-height:1.6}
+.warn .ic{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:700}
+.mima{border-radius:12px;background:#f6f1fb;padding:10px 12px;margin-bottom:8px}
+.mima b{font-size:13px;color:var(--t-zhuan)}
+.mima p{margin:4px 0 0;font-size:13px;line-height:1.6}
+.klegend{font-size:12px;color:var(--sub);line-height:1.8}
+.toast{position:fixed;left:50%;top:70px;transform:translateX(-50%) translateY(-10px);background:#2d2a26;color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:20}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width:1100px){.main{grid-template-columns:150px 1fr}.side{grid-column:1/-1}}
+@media (max-width:720px){.main{grid-template-columns:1fr}.clist{grid-template-columns:repeat(5,1fr)}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo"><div class="seal">字</div><div>汉字小探险<small>义项网 · 第123组 · 20字</small></div></div>
+    <nav class="top" id="topnav"></nav>
+  </header>
+  <div class="main">
+    <aside class="left card">
+      <h3>本组生字</h3>
+      <input class="search" id="search" placeholder="找一个字…">
+      <div class="clist" id="clist"></div>
+    </aside>
+    <div class="center">
+      <div class="stage card" id="stage">
+        <div class="title"><b id="tChar"></b><span id="tPy"></span></div>
+        <svg id="svg" viewBox="-470 -300 940 600"><defs id="defs"></defs><g id="vp"></g></svg>
+        <div class="zoom"><button id="zin" title="放大">＋</button><button id="zout" title="缩小">－</button><button id="zreset" title="复位">⟲</button></div>
+        <div class="legend" id="legend"></div>
+        <div class="hint">滚轮缩放 · 拖动平移 · 点击义项看详情</div>
+      </div>
+      <div class="detail card" id="detail"></div>
+    </div>
+    <aside class="side">
+      <section class="card"><h3>偏旁拆分</h3><div id="split"></div></section>
+      <section class="card"><h3>易读错 · 易写错</h3><div id="warn"></div></section>
+      <section class="card"><h3>汉字密码</h3><div id="mima"></div></section>
+      <section class="card"><h3>把握程度说明</h3><div class="klegend">
+        <span style="color:var(--k-ok)">● 确定</span>：字书和常用工具书说法一致。<br>
+        <span style="color:var(--k-mid)">● 通行说法</span>：多数人这样讲，但学界仍有讨论。<br>
+        <span style="color:var(--k-q)">● 待查</span>：证据不足或原文未核，暂不下结论。<br>
+        现代例句均为自编，标「示例」；未能核实出处的文言原句一律不列，标「待查」。</div></section>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="hanzi-data">[
+ {
+  "c": "沾",
+  "py": "zhān",
+  "trad": "沾（霑）",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "氵",
+    "role": "表义",
+    "note": "三点水，和水有关"
+   },
+   {
+    "p": "占",
+    "role": "表音",
+    "note": "占 zhān → 沾 zhān，读音完全相同"
+   }
+  ],
+  "root": {
+   "n": "一条河的名字",
+   "sw": "「沾，水。出壺關，東入淇。从水占聲。」（地名字句待核）",
+   "swk": "通行说法",
+   "xing": "小篆 沾（水＋占）→ 隶书 → 楷书 沾；「浸湿」义原写作「霑」，后并入「沾」",
+   "why": "《说文》说「沾」是水名；今天的「浸湿」义原本写作「霑」（雨字头），简化后合并到「沾」（通行说法）。",
+   "f": [
+    "沾水（河名）",
+    "沾河（待查）",
+    "沾"
+   ],
+   "g": "沾 ＝ 氵（水）＋ 占（表音）",
+   "e": "字书上说，「沾」最早是一条河的名字。",
+   "c": null,
+   "k": "通行说法"
+  },
+  "senses": [
+   {
+    "n": "被水弄湿",
+    "t": "假借",
+    "r": "「霑」（雨水打湿）并入「沾」，于是沾也表示浸湿",
+    "f": [
+     "沾湿",
+     "泪沾衣",
+     "沾水"
+    ],
+    "g": "沾湿 ＝ 沾 ＋ 湿",
+    "e": "清晨的露水沾湿了我的鞋子。",
+    "c": {
+     "q": "道狭草木长，夕露沾我衣。",
+     "s": "陶渊明《归园田居》（其三）",
+     "y": "小路狭窄，草木长得很高，傍晚的露水打湿了我的衣裳。"
+    },
+    "k": "确定"
+   },
+   {
+    "n": "碰上、附着上",
+    "t": "引申",
+    "r": "水沾在衣服上，引申为别的东西粘上去",
+    "f": [
+     "沾染",
+     "沾上",
+     "沾满"
+    ],
+    "g": "沾染 ＝ 沾 ＋ 染：粘上、染上",
+    "e": "小狗在泥地里打滚，身上沾满了泥。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "得到好处",
+    "t": "比喻",
+    "r": "靠近别人，就像被他的光彩沾到一点",
+    "f": [
+     "沾光",
+     "沾亲带故",
+     "利益均沾"
+    ],
+    "g": "沾光 ＝ 沾（得到）＋ 光（好处）",
+    "e": "哥哥得了奖，全家都跟着沾光。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "得意的样子",
+    "t": "引申",
+    "r": "「沾沾」形容自以为了不起的神气（来源待查）",
+    "f": [
+     "沾沾自喜",
+     "沾沾",
+     "自得（近义）"
+    ],
+    "g": "沾沾自喜 ＝ 沾沾（得意）＋ 自喜（自己高兴）",
+    "e": "考了一次一百分，不要沾沾自喜。",
+    "c": null,
+    "k": "待查"
+   }
+  ],
+  "du": "读 zhān（第一声），翘舌音，不要读成 zhàn。",
+  "xie": "右边是「占」，上面是「卜」，不要写成「古」。",
+  "mima": [
+   {
+    "t": "「占」家族",
+    "d": "沾、粘、毡、站、战、钻、贴：都以「占」表音。"
+   },
+   {
+    "t": "简化合并",
+    "d": "雨水打湿的「霑」并进了「沾」：一个字多了一个意思。"
+   }
+  ]
+ },
+ {
+  "c": "诈",
+  "py": "zhà",
+  "trad": "詐",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "讠",
+    "role": "表义",
+    "note": "言字旁，用话骗人"
+   },
+   {
+    "p": "乍",
+    "role": "表音",
+    "note": "乍 zhà → 诈 zhà，读音完全相同"
+   }
+  ],
+  "root": {
+   "n": "欺骗",
+   "sw": "「詐，欺也。从言乍聲。」",
+   "swk": "确定",
+   "xing": "小篆 詐（言＋乍）→ 隶书 → 楷书 詐 → 简化字 诈",
+   "why": "《说文》「欺也」：用假话骗人；言字旁表示和说话有关。",
+   "f": [
+    "欺诈",
+    "诈骗",
+    "狡诈"
+   ],
+   "g": "诈骗 ＝ 诈（欺骗）＋ 骗",
+   "e": "接到陌生电话要钱，要小心是诈骗。",
+   "c": {
+    "q": "故兵以诈立，以利动，以分合为变者也。",
+    "s": "《孙子兵法·军争》",
+    "y": "所以用兵要靠诡诈取胜，按照是否有利来行动，用分散集中来变化战术。"
+   },
+   "k": "确定"
+  },
+  "senses": [
+   {
+    "n": "假装",
+    "t": "引申",
+    "r": "装出假样子骗人，比如假装投降",
+    "f": [
+     "诈降",
+     "诈死",
+     "诈病"
+    ],
+    "g": "诈降 ＝ 诈（假装）＋ 降（投降）",
+    "e": "《三国演义》里，黄盖用诈降之计骗了曹操。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "用假话套出真话",
+    "t": "引申",
+    "r": "故意说假话，让对方说漏嘴",
+    "f": [
+     "诈出",
+     "讹诈",
+     "诈唬"
+    ],
+    "g": "诈出 ＝ 诈（套话）＋ 出",
+    "e": "侦探一句话就把小偷诈出了实话。",
+    "c": null,
+    "k": "通行说法"
+   }
+  ],
+  "du": "读 zhà（第四声），翘舌音。",
+  "xie": "右边是「乍」，不要写成「作」的右边多一横；和「炸」「榨」分清偏旁。",
+  "mima": [
+   {
+    "t": "「乍」家族",
+    "d": "诈、炸、榨、蚱、昨、作、怎：都以「乍」表音。"
+   },
+   {
+    "t": "言字旁",
+    "d": "讠旁的字有的和骗人的话有关：诈、骗（马旁例外）、诬、谎。"
+   }
+  ]
+ },
+ {
+  "c": "斋",
+  "py": "zhāi",
+  "trad": "齋",
+  "struct": "上下结构",
+  "parts": [
+   {
+    "p": "示（简化后省形）",
+    "role": "表义",
+    "note": "繁体下部是「示」，和祭祀有关"
+   },
+   {
+    "p": "齐（省）",
+    "role": "表音",
+    "note": "上部是「齐」的省写：齐 qí／zhāi → 斋 zhāi"
+   }
+  ],
+  "root": {
+   "n": "祭祀前清洁身心",
+   "sw": "「齋，戒，潔也。从示，齊省聲。」",
+   "swk": "确定",
+   "xing": "金文 → 小篆 齋（齊省＋示）→ 楷书 齋 → 简化字 斋",
+   "why": "《说文》「戒，洁也」：祭祀前要洗澡、吃素、不喝酒，让身心干净；「示」表示祭祀。",
+   "f": [
+    "斋戒",
+    "斋祭（待查）",
+    "斋沐"
+   ],
+   "g": "斋戒 ＝ 斋（洁净身心）＋ 戒（戒除）",
+   "e": "古人举行大典前要先斋戒几天。",
+   "c": {
+    "q": "于是赵王乃斋戒五日。",
+    "s": "《史记·廉颇蔺相如列传》",
+    "y": "于是赵王就斋戒了五天。"
+   },
+   "k": "确定"
+  },
+  "senses": [
+   {
+    "n": "吃素",
+    "t": "引申",
+    "r": "斋戒时不吃荤，于是吃素也叫斋",
+    "f": [
+     "吃斋",
+     "斋饭",
+     "斋菜"
+    ],
+    "g": "吃斋 ＝ 吃 ＋ 斋（素食）",
+    "e": "寺庙里的师父们每天吃斋念佛。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "给僧人饭食",
+    "t": "引申",
+    "r": "把素饭送给出家人",
+    "f": [
+     "化斋",
+     "施斋",
+     "斋僧"
+    ],
+    "g": "化斋 ＝ 化（求取）＋ 斋（素饭）",
+    "e": "《西游记》里，唐僧常让悟空去化斋。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "书房、屋子",
+    "t": "转喻",
+    "r": "斋戒要找安静干净的屋子，后来读书的屋子也叫斋",
+    "f": [
+     "书斋",
+     "聊斋",
+     "荣宝斋"
+    ],
+    "g": "书斋 ＝ 书 ＋ 斋（屋子）",
+    "e": "爷爷的书斋里摆满了线装书。",
+    "c": null,
+    "k": "通行说法"
+   }
+  ],
+  "du": "读 zhāi（第一声），翘舌音，不要读成 qí。",
+  "xie": "上面是「文」，下面是撇和竖、竖撇；和「齐」分清：齐下面是两竖，斋下面中间多了「小」形。",
+  "mima": [
+   {
+    "t": "斋和齐",
+    "d": "繁体「齋」从「齊」得声，简化后上半都是「文」。"
+   },
+   {
+    "t": "「示」表祭祀",
+    "d": "祭、祝、福、神里的「示／礻」都和祭祀有关，斋的繁体也有。"
+   }
+  ]
+ },
+ {
+  "c": "瞒",
+  "py": "mán",
+  "trad": "瞞",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "目",
+    "role": "表义",
+    "note": "目字旁，和眼睛有关"
+   },
+   {
+    "p": "㒼",
+    "role": "表音",
+    "note": "右边原为「㒼」mán，简化后写作「满」的右边"
+   }
+  ],
+  "root": {
+   "n": "眼皮低垂、闭着眼",
+   "sw": "「瞞，平目也。从目㒼聲。」（释义待核）",
+   "swk": "待查",
+   "xing": "小篆 瞞（目＋㒼）→ 隶书 → 楷书 瞞 → 简化字 瞒",
+   "why": "《说文》「平目」，一般理解为眼皮垂下、眼睛眯着看不清（通行说法）；目字旁表示眼睛。",
+   "f": [
+    "瞒目（待查）",
+    "瞒眼（待查）",
+    "眯眼（近义）"
+   ],
+   "g": "瞒 ＝ 目（眼睛）＋ 㒼（表音）",
+   "e": "字书上说，「瞒」最早和眼睛闭着有关。",
+   "c": null,
+   "k": "待查"
+  },
+  "senses": [
+   {
+    "n": "把真相藏起来",
+    "t": "引申",
+    "r": "让别人像闭着眼一样看不到真相",
+    "f": [
+     "隐瞒",
+     "瞒着",
+     "瞒报"
+    ],
+    "g": "隐瞒 ＝ 隐（藏）＋ 瞒",
+    "e": "做错了事，不要隐瞒，要诚实地说出来。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "骗过所有人",
+    "t": "比喻",
+    "r": "连老天都能骗过去，比喻手段很高明",
+    "f": [
+     "瞒天过海",
+     "欺上瞒下",
+     "瞒不过"
+    ],
+    "g": "瞒天过海 ＝ 瞒天（骗过天）＋ 过海",
+    "e": "他想瞒天过海，可是老师一眼就看穿了。",
+    "c": null,
+    "k": "确定"
+   }
+  ],
+  "du": "读 mán（第二声），不要读成 mǎn。",
+  "xie": "右边和「满」的右边一样：草字头下面是「两」的样子；左边是「目」，不要写成「日」。",
+  "mima": [
+   {
+    "t": "「㒼」家族",
+    "d": "瞒、满、螨、蹒：右边相同，读 man。"
+   },
+   {
+    "t": "目字旁",
+    "d": "目旁的字多和眼睛有关：瞒、眨、睁、盯。"
+   }
+  ]
+ },
+ {
+  "c": "彪",
+  "py": "biāo",
+  "trad": "彪",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "虎",
+    "role": "表义",
+    "note": "左边是「虎」，和老虎有关"
+   },
+   {
+    "p": "彡",
+    "role": "表义",
+    "note": "右边「彡」像花纹；《说文》说「彡象其文」，会意字"
+   }
+  ],
+  "root": {
+   "n": "老虎身上的花纹",
+   "sw": "「彪，虎文也。从虎，彡象其文也。」",
+   "swk": "确定",
+   "xing": "小篆 彪（虎＋彡）→ 隶书 → 楷书 彪",
+   "why": "《说文》「虎文」，就是老虎的斑纹；虎加三撇（彡），三撇像花纹。",
+   "f": [
+    "彪文（待查）",
+    "彪炳",
+    "虎彪（待查）"
+   ],
+   "g": "彪 ＝ 虎 ＋ 彡（花纹）",
+   "e": "老虎身上一道道黑黄相间的花纹，古人叫「彪」。",
+   "c": null,
+   "k": "确定"
+  },
+  "senses": [
+   {
+    "n": "小老虎、老虎",
+    "t": "转喻",
+    "r": "用老虎的花纹来指老虎本身",
+    "f": [
+     "彪子（方言，待查）",
+     "虎彪（待查）",
+     "彪虎（待查）"
+    ],
+    "g": "彪 ＝ 用花纹代指老虎",
+    "e": "传说中，「彪」是老虎生的小虎。",
+    "c": null,
+    "k": "待查"
+   },
+   {
+    "n": "身材高大强壮",
+    "t": "比喻",
+    "r": "像老虎一样威猛壮实",
+    "f": [
+     "彪形大汉",
+     "彪悍",
+     "彪壮"
+    ],
+    "g": "彪形大汉 ＝ 彪形（像虎一样的身形）＋ 大汉",
+    "e": "门口站着一个彪形大汉，看起来很威风。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "光彩照人",
+    "t": "比喻",
+    "r": "像虎纹一样鲜明耀眼，比喻功劳文采很显著",
+    "f": [
+     "彪炳",
+     "彪炳千古",
+     "彪炳史册"
+    ],
+    "g": "彪炳千古 ＝ 彪炳（光彩照耀）＋ 千古",
+    "e": "英雄们的功绩彪炳史册。",
+    "c": null,
+    "k": "确定"
+   }
+  ],
+  "du": "读 biāo（第一声），不要读成 hǔ 或 piāo。",
+  "xie": "右边是三撇「彡」，不要写成两撇；左边「虎」下面是「几」。",
+  "mima": [
+   {
+    "t": "「彡」表花纹",
+    "d": "彪、彩、彰、影、须：彡常表示花纹、光彩或毛发。"
+   },
+   {
+    "t": "会意字",
+    "d": "虎＋彡＝彪：老虎加上花纹。"
+   }
+  ]
+ },
+ {
+  "c": "厄",
+  "py": "è",
+  "trad": "厄（阨、戹）",
+  "struct": "半包围结构",
+  "parts": [
+   {
+    "p": "厂",
+    "role": "表义",
+    "note": "厂字头，原像山崖，表示险阻（通行说法）"
+   },
+   {
+    "p": "㔾",
+    "role": "表义",
+    "note": "里面像弯腰的人，表示被困住（字形说法不一，待查）"
+   }
+  ],
+  "root": {
+   "n": "套在牛马脖子上的轭（一说）",
+   "sw": "《说文》「厄」字释义与今义关系不明（原文待核）",
+   "swk": "待查",
+   "xing": "金文（像车轭形，图待补）→ 小篆 → 楷书 厄",
+   "why": "不少学者认为「厄」本是车轭的样子，被轭套住就动弹不得，引申为困苦（通行说法）。《说文》原文待核。",
+   "f": [
+    "车厄（待查）",
+    "轭",
+    "牛轭"
+   ],
+   "g": "轭 ＝ 车 ＋ 厄（后来加车旁专指车轭）",
+   "e": "牛脖子上套着弯弯的木轭，拉着犁耕地。",
+   "c": null,
+   "k": "待查"
+  },
+  "senses": [
+   {
+    "n": "灾难、困苦",
+    "t": "比喻",
+    "r": "被套住动不了，就像遇到了倒霉事",
+    "f": [
+     "厄运",
+     "困厄",
+     "灾厄"
+    ],
+    "g": "厄运 ＝ 厄（灾难）＋ 运",
+    "e": "他没有被厄运打倒，反而更加努力。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "受困、遭遇灾难",
+    "t": "引申",
+    "r": "处在困苦里，被困住",
+    "f": [
+     "厄于",
+     "受厄",
+     "遭厄（待查）"
+    ],
+    "g": "厄于 ＝ 厄（受困）＋ 于",
+    "e": "孔子当年周游列国，曾经受困于陈国和蔡国之间。",
+    "c": {
+     "q": "仲尼厄而作《春秋》。",
+     "s": "司马迁《报任安书》",
+     "y": "孔子在困窘中写出了《春秋》。"
+    },
+    "k": "确定"
+   },
+   {
+    "n": "险要的地方",
+    "t": "引申",
+    "r": "地势狭窄难走，像被卡住",
+    "f": [
+     "险厄",
+     "厄塞（待查）",
+     "阨（异体）"
+    ],
+    "g": "险厄 ＝ 险 ＋ 厄（狭窄难行）",
+    "e": "古代军队常在险厄之地设关防守。",
+    "c": null,
+    "k": "通行说法"
+   }
+  ],
+  "du": "读 è（第四声）。",
+  "xie": "厂字头里面是「㔾」，弯钩不封口，不要写成「巳」或「已」。",
+  "mima": [
+   {
+    "t": "「厄」家族",
+    "d": "扼（扼住）、轭（车轭）、呃（打嗝声）：都以「厄」表音，读 e。"
+   },
+   {
+    "t": "后加偏旁",
+    "d": "厄本指轭，后来加车旁写成「轭」，厄只留下「困苦」义（通行说法）。"
+   }
+  ]
+ },
+ {
+  "c": "咨",
+  "py": "zī",
+  "trad": "咨",
+  "struct": "上下结构",
+  "parts": [
+   {
+    "p": "口",
+    "role": "表义",
+    "note": "口字底，用嘴商量"
+   },
+   {
+    "p": "次",
+    "role": "表音",
+    "note": "次 cì → 咨 zī，古音相近"
+   }
+  ],
+  "root": {
+   "n": "商量、征求意见",
+   "sw": "「咨，謀事曰咨。从口次聲。」",
+   "swk": "确定",
+   "xing": "金文 → 小篆 咨（口＋次）→ 隶书 → 楷书 咨",
+   "why": "《说文》「谋事曰咨」：一起商量事情；口字底表示用嘴说。",
+   "f": [
+    "咨询",
+    "咨议（待查）",
+    "咨访"
+   ],
+   "g": "咨询 ＝ 咨（商量）＋ 询（问）",
+   "e": "妈妈打电话向医生咨询用药的问题。",
+   "c": {
+    "q": "愚以为宫中之事，事无大小，悉以咨之，然后施行。",
+    "s": "诸葛亮《出师表》",
+    "y": "我认为宫中的事情，无论大小，都应该跟他们商量，然后再去施行。"
+   },
+   "k": "确定"
+  },
+  "senses": [
+   {
+    "n": "公文的一种",
+    "t": "转喻",
+    "r": "用来商量、通报事情的文书也叫「咨」",
+    "f": [
+     "咨文",
+     "国情咨文",
+     "咨呈（待查）"
+    ],
+    "g": "咨文 ＝ 咨（商议）＋ 文（公文）",
+    "e": "「咨文」是旧时同级机关之间往来的公文。",
+    "c": null,
+    "k": "通行说法"
+   },
+   {
+    "n": "叹息",
+    "t": "假借",
+    "r": "古书里借「咨」表示叹气的声音",
+    "f": [
+     "咨嗟",
+     "嗟咨",
+     "咨叹（待查）"
+    ],
+    "g": "咨嗟 ＝ 咨 ＋ 嗟（都是叹息）",
+    "e": "古文里的「咨嗟」，就是唉声叹气。",
+    "c": null,
+    "k": "通行说法"
+   }
+  ],
+  "du": "读 zī（第一声），平舌音，不要读成 cì。",
+  "xie": "上面是「次」，左边两点，不要写成三点水；和「姿」「资」分清下部。",
+  "mima": [
+   {
+    "t": "「次」家族",
+    "d": "咨、姿、资、瓷、恣：都以「次」表音，读 zi／ci。"
+   },
+   {
+    "t": "口字底",
+    "d": "咨、吾、名、吞：口在下面也和嘴有关。"
+   }
+  ]
+ },
+ {
+  "c": "纺",
+  "py": "fǎng",
+  "trad": "紡",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "纟",
+    "role": "表义",
+    "note": "绞丝旁，和丝线有关"
+   },
+   {
+    "p": "方",
+    "role": "表音",
+    "note": "方 fāng → 纺 fǎng，读音相近"
+   }
+  ],
+  "root": {
+   "n": "把丝、麻、棉捻成线",
+   "sw": "「紡，網絲也。从糸方聲。」",
+   "swk": "确定",
+   "xing": "小篆 紡（糸＋方）→ 隶书 → 楷书 紡 → 简化字 纺",
+   "why": "《说文》释为「网丝」，就是把丝理顺捻成线（通行说法）；绞丝旁表示和丝有关。",
+   "f": [
+    "纺线",
+    "纺纱",
+    "纺车"
+   ],
+   "g": "纺纱 ＝ 纺（捻成线）＋ 纱",
+   "e": "古时候，妇女们常坐在纺车前纺线。",
+   "c": null,
+   "k": "确定"
+  },
+  "senses": [
+   {
+    "n": "纺线织布的行业",
+    "t": "引申",
+    "r": "从捻线这一步，扩大到整个织布的工作",
+    "f": [
+     "纺织",
+     "纺织厂",
+     "纺织品"
+    ],
+    "g": "纺织 ＝ 纺（纺线）＋ 织（织布）",
+    "e": "这座城市以前有很多纺织厂。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "一种薄丝绸",
+    "t": "转喻",
+    "r": "用「纺」这道工序，来叫纺出来的丝织品",
+    "f": [
+     "纺绸",
+     "杭纺",
+     "电力纺（待查）"
+    ],
+    "g": "纺绸 ＝ 纺 ＋ 绸",
+    "e": "奶奶有一件淡蓝色的纺绸衬衫。",
+    "c": null,
+    "k": "通行说法"
+   }
+  ],
+  "du": "读 fǎng（第三声），后鼻音。",
+  "xie": "右边是「方」，不要写成「万」；和「访」「防」「仿」分清偏旁。",
+  "mima": [
+   {
+    "t": "「方」家族",
+    "d": "纺（丝）、访（言）、防（阜）、仿（人）、房（户）、芳（艸）：都以「方」表音，偏旁表义。"
+   },
+   {
+    "t": "绞丝旁",
+    "d": "纟旁的字多和丝线有关：纺、织、线、绳。"
+   }
+  ]
+ },
+ {
+  "c": "罐",
+  "py": "guàn",
+  "trad": "罐",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "缶",
+    "role": "表义",
+    "note": "缶 fǒu 是古代的瓦器，和容器有关"
+   },
+   {
+    "p": "雚",
+    "role": "表音",
+    "note": "雚 guàn → 罐 guàn，读音相同"
+   }
+  ],
+  "root": {
+   "n": "圆筒形的容器",
+   "sw": "《说文》未收此字",
+   "swk": "确定",
+   "xing": "后起字：缶＋雚 → 楷书 罐",
+   "why": "「缶」是瓦罐一类的器皿，表示容器；「雚」表音。最早用于什么字书，待查。",
+   "f": [
+    "瓦罐",
+    "罐子",
+    "陶罐"
+   ],
+   "g": "陶罐 ＝ 陶（陶土做的）＋ 罐",
+   "e": "博物馆里展出了一只几千年前的陶罐。",
+   "c": null,
+   "k": "通行说法"
+  },
+  "senses": [
+   {
+    "n": "密封保存的食品",
+    "t": "转喻",
+    "r": "把食物装进罐子封好，就叫罐头",
+    "f": [
+     "罐头",
+     "罐装",
+     "易拉罐"
+    ],
+    "g": "罐头 ＝ 罐 ＋ 头（名词后缀）",
+    "e": "露营时，我们带了几个水果罐头。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "拔火罐",
+    "t": "转喻",
+    "r": "用小罐子吸在身上治病，于是这种疗法也叫罐",
+    "f": [
+     "拔罐",
+     "火罐",
+     "拔火罐"
+    ],
+    "g": "拔火罐 ＝ 拔 ＋ 火罐",
+    "e": "爷爷背上有几个圆圆的印子，是拔火罐留下的。",
+    "c": null,
+    "k": "确定"
+   }
+  ],
+  "du": "读 guàn（第四声）。",
+  "xie": "左边「缶」最后一笔是提；右边「雚」上面是草字头，中间两个「口」，下面是「隹」。",
+  "mima": [
+   {
+    "t": "「雚」家族",
+    "d": "罐、灌、鹳、颧、观（繁体觀）、权（繁体權）：都以「雚」表音。"
+   },
+   {
+    "t": "缶字旁",
+    "d": "缶旁的字多是瓦器容器：罐、缸、缺（瓦器破了）。"
+   }
+  ]
+ },
+ {
+  "c": "桶",
+  "py": "tǒng",
+  "trad": "桶",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "木",
+    "role": "表义",
+    "note": "木字旁，古代的桶用木头做"
+   },
+   {
+    "p": "甬",
+    "role": "表音",
+    "note": "甬 yǒng → 桶 tǒng，古音相近"
+   }
+  ],
+  "root": {
+   "n": "古代一种方形量器",
+   "sw": "「桶，木方，受六升。从木甬聲。」",
+   "swk": "确定",
+   "xing": "小篆 桶（木＋甬）→ 隶书 → 楷书 桶",
+   "why": "《说文》说「桶」是木头做的方形器具，能装六升，用来量粮食；木字旁表示木头。",
+   "f": [
+    "量桶（待查）",
+    "斗桶（待查）",
+    "桶"
+   ],
+   "g": "桶 ＝ 木 ＋ 甬（表音）",
+   "e": "字书上说，最早的「桶」是一种量粮食的方木器。",
+   "c": null,
+   "k": "确定"
+  },
+  "senses": [
+   {
+    "n": "圆筒形装东西的器具",
+    "t": "引申",
+    "r": "从量粮食的木器，变成装水、装东西的桶",
+    "f": [
+     "水桶",
+     "木桶",
+     "垃圾桶"
+    ],
+    "g": "垃圾桶 ＝ 垃圾 ＋ 桶",
+    "e": "请把废纸扔进垃圾桶。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "量词",
+    "t": "转喻",
+    "r": "用装东西的桶来计算数量",
+    "f": [
+     "一桶水",
+     "两桶油",
+     "一桶饭"
+    ],
+    "g": "一桶水 ＝ 一 ＋ 桶（量词）＋ 水",
+    "e": "我和爸爸一起提了两桶水浇花。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "只会吃不会做事的人",
+    "t": "比喻",
+    "r": "像装饭的桶一样，只能装东西（骂人的话，要慎用）",
+    "f": [
+     "饭桶",
+     "酒桶（待查）",
+     "草包（近义）"
+    ],
+    "g": "饭桶 ＝ 饭 ＋ 桶：比喻没用的人",
+    "e": "「饭桶」是骂人的话，我们不要随便说别人。",
+    "c": null,
+    "k": "确定"
+   }
+  ],
+  "du": "读 tǒng（第三声），不要读成 yǒng。",
+  "xie": "右边「甬」上面是「龴」，里面是「用」；和「捅」「涌」「痛」分清偏旁。",
+  "mima": [
+   {
+    "t": "「甬」家族",
+    "d": "桶、通、痛、捅、涌、勇、俑：都以「甬」表音。"
+   },
+   {
+    "t": "桶和筒",
+    "d": "木头的、大的装东西用「桶」；竹子的、细长的用「筒」（笔筒）。"
+   }
+  ]
+ },
+ {
+  "c": "壤",
+  "py": "rǎng",
+  "trad": "壤",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "土",
+    "role": "表义",
+    "note": "提土旁，和土地有关"
+   },
+   {
+    "p": "襄",
+    "role": "表音",
+    "note": "襄 xiāng → 壤 rǎng，古音相近"
+   }
+  ],
+  "root": {
+   "n": "松软的泥土",
+   "sw": "「壤，柔土也。从土襄聲。」",
+   "swk": "确定",
+   "xing": "小篆 壤（土＋襄）→ 隶书 → 楷书 壤",
+   "why": "《说文》「柔土也」：没有结块、松软可以种庄稼的土；提土旁表示土。",
+   "f": [
+    "土壤",
+    "沃壤",
+    "红壤"
+   ],
+   "g": "土壤 ＝ 土 ＋ 壤（松软的土）",
+   "e": "肥沃的土壤能长出好庄稼。",
+   "c": {
+    "q": "是以泰山不让土壤，故能成其大。",
+    "s": "李斯《谏逐客书》",
+    "y": "所以泰山不拒绝任何一点泥土，才能成就它的高大。"
+   },
+   "k": "确定"
+  },
+  "senses": [
+   {
+    "n": "地方、地区",
+    "t": "引申",
+    "r": "一片土地，就是一个地方",
+    "f": [
+     "接壤",
+     "穷乡僻壤",
+     "壤地（待查）"
+    ],
+    "g": "接壤 ＝ 接（相连）＋ 壤（土地）",
+    "e": "中国和许多国家接壤。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "大地",
+    "t": "引申",
+    "r": "从一块土扩大到整个大地，常和「天」对比",
+    "f": [
+     "天壤之别",
+     "霄壤之别",
+     "天壤"
+    ],
+    "g": "天壤之别 ＝ 天壤（天和地）＋ 之别（的差别）",
+    "e": "认真和马虎做出来的作品，简直是天壤之别。",
+    "c": null,
+    "k": "确定"
+   }
+  ],
+  "du": "读 rǎng（第三声），不要受「襄」影响读成 xiāng。",
+  "xie": "右边「襄」笔画多：上「亠」，中间两个「口」和「井」形，下面像「衣」的下半；和「嚷」「让（繁讓）」分清。",
+  "mima": [
+   {
+    "t": "「襄」家族",
+    "d": "壤、嚷、攘、瓤、镶、让（繁體讓）：都以「襄」表音。"
+   },
+   {
+    "t": "提土旁",
+    "d": "土旁的字多和土地有关：壤、坝、垒、场。"
+   }
+  ]
+ },
+ {
+  "c": "糕",
+  "py": "gāo",
+  "trad": "糕（餻）",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "米",
+    "role": "表义",
+    "note": "米字旁，用米面做的"
+   },
+   {
+    "p": "羔",
+    "role": "表音",
+    "note": "羔 gāo → 糕 gāo，读音完全相同"
+   }
+  ],
+  "root": {
+   "n": "用米粉、面粉蒸烤成的点心",
+   "sw": "《说文》未收此字",
+   "swk": "确定",
+   "xing": "后起字：米＋羔（异体作「餻」，食＋羔）→ 楷书 糕",
+   "why": "米字旁表示用米面做的，「羔」表音。这个字出现得比较晚，最早的用例待查。",
+   "f": [
+    "米糕",
+    "年糕",
+    "发糕"
+   ],
+   "g": "年糕 ＝ 年（过年）＋ 糕",
+   "e": "过年时，奶奶会蒸一大锅年糕。",
+   "c": null,
+   "k": "通行说法"
+  },
+  "senses": [
+   {
+    "n": "西式烘烤点心",
+    "t": "引申",
+    "r": "从米面做的糕，扩大到鸡蛋面粉烤的蛋糕",
+    "f": [
+     "蛋糕",
+     "糕点",
+     "生日蛋糕"
+    ],
+    "g": "蛋糕 ＝ 蛋 ＋ 糕",
+    "e": "我过生日时，妈妈买了一个大蛋糕。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "事情很坏（糟糕）",
+    "t": "假借",
+    "r": "「糟糕」是口语词，借了这个字，和点心无关（来源待查）",
+    "f": [
+     "糟糕",
+     "真糟糕",
+     "糟糕透了"
+    ],
+    "g": "糟糕 ＝ 糟 ＋ 糕：表示情况很坏",
+    "e": "糟糕，我忘带作业本了！",
+    "c": null,
+    "k": "待查"
+   }
+  ],
+  "du": "读 gāo（第一声）。",
+  "xie": "右边是「羔」，下面是四点底，不要写成「羊」少四点，或写成「美」。",
+  "mima": [
+   {
+    "t": "「羔」家族",
+    "d": "糕、羹（含羔）：「羔」表音。"
+   },
+   {
+    "t": "米字旁",
+    "d": "米旁的字多和粮食、米面有关：糕、粉、粥、糖。"
+   }
+  ]
+ },
+ {
+  "c": "颂",
+  "py": "sòng",
+  "trad": "頌",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "公",
+    "role": "表音",
+    "note": "公 gōng → 颂 sòng，古音相近"
+   },
+   {
+    "p": "页",
+    "role": "表义",
+    "note": "「页」原像人头，表示容貌"
+   }
+  ],
+  "root": {
+   "n": "容貌、仪容",
+   "sw": "「頌，皃也。从頁公聲。」",
+   "swk": "确定",
+   "xing": "金文 → 小篆 頌（公＋頁）→ 隶书 → 楷书 頌 → 简化字 颂",
+   "why": "《说文》「皃」就是「貌」，容貌；「页」本义是头，所以和样子、容貌有关。",
+   "f": [
+    "颂貌（待查）",
+    "容（同源，待查）",
+    "仪颂（待查）"
+   ],
+   "g": "颂 ＝ 公（表音）＋ 页（头、容貌）",
+   "e": "字书上说，「颂」最早是容貌的意思，后来专用「容」字。",
+   "c": null,
+   "k": "确定"
+  },
+  "senses": [
+   {
+    "n": "赞美",
+    "t": "假借",
+    "r": "「赞美」和容貌关系不大，多认为是借用（通行说法）",
+    "f": [
+     "歌颂",
+     "赞颂",
+     "颂扬"
+    ],
+    "g": "歌颂 ＝ 歌（唱）＋ 颂（赞美）",
+    "e": "这首歌歌颂了伟大的母爱。",
+    "c": null,
+    "k": "通行说法"
+   },
+   {
+    "n": "《诗经》中的一类诗",
+    "t": "转喻",
+    "r": "《诗经》里专门在祭祀时赞美祖先的诗，叫「颂」",
+    "f": [
+     "周颂",
+     "商颂",
+     "雅颂"
+    ],
+    "g": "雅颂 ＝ 雅 ＋ 颂（《诗经》的两部分）",
+    "e": "《诗经》分为风、雅、颂三部分。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "祝愿（书信用语）",
+    "t": "引申",
+    "r": "赞美别人也就是祝福别人",
+    "f": [
+     "敬颂",
+     "顺颂时祺",
+     "颂安"
+    ],
+    "g": "顺颂时祺 ＝ 顺（顺便）＋ 颂（祝）＋ 时祺（时时吉祥）",
+    "e": "老式书信末尾常写「顺颂时祺」。",
+    "c": null,
+    "k": "确定"
+   }
+  ],
+  "du": "读 sòng（第四声），平舌音，不要读成 gōng。",
+  "xie": "左边是「公」，右边是「页」；和「讼」（言＋公）分清。",
+  "mima": [
+   {
+    "t": "「公」家族",
+    "d": "颂、讼、松、翁、蚣：都以「公」表音。"
+   },
+   {
+    "t": "页字旁",
+    "d": "页本是头：颂、顶、颈、额、须都和头有关。"
+   }
+  ]
+ },
+ {
+  "c": "膨",
+  "py": "péng",
+  "trad": "膨",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "月（肉）",
+    "role": "表义",
+    "note": "肉月旁，原和身体有关（肚子胀）"
+   },
+   {
+    "p": "彭",
+    "role": "表音",
+    "note": "彭 péng → 膨 péng，读音完全相同"
+   }
+  ],
+  "root": {
+   "n": "胀大",
+   "sw": "《说文》未收此字",
+   "swk": "确定",
+   "xing": "后起字：肉＋彭 → 楷书 膨",
+   "why": "肉月旁表示身体，「彭」表音，也有鼓声「嘭嘭」、鼓起来的感觉（通行说法）。最早用例待查。",
+   "f": [
+    "膨胀",
+    "膨大",
+    "膨松"
+   ],
+   "g": "膨大 ＝ 膨（胀）＋ 大",
+   "e": "气球吹着吹着就膨胀起来了。",
+   "c": null,
+   "k": "通行说法"
+  },
+  "senses": [
+   {
+    "n": "物体受热变大",
+    "t": "引申",
+    "r": "从肚子胀，扩大到所有东西变大",
+    "f": [
+     "热胀冷缩",
+     "膨化食品",
+     "膨胀系数"
+    ],
+    "g": "膨化 ＝ 膨（胀大）＋ 化（变成）",
+    "e": "爆米花是玉米受热膨化做成的。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "数量、骄气增大",
+    "t": "比喻",
+    "r": "钱变多、骄傲变大，就像东西胀起来",
+    "f": [
+     "通货膨胀",
+     "自我膨胀",
+     "人口膨胀"
+    ],
+    "g": "自我膨胀 ＝ 自我 ＋ 膨胀：比喻骄傲自大",
+    "e": "取得一点成绩，不能自我膨胀。",
+    "c": null,
+    "k": "确定"
+   }
+  ],
+  "du": "读 péng（第二声），后鼻音。",
+  "xie": "右边「彭」左边是「壴」（士＋口＋䒑形），右边三撇「彡」；三撇不要少写。",
+  "mima": [
+   {
+    "t": "「彭」家族",
+    "d": "膨、澎、嘭、蟛：都以「彭」表音，读 peng。"
+   },
+   {
+    "t": "肉月旁",
+    "d": "膨、胀、肿、肥：月旁的字常和身体变化有关。"
+   }
+  ]
+ },
+ {
+  "c": "谐",
+  "py": "xié",
+  "trad": "諧",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "讠",
+    "role": "表义",
+    "note": "言字旁，说话协调"
+   },
+   {
+    "p": "皆",
+    "role": "表音兼表义",
+    "note": "皆 jiē → 谐 xié；「皆」是都，大家一致"
+   }
+  ],
+  "root": {
+   "n": "协调、合得来",
+   "sw": "「諧，詥也。从言皆聲。」",
+   "swk": "确定",
+   "xing": "小篆 諧（言＋皆）→ 隶书 → 楷书 諧 → 简化字 谐",
+   "why": "《说文》「詥」就是和谐、协调；言字旁表示言语，「皆」（都）也暗含大家一致（通行说法）。",
+   "f": [
+    "和谐",
+    "谐和",
+    "协调（近义）"
+   ],
+   "g": "和谐 ＝ 和 ＋ 谐（协调）",
+   "e": "我们的班级像一个和谐的大家庭。",
+   "c": null,
+   "k": "确定"
+  },
+  "senses": [
+   {
+    "n": "说话风趣",
+    "t": "引申",
+    "r": "说话让大家都开心、合得来",
+    "f": [
+     "诙谐",
+     "谐趣",
+     "谐谑"
+    ],
+    "g": "诙谐 ＝ 诙（开玩笑）＋ 谐",
+    "e": "爷爷说话很诙谐，总把大家逗得哈哈大笑。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "读音相同或相近",
+    "t": "引申",
+    "r": "两个字的读音配合得很好",
+    "f": [
+     "谐音",
+     "谐声",
+     "谐音字"
+    ],
+    "g": "谐音 ＝ 谐（相合）＋ 音",
+    "e": "过年吃鱼，因为「鱼」和「余」谐音。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "事情办成",
+    "t": "引申",
+    "r": "各方都协调好了，事情就成了",
+    "f": [
+     "事谐（待查）",
+     "谐价（待查）",
+     "谐和（待查）"
+    ],
+    "g": "谐 ＝ 协调、办妥",
+    "e": "古书里「事谐」就是事情办妥了。",
+    "c": null,
+    "k": "待查"
+   }
+  ],
+  "du": "读 xié（第二声），不要受「皆」影响读成 jiē。",
+  "xie": "右边「皆」上面是「比」，下面是「白」。",
+  "mima": [
+   {
+    "t": "「皆」家族",
+    "d": "谐、偕、楷、阶、揩：都以「皆」表音。"
+   },
+   {
+    "t": "声旁兼表义",
+    "d": "皆＝都，谐＝大家都合得来：声旁也帮着表意思。"
+   }
+  ]
+ },
+ {
+  "c": "垒",
+  "py": "lěi",
+  "trad": "壘",
+  "struct": "上下结构",
+  "parts": [
+   {
+    "p": "厽（简化，原为畾）",
+    "role": "表音",
+    "note": "繁体上部「畾」léi 表音；简化后写成三个「厶」"
+   },
+   {
+    "p": "土",
+    "role": "表义",
+    "note": "土字底，用土筑成的墙"
+   }
+  ],
+  "root": {
+   "n": "军营的围墙",
+   "sw": "「壘，軍壁也。从土畾聲。」",
+   "swk": "确定",
+   "xing": "小篆 壘（畾＋土）→ 隶书 → 楷书 壘 → 简化字 垒",
+   "why": "《说文》「军壁也」：军营周围用土筑起的墙；土字底表示用土筑。",
+   "f": [
+    "营垒",
+    "堡垒",
+    "壁垒"
+   ],
+   "g": "堡垒 ＝ 堡（土石建的防御工事）＋ 垒",
+   "e": "战士们在山上修了一座坚固的堡垒。",
+   "c": {
+    "q": "故垒西边，人道是，三国周郎赤壁。",
+    "s": "苏轼《念奴娇·赤壁怀古》",
+    "y": "旧营垒的西边，人们说那就是三国时周瑜大战的赤壁。"
+   },
+   "k": "确定"
+  },
+  "senses": [
+   {
+    "n": "一层层堆砌",
+    "t": "引申",
+    "r": "筑墙要一层层往上堆，于是「垒」也是堆砌的动作",
+    "f": [
+     "垒墙",
+     "垒石头",
+     "垒积木"
+    ],
+    "g": "垒墙 ＝ 垒（砌）＋ 墙",
+    "e": "弟弟用积木垒了一座高高的城堡。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "界线分明的阻隔",
+    "t": "比喻",
+    "r": "墙把两边隔开，比喻双方对立",
+    "f": [
+     "壁垒分明",
+     "对垒",
+     "营垒分明"
+    ],
+    "g": "对垒 ＝ 对（相对）＋ 垒（营垒）：双方对阵",
+    "e": "两支球队在决赛中对垒。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "棒球、垒球的垒位",
+    "t": "转喻",
+    "r": "球场上要守住的据点，像营垒一样",
+    "f": [
+     "垒球",
+     "本垒",
+     "全垒打"
+    ],
+    "g": "全垒打 ＝ 全垒（跑完所有垒）＋ 打",
+    "e": "他一棒打出了全垒打，全场欢呼。",
+    "c": null,
+    "k": "确定"
+   }
+  ],
+  "du": "读 lěi（第三声），l 不要读成 n。",
+  "xie": "上面是三个「厶」，下面是「土」；和「叠」「累」分清。",
+  "mima": [
+   {
+    "t": "「畾」家族",
+    "d": "垒（壘）、雷（靁）、蕾、儡、擂：都以「畾」表音，读 lei。"
+   },
+   {
+    "t": "三个一样的部件",
+    "d": "垒、品、晶、森：三个相同部件常表示「多」。"
+   }
+  ]
+ },
+ {
+  "c": "咕",
+  "py": "gū",
+  "trad": "咕",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "口",
+    "role": "表义",
+    "note": "口字旁，表示声音"
+   },
+   {
+    "p": "古",
+    "role": "表音",
+    "note": "古 gǔ → 咕 gū，读音相近"
+   }
+  ],
+  "root": {
+   "n": "模拟声音的字（拟声）",
+   "sw": "《说文》未收此字",
+   "swk": "确定",
+   "xing": "后起字：口＋古 → 楷书 咕",
+   "why": "口字旁加表音的「古」，专门用来模仿声音，比如鸡叫、肚子叫、东西落水。",
+   "f": [
+    "咕咕",
+    "咕噜",
+    "咕咚"
+   ],
+   "g": "咕咚 ＝ 咕 ＋ 咚（都是声音）",
+   "e": "一块石头咕咚一声掉进了井里。",
+   "c": null,
+   "k": "通行说法"
+  },
+  "senses": [
+   {
+    "n": "小声说话",
+    "t": "引申",
+    "r": "从咕咕的声音，到小声地自言自语",
+    "f": [
+     "嘀咕",
+     "咕哝",
+     "叽咕"
+    ],
+    "g": "嘀咕 ＝ 嘀 ＋ 咕：小声说",
+    "e": "他一边写作业，一边小声嘀咕着什么。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "心里不踏实",
+    "t": "比喻",
+    "r": "心里像有人在小声说话，总是犯疑",
+    "f": [
+     "犯嘀咕",
+     "心里嘀咕",
+     "打鼓（近义）"
+    ],
+    "g": "犯嘀咕 ＝ 犯 ＋ 嘀咕（犹豫怀疑）",
+    "e": "爸爸这么晚还没回家，妈妈心里直犯嘀咕。",
+    "c": null,
+    "k": "确定"
+   }
+  ],
+  "du": "读 gū（第一声），不要读成 gǔ。",
+  "xie": "右边是「古」，上面是「十」，不要写成「占」。",
+  "mima": [
+   {
+    "t": "「古」家族",
+    "d": "咕、姑、估、故、枯、苦、固、湖：都以「古」表音。"
+   },
+   {
+    "t": "口字旁拟声",
+    "d": "口旁常用来写声音：咕、咚、哗、嘀、喵。"
+   }
+  ]
+ },
+ {
+  "c": "隙",
+  "py": "xì",
+  "trad": "隙",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "阝（左耳旁＝阜）",
+    "role": "表义",
+    "note": "左耳旁原是「阜」，和墙壁、土山有关"
+   },
+   {
+    "p": "右半（小＋日＋小）",
+    "role": "表音兼表义",
+    "note": "右边像墙缝中透进的光；《说文》说也表音"
+   }
+  ],
+  "root": {
+   "n": "墙上的裂缝",
+   "sw": "「隙，壁際孔也。」（后文字形分析从略）",
+   "swk": "确定",
+   "xing": "小篆 隙（阜＋右半）→ 隶书 → 楷书 隙",
+   "why": "《说文》「壁际孔也」：墙壁相接处的小孔；右边像从缝里透进来的光。",
+   "f": [
+    "缝隙",
+    "裂隙",
+    "墙隙"
+   ],
+   "g": "缝隙 ＝ 缝 ＋ 隙（裂缝）",
+   "e": "阳光从门的缝隙里照了进来。",
+   "c": null,
+   "k": "确定"
+  },
+  "senses": [
+   {
+    "n": "空着的地方",
+    "t": "引申",
+    "r": "从墙缝扩大到两样东西之间的空当",
+    "f": [
+     "空隙",
+     "间隙",
+     "见缝插针（近义）"
+    ],
+    "g": "空隙 ＝ 空 ＋ 隙",
+    "e": "书架上的空隙正好能放下一本书。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "空闲的时间",
+    "t": "比喻",
+    "r": "时间里的空当，就像墙上的缝",
+    "f": [
+     "农隙",
+     "课隙（待查）",
+     "闲隙"
+    ],
+    "g": "农隙 ＝ 农（农忙）＋ 隙（空闲）",
+    "e": "农民伯伯利用农隙修好了水渠。",
+    "c": null,
+    "k": "通行说法"
+   },
+   {
+    "n": "感情上的裂痕",
+    "t": "比喻",
+    "r": "两个人之间有了「裂缝」，不再亲密",
+    "f": [
+     "嫌隙",
+     "仇隙",
+     "有隙"
+    ],
+    "g": "嫌隙 ＝ 嫌（不满）＋ 隙",
+    "e": "一次误会，让两个好朋友之间有了嫌隙。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "可利用的机会",
+    "t": "比喻",
+    "r": "墙上有缝，别人就能钻进来",
+    "f": [
+     "乘隙",
+     "可乘之隙",
+     "无隙可乘"
+    ],
+    "g": "无隙可乘 ＝ 无隙（没有空子）＋ 可乘（可以利用）",
+    "e": "我们的防守严密，对手无隙可乘。",
+    "c": null,
+    "k": "确定"
+   }
+  ],
+  "du": "读 xì（第四声），不要读成 xī。",
+  "xie": "右边是「小＋日＋小」，上面小没有钩，下面小有钩；不要写成「京」。",
+  "mima": [
+   {
+    "t": "左耳旁＝阜",
+    "d": "阝在左边多和土山、地势、墙有关：隙、陡、阶、防。"
+   },
+   {
+    "t": "字形会意",
+    "d": "隙的右边像缝里透出光，看字形就能联想到「缝」。"
+   }
+  ]
+ },
+ {
+  "c": "辣",
+  "py": "là",
+  "trad": "辣",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "辛",
+    "role": "表义",
+    "note": "「辛」是刺激的味道"
+   },
+   {
+    "p": "束",
+    "role": "表音",
+    "note": "束 shù → 辣 là，读音有变（通行说法）"
+   }
+  ],
+  "root": {
+   "n": "像辣椒、姜、蒜那样刺激的味道",
+   "sw": "《说文》未收此字",
+   "swk": "确定",
+   "xing": "后起字：辛＋束 → 楷书 辣",
+   "why": "「辛」本身就有辣的意思，表示味道刺激；「辣」是后来专门造的字。最早用例待查。",
+   "f": [
+    "辣椒",
+    "酸辣",
+    "麻辣"
+   ],
+   "g": "辣椒 ＝ 辣 ＋ 椒",
+   "e": "四川人做菜喜欢放辣椒。",
+   "c": null,
+   "k": "通行说法"
+  },
+  "senses": [
+   {
+    "n": "受到刺激而难受",
+    "t": "引申",
+    "r": "辣味让嘴和眼睛火辣辣地疼",
+    "f": [
+     "火辣辣",
+     "辣眼睛",
+     "辣得慌"
+    ],
+    "g": "火辣辣 ＝ 火 ＋ 辣辣：像火烧一样",
+    "e": "太阳晒得人脸上火辣辣的。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "凶狠",
+    "t": "比喻",
+    "r": "手段像辣味一样狠，让人难受",
+    "f": [
+     "毒辣",
+     "心狠手辣",
+     "辛辣"
+    ],
+    "g": "心狠手辣 ＝ 心狠 ＋ 手辣（手段凶狠）",
+    "e": "童话里的巫婆心狠手辣。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "泼辣、厉害能干",
+    "t": "比喻",
+    "r": "性格像辣椒一样冲，做事利落",
+    "f": [
+     "泼辣",
+     "火辣",
+     "辣妹子"
+    ],
+    "g": "泼辣 ＝ 泼（大胆）＋ 辣",
+    "e": "王熙凤是个性格泼辣的人物。",
+    "c": null,
+    "k": "确定"
+   }
+  ],
+  "du": "读 là（第四声），l 不要读成 n。",
+  "xie": "左边是「辛」，最后一笔是竖变成提的样子；右边是「束」，不要写成「柬」或「刺」的左边。",
+  "mima": [
+   {
+    "t": "「辛」字旁",
+    "d": "辣、辨（繁简皆有辛）、辜：辛旁常和刺激、罪苦有关。"
+   },
+   {
+    "t": "辛和辣",
+    "d": "古人说「辛」，今天说「辣」：同一种味道换了字。"
+   }
+  ]
+ },
+ {
+  "c": "绑",
+  "py": "bǎng",
+  "trad": "綁",
+  "struct": "左右结构",
+  "parts": [
+   {
+    "p": "纟",
+    "role": "表义",
+    "note": "绞丝旁，用绳子"
+   },
+   {
+    "p": "邦",
+    "role": "表音",
+    "note": "邦 bāng → 绑 bǎng，读音相近"
+   }
+  ],
+  "root": {
+   "n": "用绳子缠住、捆住",
+   "sw": "《说文》未收此字",
+   "swk": "确定",
+   "xing": "后起字：糸＋邦 → 楷书 綁 → 简化字 绑",
+   "why": "绞丝旁表示用绳子，「邦」表音。是较晚出现的字，最早用例待查。",
+   "f": [
+    "捆绑",
+    "绑带",
+    "绑腿"
+   ],
+   "g": "捆绑 ＝ 捆 ＋ 绑",
+   "e": "他用绳子把行李绑在自行车后座上。",
+   "c": null,
+   "k": "通行说法"
+  },
+  "senses": [
+   {
+    "n": "强行抓走人",
+    "t": "引申",
+    "r": "把人捆起来带走，是严重的犯罪",
+    "f": [
+     "绑架",
+     "绑票",
+     "绑匪"
+    ],
+    "g": "绑架 ＝ 绑（捆住）＋ 架（架走）",
+    "e": "警察成功解救了被绑架的人质。",
+    "c": null,
+    "k": "确定"
+   },
+   {
+    "n": "紧紧连在一起",
+    "t": "比喻",
+    "r": "像用绳子捆住一样分不开（现代用法）",
+    "f": [
+     "绑定",
+     "捆绑销售",
+     "绑在一起"
+    ],
+    "g": "绑定 ＝ 绑 ＋ 定（固定）",
+    "e": "这个账号已经和手机号绑定了。",
+    "c": null,
+    "k": "确定"
+   }
+  ],
+  "du": "读 bǎng（第三声），后鼻音，不要读成 bāng。",
+  "xie": "右边是「邦」，右耳旁在右；左边「丰」最后一笔是撇，不要写成「丰」的竖。",
+  "mima": [
+   {
+    "t": "「邦」家族",
+    "d": "绑、帮（繁體幫）、梆：都以「邦」表音，读 bang。"
+   },
+   {
+    "t": "绞丝旁",
+    "d": "绑、捆（扌例外）、结、缠：和绳子有关的字常带纟。"
+   }
+  ]
+ }
+]</script>
+<script>
+(function(){
+const DATA = JSON.parse(document.getElementById('hanzi-data').textContent);
+const MENU = ['字义扩展图','偏旁部首','声旁音部','字词句','汉字密码','易错诊所','记忆复习','学习路径'];
+const TYPE = {'引申':'#2a9d8f','比喻':'#e9894a','转喻':'#7b5ea7','假借':'#d14d72'};
+const TYPE_TIP = {'引申':'从本来的意思慢慢延伸出来','比喻':'因为样子或特点相像','转喻':'用相关的东西来代替','假借':'只借字的读音，意思没关系'};
+const KC = {'确定':'var(--k-ok)','通行说法':'var(--k-mid)','待查':'var(--k-q)'};
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+let cur = 0, sel = 'root';
+
+/* top nav */
+MENU.forEach((m,i)=>{
+  const b=document.createElement('button'); b.textContent=m;
+  b.className = i===0?'on':'off';
+  b.onclick=()=>{ if(i) toast('「'+m+'」模块即将开放，本页只实现字义扩展图'); };
+  $('topnav').appendChild(b);
+});
+/* legend */
+$('legend').innerHTML = Object.keys(TYPE).map(t=>`<span title="${TYPE_TIP[t]}"><i style="background:${TYPE[t]}"></i>${t}</span>`).join('');
+
+/* char list */
+function renderList(filter){
+  const box=$('clist'); box.innerHTML='';
+  DATA.forEach((d,i)=>{
+    if(filter && !(d.c.includes(filter)||d.py.includes(filter))) return;
+    const b=document.createElement('button');
+    b.className = i===cur?'on':'';
+    b.innerHTML=`<b>${d.c}</b><span>${d.py}</span>`;
+    b.onclick=()=>{cur=i;sel='root';renderList($('search').value.trim());renderAll();resetView();};
+    box.appendChild(b);
+  });
+}
+$('search').oninput=e=>renderList(e.target.value.trim());
+
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200);}
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function wrap(s,n){const out=[];let line='';for(const ch of s){line+=ch;if(line.length>=n){out.push(line);line='';}}if(line)out.push(line);return out;}
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+
+/* graph */
+function renderGraph(){
+  const d=DATA[cur], vp=$('vp'); vp.innerHTML='';
+  $('tChar').textContent=d.c; $('tPy').textContent=d.py+' · '+d.struct;
+  const n=d.senses.length;
+  const R = n<=2?250:n<=4?270:290;
+  const start = n===1?0:(n===2?-Math.PI/2+0.35:-Math.PI/2);
+  const pos = d.senses.map((s,i)=>{
+    const a = n===1? 0 : start + i*2*Math.PI/n + (n===2?0:0.0);
+    return {x:Math.cos(a)*R*1.25, y:Math.sin(a)*R*0.82, a};
+  });
+  const gE=el('g',{},vp), gN=el('g',{},vp), gL=el('g',{},vp);
+  // edges
+  d.senses.forEach((s,i)=>{
+    const p=pos[i], col=TYPE[s.t]||'#999';
+    const mx=p.x*0.5, my=p.y*0.5;
+    const nx=-p.y, ny=p.x, L=Math.hypot(nx,ny)||1;
+    const cx=mx+nx/L*28, cy=my+ny/L*28;
+    el('path',{d:`M0,0 Q${cx},${cy} ${p.x},${p.y}`,fill:'none',stroke:col,'stroke-width':3,'stroke-dasharray':s.t==='假借'?'8 6':'', 'stroke-linecap':'round',opacity:.85},gE);
+    // label at curve midpoint
+    const lx=0.48*cx+0.36*p.x, ly=0.48*cy+0.36*p.y;
+    const g=el('g',{class:'elabel',transform:`translate(${lx},${ly})`},gL);
+    el('rect',{x:-26,y:-13,width:52,height:24,rx:12,fill:col},g);
+    const t=el('text',{x:0,y:4,'text-anchor':'middle','font-size':13,'font-weight':700,fill:'#fff'},g);t.textContent=s.t;
+    const lines=wrap(s.r,12).slice(0,3);
+    const tb=el('text',{x:0,y:28,'text-anchor':'middle','font-size':12,fill:'#5b5348',stroke:'#fffdf8','stroke-width':4,'paint-order':'stroke','stroke-linejoin':'round'},g);
+    lines.forEach((ln,j)=>{const ts=el('tspan',{x:0,dy:j?16:0},tb);ts.textContent=(j===2&&wrap(s.r,12).length>3)?ln.slice(0,-1)+'…':ln;});
+  });
+  // center node
+  const cg=el('g',{class:'node'+(sel==='root'?' sel':''),transform:'translate(0,0)'},gN);
+  el('circle',{r:92,fill:'#fbe9e3'},cg);
+  el('rect',{class:'box',x:-78,y:-78,width:156,height:156,rx:40,fill:'#fff',stroke:'#c8553d','stroke-width':2},cg);
+  const ct=el('text',{x:0,y:-12,'text-anchor':'middle','font-size':58,fill:'#c8553d','font-family':'Kaiti SC,STKaiti,KaiTi,serif'},cg);ct.textContent=d.c;
+  el('rect',{x:-30,y:6,width:60,height:20,rx:10,fill:'#c8553d'},cg);
+  const bt=el('text',{x:0,y:20,'text-anchor':'middle','font-size':12,'font-weight':700,fill:'#fff'},cg);bt.textContent='本义';
+  const rl=wrap(d.root.n,9).slice(0,2);
+  const rt=el('text',{x:0,y:46,'text-anchor':'middle','font-size':13,fill:'#2d2a26'},cg);
+  rl.forEach((ln,j)=>{const ts=el('tspan',{x:0,dy:j?16:0},rt);ts.textContent=ln;});
+  cg.onclick=e=>{e.stopPropagation();sel='root';renderAll();};
+  // sense nodes
+  d.senses.forEach((s,i)=>{
+    const p=pos[i], col=TYPE[s.t];
+    const lines=wrap(s.n.replace(/（[^）]*）/g,''),8).slice(0,3);
+    const w=150, h=34+lines.length*18;
+    const g=el('g',{class:'node'+(sel===i?' sel':''),transform:`translate(${p.x},${p.y})`},gN);
+    el('rect',{class:'box',x:-w/2,y:-h/2,width:w,height:h,rx:16,fill:'#fff',stroke:col,'stroke-width':2},g);
+    el('rect',{x:-w/2,y:-h/2,width:8,height:h,rx:4,fill:col},g);
+    el('circle',{cx:w/2-14,cy:-h/2+14,r:5,fill:KC[s.k].replace('var(--k-ok)','#3c9a5f').replace('var(--k-mid)','#d39b2a').replace('var(--k-q)','#9a8f84')},g);
+    const tt=el('text',{x:4,y:-h/2+28,'text-anchor':'middle','font-size':15,'font-weight':600,fill:'#2d2a26'},g);
+    lines.forEach((ln,j)=>{const ts=el('tspan',{x:4,dy:j?18:0},tt);ts.textContent=ln;});
+    const st=el('text',{x:4,y:h/2-10,'text-anchor':'middle','font-size':11,fill:'#7a7166'},g);
+    st.textContent=s.f.slice(0,2).join(' · ');
+    g.onclick=e=>{e.stopPropagation();sel=i;renderAll();};
+  });
+}
+
+/* pan & zoom */
+let view={x:0,y:0,k:1};
+function applyView(){$('vp').setAttribute('transform',`translate(${view.x},${view.y}) scale(${view.k})`);}
+function resetView(){view={x:0,y:0,k:1};applyView();}
+function zoomAt(f,px,py){const k2=Math.min(3,Math.max(.4,view.k*f));const r=k2/view.k;view.x=px-(px-view.x)*r;view.y=py-(py-view.y)*r;view.k=k2;applyView();}
+const svg=$('svg');
+function toSvg(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse());}
+svg.addEventListener('wheel',e=>{e.preventDefault();const p=toSvg(e);zoomAt(e.deltaY<0?1.12:1/1.12,p.x,p.y);},{passive:false});
+let drag=null;
+svg.addEventListener('pointerdown',e=>{if(e.target.closest('.node'))return;const p=toSvg(e);drag={x:p.x-view.x,y:p.y-view.y};svg.classList.add('drag');svg.setPointerCapture(e.pointerId);});
+svg.addEventListener('pointermove',e=>{if(!drag)return;const p=toSvg(e);view.x=p.x-drag.x;view.y=p.y-drag.y;applyView();});
+svg.addEventListener('pointerup',()=>{drag=null;svg.classList.remove('drag');});
+$('zin').onclick=()=>zoomAt(1.2,0,0);$('zout').onclick=()=>zoomAt(1/1.2,0,0);$('zreset').onclick=resetView;
+
+/* detail */
+function kbadge(k){return `<span class="kbadge" style="color:${KC[k]};border-color:${KC[k]}">把握程度：${k}</span>`;}
+function familyHTML(f,c){return f.map(w=>`<span>${esc(w).split(c).join('<em>'+c+'</em>')}</span>`).join('');}
+function classicHTML(c){
+  if(!c) return `<div class="pending">待查 —— 暂未核实到可靠的文言原句，宁缺毋编。</div>`;
+  return `<div class="quote">${esc(c.q)}</div><div class="src">—— ${esc(c.s)}</div><div class="trans">译文：${esc(c.y)}</div>`;
+}
+function renderDetail(){
+  const d=DATA[cur], box=$('detail');
+  if(sel==='root'){
+    const r=d.root;
+    box.innerHTML=`
+    <div class="dhead"><span class="tag" style="background:var(--brand)">本义</span><h2>${esc(d.c)}：${esc(r.n)}</h2>${kbadge(r.k)}</div>
+    <div class="grid2">
+      <div class="blk full"><h4>《说文解字》原文 <span style="font-weight:400;color:${KC[r.swk]}">（${r.swk}）</span></h4><div class="shuowen">${esc(r.sw)}</div></div>
+      <div class="blk full"><h4>字形演变（文字占位，字形图待补）</h4><div class="evo">${r.xing.split('→').map(x=>`<span>${esc(x.trim())}</span>`).join('<b style="color:#c9bca8">→</b>')}</div></div>
+      <div class="blk full"><h4>为什么说这是本义</h4><div class="ex">${esc(r.why)}</div></div>
+      ${commonBlocks(r,d.c)}
+    </div>`;
+  } else {
+    const s=d.senses[sel];
+    box.innerHTML=`
+    <div class="dhead"><span class="tag" style="background:${TYPE[s.t]}" title="${TYPE_TIP[s.t]}">${s.t}</span><h2>${esc(s.n)}</h2>${s.py?`<span class="kbadge" style="color:#555;border-color:#ccc">${s.py}</span>`:''}${kbadge(s.k)}</div>
+    <div class="reason">从本义「${esc(d.root.n)}」到这里：${esc(s.r)}。<span style="color:#9a8f84">（${s.t}：${TYPE_TIP[s.t]}）</span></div>
+    <div class="grid2">${commonBlocks(s,d.c)}</div>`;
+  }
+}
+function commonBlocks(s,c){
+  return `
+    <div class="blk"><h4>词族 · 3个</h4><div class="chips">${familyHTML(s.f,c)}</div></div>
+    <div class="blk"><h4>构词拆解</h4><div class="ex">${esc(s.g)}</div></div>
+    <div class="blk"><h4>现代例句</h4><div class="ex"><span class="mk">示例</span>${esc(s.e)}</div></div>
+    <div class="blk"><h4>文言原句</h4>${classicHTML(s.c)}</div>`;
+}
+
+/* sidebar */
+function renderSide(){
+  const d=DATA[cur];
+  const parts=d.parts.map(p=>`<div class="part ${p.role==='表义'?'yi':'yin'}"><span class="rl">${p.role}</span><b>${esc(p.p.split('（')[0])}</b><p>${p.p.includes('（')?'<strong>'+esc(p.p.slice(p.p.indexOf('（')))+'</strong> ':''}${esc(p.note)}</p></div>`).join('<div class="plus">＋</div>');
+  $('split').innerHTML=`<div class="split">${parts}</div><div class="meta">${esc(d.c)}（${d.py}） · ${esc(d.struct)} · 繁体／古字：${esc(d.trad)}</div>`;
+  $('warn').innerHTML=`<div class="warn"><div class="ic" style="background:#e9894a">读</div><div>${esc(d.du)}</div></div><div class="warn"><div class="ic" style="background:#d14d72">写</div><div>${esc(d.xie)}</div></div>`;
+  $('mima').innerHTML=d.mima.map(m=>`<div class="mima"><b>🔑 ${esc(m.t)}</b><p>${esc(m.d)}</p></div>`).join('');
+}
+function renderAll(){renderGraph();renderDetail();renderSide();}
+svg.addEventListener('click',e=>{ if(!e.target.closest('.node') && !drag){} });
+renderList('');renderAll();applyView();
+})();
+</script>
+</body>
+</html>

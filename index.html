@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>识字星球 · 首页</title>
+<style id="xzq-theme">
+/* ==========================================================
+   识字星球 · 共享主题 (xzq-theme)  —— 其他页面可整段复制或引用 xzq-theme.css
+   ----------------------------------------------------------
+   配色：每个模块一个主色，通用色用 --xzq-ink / --xzq-bg 等
+   组件：.xzq-topbar .xzq-nav .xzq-card .xzq-btn .xzq-chip .xzq-hz .xzq-tip
+   本地存储约定（各页面共用，同一浏览器内有效）：
+     xzq_learned   [{zi:"休",date:"2026-10-27"}]   已学的字
+     xzq_meanings  ["好:喜爱", ...]                  已掌握的义项（字:义项）
+     xzq_path      {"grade-3":[true,false,...]}      闯关进度（6关）
+     hz_wrong      错题本数组（易错诊所写入）
+     hz_srs        复习卡片数组（记忆复习写入）
+   ========================================================== */
+:root{
+  --xzq-bg:#FFF8EE; --xzq-ink:#2B2A4C; --xzq-muted:#7A7896; --xzq-line:#F0E6D6; --xzq-card:#FFFFFF;
+  --xzq-meaning:#4C7DF0;  --xzq-meaning-soft:#E4ECFF;   /* 字义扩展图 */
+  --xzq-radical:#F59E3A;  --xzq-radical-soft:#FFF0DC;   /* 偏旁部首 */
+  --xzq-phon:#8B6CEF;     --xzq-phon-soft:#EEE8FF;      /* 声旁音部 */
+  --xzq-word:#16A3C7;     --xzq-word-soft:#DDF4FA;      /* 字词句 */
+  --xzq-code:#D9549B;     --xzq-code-soft:#FCE6F2;      /* 汉字密码 */
+  --xzq-clinic:#E8505B;   --xzq-clinic-soft:#FFE8E9;    /* 易错诊所 */
+  --xzq-review:#22A98F;   --xzq-review-soft:#DDF5EF;    /* 记忆复习 */
+  --xzq-path:#3D4FB8;     --xzq-path-soft:#E6E9FA;      /* 学习路径 */
+  --xzq-kai:"STKaiti","KaiTi","Kaiti SC","KaiTi_GB2312","楷体",serif;
+  --xzq-sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  --xzq-radius:20px;
+  --xzq-shadow:0 6px 0 rgba(43,42,76,.06),0 10px 30px rgba(43,42,76,.08);
+  --xzq-topbar-h:64px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body.xzq{font-family:var(--xzq-sans);color:var(--xzq-ink);background:var(--xzq-bg);line-height:1.6;min-height:100vh;
+  background-image:radial-gradient(circle at 8% -5%,#FFE3C6 0,transparent 38%),radial-gradient(circle at 105% 18%,#D9F3EC 0,transparent 32%),radial-gradient(circle at 50% 120%,#E9E3FF 0,transparent 40%);
+  background-attachment:fixed;padding-top:var(--xzq-topbar-h)}
+.xzq a{color:inherit}
+.xzq button{font-family:inherit;cursor:pointer}
+.xzq-topbar{position:fixed;top:0;left:0;right:0;height:var(--xzq-topbar-h);z-index:40;background:rgba(255,248,238,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--xzq-line)}
+.xzq-topbar .in{max-width:1180px;margin:0 auto;height:100%;display:flex;align-items:center;gap:14px;padding:0 18px}
+.xzq-brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex:0 0 auto}
+.xzq-logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#FF8A5C,#F7B733);display:grid;place-items:center;color:#fff;font-family:var(--xzq-kai);font-size:24px;font-weight:700;box-shadow:0 3px 0 #D9772F}
+.xzq-brand b{font-size:18px;letter-spacing:1px}
+.xzq-nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1}
+.xzq-nav::-webkit-scrollbar{display:none}
+.xzq-nav a{flex:0 0 auto;text-decoration:none;color:var(--xzq-muted);font-weight:700;font-size:14px;padding:7px 12px;border-radius:999px;transition:.15s;white-space:nowrap}
+.xzq-nav a:hover{background:#fff;color:var(--xzq-ink)}
+.xzq-nav a.on{background:var(--xzq-ink);color:#fff;box-shadow:0 3px 0 #15142E}
+.xzq-wrap{max-width:1180px;margin:0 auto;padding:22px 18px 40px}
+.xzq-card{background:var(--xzq-card);border-radius:var(--xzq-radius);padding:18px;box-shadow:var(--xzq-shadow)}
+.xzq-btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:14px;padding:10px 18px;font-size:15px;font-weight:700;color:#fff;background:var(--xzq-ink);box-shadow:0 4px 0 #15142E;text-decoration:none;transition:.12s}
+.xzq-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #15142E}
+.xzq-btn.ghost{background:#fff;color:var(--xzq-ink);border:2px solid var(--xzq-line);box-shadow:none}
+.xzq-btn.sm{padding:6px 12px;font-size:13px;border-radius:10px}
+.xzq-chip{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px;background:var(--xzq-path-soft);color:var(--xzq-path)}
+.xzq-hz{font-family:var(--xzq-kai);font-weight:700;line-height:1.1}
+.xzq-tip{background:#FFFAF0;border:1.5px solid #F7E3BF;border-radius:14px;padding:10px 12px;font-size:14px}
+.xzq-muted{color:var(--xzq-muted)}
+/* ================= 主题结束 ================= */
+</style>
+<style>
+/* ---------- 本页样式 ---------- */
+.hero{border-radius:28px;padding:30px 30px 26px;background:linear-gradient(120deg,#3D4FB8,#6C7FE8 60%,#8FA2FF);color:#fff;position:relative;overflow:hidden;box-shadow:var(--xzq-shadow)}
+.hero .bg{position:absolute;right:-10px;top:-40px;font-family:var(--xzq-kai);font-size:220px;opacity:.12;line-height:1;pointer-events:none}
+.hero h1{margin:0;font-size:30px}
+.hero p{margin:4px 0 18px;opacity:.9}
+.search{display:flex;gap:10px;max-width:620px;background:#fff;border-radius:22px;padding:8px;box-shadow:0 8px 0 rgba(0,0,0,.08)}
+.search input{flex:1;border:none;outline:none;font-size:30px;font-family:var(--xzq-kai);padding:4px 14px;color:var(--xzq-ink);min-width:0;background:transparent}
+.search input::placeholder{font-family:var(--xzq-sans);font-size:17px;color:#B2AFC4}
+.search button{border:none;border-radius:16px;background:linear-gradient(135deg,#FF8A5C,#F7B733);color:#fff;font-weight:800;font-size:17px;padding:0 22px;box-shadow:0 4px 0 #D9772F}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.quick span{opacity:.8;font-size:13px}
+.quick a{font-family:var(--xzq-kai);font-size:22px;text-decoration:none;background:rgba(255,255,255,.2);border-radius:12px;padding:0 12px}
+.quick a:hover{background:rgba(255,255,255,.35)}
+.err{color:#FFE0A0;font-size:13px;margin-top:8px;min-height:18px}
+
+.two{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;margin-top:20px}
+h2.sec{font-size:19px;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
+.task{display:flex;align-items:center;gap:12px;padding:11px 4px;border-top:1px dashed var(--xzq-line)}
+.task:first-of-type{border-top:none}
+.task .ck{width:28px;height:28px;border-radius:9px;border:2.5px solid var(--xzq-line);display:grid;place-items:center;font-weight:900;color:#fff;flex:0 0 auto;background:#fff;cursor:pointer}
+.task.done .ck{background:var(--xzq-review);border-color:var(--xzq-review)}
+.task.done .tt{text-decoration:line-through;color:var(--xzq-muted)}
+.task .tt{flex:1;font-weight:600}
+.task .tt small{display:block;font-weight:400;color:var(--xzq-muted);font-size:12px}
+.pbar{height:10px;background:#F1EDE5;border-radius:99px;overflow:hidden;margin:10px 0 2px}
+.pbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#22A98F,#5CD2B4)}
+
+.code{background:linear-gradient(150deg,#FCE6F2,#FFF 60%);position:relative}
+.code .big{font-family:var(--xzq-kai);font-size:96px;font-weight:700;color:var(--xzq-code);line-height:1}
+.code .parts{display:flex;align-items:center;gap:8px;font-family:var(--xzq-kai);font-size:30px;margin:8px 0}
+.code .parts i{font-style:normal;font-family:var(--xzq-sans);font-size:18px;color:var(--xzq-muted)}
+
+.mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.mod{text-decoration:none;display:block;border-radius:22px;padding:18px;background:#fff;box-shadow:var(--xzq-shadow);transition:.18s;position:relative;overflow:hidden}
+.mod:hover{transform:translateY(-4px)}
+.mod .ic{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;font-size:28px;margin-bottom:10px}
+.mod b{font-size:17px;display:block}
+.mod p{margin:4px 0 0;color:var(--xzq-muted);font-size:14px}
+.mod .wm{position:absolute;right:10px;bottom:-14px;font-family:var(--xzq-kai);font-size:80px;opacity:.08;font-weight:700}
+
+/* 学习路径 */
+.layout{display:grid;grid-template-columns:210px 1fr;gap:20px;align-items:start}
+.side{position:sticky;top:calc(var(--xzq-topbar-h) + 18px);background:#fff;border-radius:22px;padding:12px;box-shadow:var(--xzq-shadow)}
+.side .ttl{font-size:13px;color:var(--xzq-muted);font-weight:700;padding:4px 10px 8px}
+.side button{display:flex;width:100%;align-items:center;gap:8px;border:none;background:none;text-align:left;font-size:15px;font-weight:700;color:var(--xzq-ink);padding:11px 12px;border-radius:14px;margin-bottom:2px}
+.side button:hover{background:#F7F4EE}
+.side button.on{background:var(--xzq-path);color:#fff;box-shadow:0 3px 0 #2A388A}
+.phead{border-radius:24px;padding:22px 24px;background:linear-gradient(120deg,#3D4FB8,#6C7FE8);color:#fff;margin-bottom:16px;box-shadow:var(--xzq-shadow)}
+.phead h2{margin:0;font-size:24px}
+.phead p{margin:4px 0 0;opacity:.9;font-size:14px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.pills button{border:2px solid var(--xzq-line);background:#fff;border-radius:14px;padding:7px 14px;font-weight:700;font-size:14px;color:var(--xzq-ink)}
+.pills button.on{background:var(--xzq-ink);border-color:var(--xzq-ink);color:#fff}
+.pills button .pc{font-size:11px;color:var(--xzq-review);margin-left:4px}
+.pills button.on .pc{color:#9FF0DC}
+.route{position:relative;display:grid;gap:14px;padding-left:6px}
+.route:before{content:"";position:absolute;left:33px;top:30px;bottom:30px;width:4px;background:repeating-linear-gradient(180deg,#D8D2C6 0 8px,transparent 8px 16px);border-radius:4px}
+.stage{display:flex;align-items:center;gap:16px;background:#fff;border-radius:20px;padding:14px 16px;box-shadow:var(--xzq-shadow);position:relative}
+.stage .node{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:26px;flex:0 0 auto;border:4px solid #fff;box-shadow:0 0 0 3px var(--xzq-line);z-index:1}
+.stage.done .node{box-shadow:0 0 0 3px var(--xzq-review)}
+.stage.cur .node{box-shadow:0 0 0 3px #F7A440;animation:pulse 1.8s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(247,164,64,.35)}}
+.stage.lock{opacity:.55}
+.stage .info{flex:1}
+.stage .info b{font-size:17px}
+.stage .info small{display:block;color:var(--xzq-muted)}
+.stage .st{font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px}
+.st.done{background:var(--xzq-review-soft);color:var(--xzq-review)}
+.st.cur{background:#FFF0DC;color:#C46F0E}
+.st.lock{background:#F1EEE8;color:#A9A5B8}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.trophy{text-align:center;padding:20px;background:linear-gradient(135deg,#FFF3D6,#FFE1E4);border-radius:20px;margin-top:14px;font-weight:700}
+.goal{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.goal div{background:#fff;border-radius:16px;padding:12px;box-shadow:var(--xzq-shadow)}
+.goal b{display:block;font-size:22px;color:var(--xzq-path)}
+.goal span{font-size:12px;color:var(--xzq-muted)}
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:18px}
+.theme{border:3px solid transparent;background:#fff;border-radius:20px;padding:14px;text-align:left;box-shadow:var(--xzq-shadow)}
+.theme.on{border-color:var(--xzq-path)}
+.theme .e{font-size:30px}
+.theme b{display:block;font-size:16px;color:var(--xzq-ink)}
+.theme .zs{font-family:var(--xzq-kai);font-size:22px;letter-spacing:3px;color:var(--xzq-ink)}
+.unitsel{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.unitsel select{font-family:inherit;font-size:15px;font-weight:700;border:2px solid var(--xzq-line);border-radius:12px;padding:7px 10px;background:#fff;color:var(--xzq-ink)}
+.ugrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-bottom:16px}
+.ugrid button{border:2px solid var(--xzq-line);background:#fff;border-radius:14px;padding:8px;font-weight:700;color:var(--xzq-ink)}
+.ugrid button.on{border-color:var(--xzq-path);background:var(--xzq-path-soft);color:var(--xzq-path)}
+.ugrid button small{display:block;font-size:11px;color:var(--xzq-muted);font-weight:600}
+
+/* 报告 */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.kpi{background:#fff;border-radius:20px;padding:18px;box-shadow:var(--xzq-shadow);position:relative;overflow:hidden}
+.kpi b{display:block;font-size:38px;line-height:1.1}
+.kpi span{color:var(--xzq-muted);font-size:14px}
+.kpi .e{position:absolute;right:14px;top:12px;font-size:30px;opacity:.85}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.charts .wide{grid-column:1/-1}
+.charts h3{margin:0 0 8px;font-size:16px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;margin-top:6px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.addz{display:flex;gap:8px;margin-top:10px}
+.addz input{flex:1;border:2px solid var(--xzq-line);border-radius:12px;padding:8px 12px;font-family:var(--xzq-kai);font-size:20px;outline:none;min-width:0}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:var(--xzq-ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;transition:.25s;z-index:60;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+footer{color:var(--xzq-muted);font-size:12px;text-align:center;padding:10px 0 30px}
+@media(max-width:860px){.two,.charts{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.side{position:static;display:flex;flex-wrap:wrap;gap:4px}.side .ttl{width:100%}.side button{width:auto}.xzq-brand b{display:none}}
+@media(max-width:560px){.kpis,.goal{grid-template-columns:1fr}.hero h1{font-size:24px}.search input{font-size:24px}}
+</style>
+</head>
+<body class="xzq">
+<a href="app-shell.html" style="position:fixed;right:12px;bottom:12px;z-index:999;background:#3D4FB8;color:#fff;padding:8px 14px;border-radius:20px;text-decoration:none;font-size:14px">新版总入口 · 全部 3500 字</a>
+<header class="xzq-topbar"><div class="in">
+  <a class="xzq-brand" href="#home"><span class="xzq-logo">字</span><b>识字星球</b></a>
+  <nav class="xzq-nav" id="nav"></nav>
+</div></header>
+<main class="xzq-wrap" id="main"></main>
+<footer>学习记录保存在本浏览器（localStorage），换浏览器或清除缓存后会重置。</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 配置：页面文件 ================= */
+const FILES={
+  meaning:'jie-ziyi-kuozhan-tu.html',
+  radical:'pianpang-bushou.html',
+  phon:'pianpang-bushou.html#shengpang',
+  word:'zicijv.html',
+  code:'hanzi-mima.html',
+  clinic:'yicuo-fuxi.html',
+  review:'yicuo-fuxi.html#review',
+  maps:'maps/'
+};
+/* 搜索一个字时跳转的地址：字义扩展图页面可读取 ?zi= 参数或 #字 定位 */
+const mapUrl=zi=>FILES.meaning+'?zi='+encodeURIComponent(zi)+'#'+encodeURIComponent(zi);
+
+const MODS=[
+ {k:'meaning',n:'字义扩展图',ic:'🗺️',c:'meaning',d:'从本义出发，看一个字怎样长出许多意思',wm:'义'},
+ {k:'radical',n:'偏旁部首',ic:'🧩',c:'radical',d:'认识偏旁，猜出字的意思和类别',wm:'部'},
+ {k:'phon',n:'声旁音部',ic:'🎵',c:'phon',d:'找到声旁，帮你推测读音',wm:'音'},
+ {k:'word',n:'字词句',ic:'📝',c:'word',d:'由字组词，由词造句，用起来才记得牢',wm:'词'},
+ {k:'code',n:'汉字密码',ic:'🔐',c:'code',d:'拆开字的部件，读懂造字的道理',wm:'密'},
+ {k:'clinic',n:'易错诊所',ic:'🩺',c:'clinic',d:'多音字、形近字、同音字，专治易错',wm:'诊'},
+ {k:'review',n:'记忆复习',ic:'📅',c:'review',d:'按第1、2、4、7、15天间隔复习',wm:'忆'},
+ {k:'path',n:'学习路径',ic:'🧭',c:'path',d:'按年级、单元、主题一关一关闯',wm:'路'}
+];
+
+/* 今天学到的汉字密码（会意 / 指事字，按日期轮换） */
+const CODES=[
+ {z:'休',p:['亻','木'],t:'会意字：一个人靠在树旁，表示休息。'},
+ {z:'采',p:['爫','木'],t:'会意字：上面是手（爪），下面是树，用手在树上摘取，本义是采摘。'},
+ {z:'看',p:['手','目'],t:'会意字：《说文解字》说“从手下目”——把手搭在眼睛上方远望。'},
+ {z:'鸣',p:['口','鸟'],t:'会意字：鸟张口叫，本义是鸟叫，后来泛指发出声音。'},
+ {z:'解',p:['角','刀','牛'],t:'会意字：《说文解字》说“从刀判牛角”，用刀把牛角剖开，本义是分解。'},
+ {z:'男',p:['田','力'],t:'会意字：在田里出力干活的人。'},
+ {z:'牧',p:['牛','攵'],t:'会意字：攵像手拿鞭子，赶着牛，本义是放牧。'},
+ {z:'从',p:['人','人'],t:'会意字：一人跟在另一人后面，本义是跟随。'},
+ {z:'众',p:['人','人','人'],t:'会意字：三个人表示人很多。'},
+ {z:'林',p:['木','木'],t:'会意字：两棵树表示树林；三棵树的“森”表示树更多。'},
+ {z:'本',p:['木','一'],t:'指事字：在“木”的下部加一横，指出树根，本义是根。'},
+ {z:'末',p:['木','一'],t:'指事字：在“木”的上部加一长横，指出树梢，本义是末端。'},
+ {z:'刃',p:['刀','丶'],t:'指事字：在刀口处加一点，指出最锋利的地方——刀刃。'},
+ {z:'旦',p:['日','一'],t:'指事字：太阳刚刚升到地平线上，表示早晨。'},
+ {z:'尖',p:['小','大'],t:'会意字：上小下大，就是尖的样子。'},
+ {z:'泪',p:['氵','目'],t:'会意字：从眼睛里流出的水。'},
+ {z:'炎',p:['火','火'],t:'会意字：两个火叠在一起，表示火势旺、天气热。'},
+ {z:'明',p:['日','月'],t:'今天的字形由“日”“月”组成，表示光亮。（甲骨文中也有写作窗户加月的形体，表示月光照进窗户。）'}
+];
+
+/* 闯关路线 */
+const STAGES=[
+ {k:'radical',n:'认偏旁',ic:'🧩',d:'认识本关的偏旁和它表示的意思',c:'radical'},
+ {k:'phon',n:'声旁读音',ic:'🎵',d:'找出声旁，读准字音',c:'phon'},
+ {k:'meaning',n:'字义扩展',ic:'🗺️',d:'从本义出发，理解引申义',c:'meaning'},
+ {k:'word',n:'字词句',ic:'📝',d:'组词、造句，把字用起来',c:'word'},
+ {k:'code',n:'汉字密码',ic:'🔐',d:'拆部件，讲清造字道理',c:'code'},
+ {k:'clinic',n:'易错挑战',ic:'🏆',d:'多音字、形近字、同音字小测',c:'clinic'}
+];
+
+/* 按年级：依据《义务教育语文课程标准（2022年版）》各学段识字要求 */
+const GRADES=[
+ {g:1,s:'第一学段（1–2年级）',goal:'累计认识常用汉字约1600个，会写约800个',focus:'认识常用偏旁，掌握基本笔画和笔顺规则'},
+ {g:2,s:'第一学段（1–2年级）',goal:'累计认识常用汉字约1600个，会写约800个',focus:'借助偏旁和拼音识字，开始用音序、部首查字典'},
+ {g:3,s:'第二学段（3–4年级）',goal:'累计认识常用汉字约2500个，会写约1600个',focus:'能独立识字，用形声字规律推测字音字义'},
+ {g:4,s:'第二学段（3–4年级）',goal:'累计认识常用汉字约2500个，会写约1600个',focus:'辨析形近字、同音字，体会字的多个意思'},
+ {g:5,s:'第三学段（5–6年级）',goal:'累计认识常用汉字约3000个，会写约2500个',focus:'有较强的独立识字能力，理解一字多义'},
+ {g:6,s:'第三学段（5–6年级）',goal:'累计认识常用汉字约3000个，会写约2500个',focus:'在语境中辨别字义，规范书写'},
+ {g:7,s:'第四学段（7–9年级）',goal:'累计认识常用汉字约3500个',focus:'在阅读中积累，了解汉字的文化内涵'},
+ {g:8,s:'第四学段（7–9年级）',goal:'累计认识常用汉字约3500个',focus:'辨析古今字义变化，体会汉字构形理据'},
+ {g:9,s:'第四学段（7–9年级）',goal:'累计认识常用汉字约3500个',focus:'综合运用，减少常见错别字'}
+];
+
+/* 主题闯关 */
+const THEMES=[
+ {k:'nature',n:'天地自然',e:'🌤️',z:'日 月 山 水 雨 雪 云 风'},
+ {k:'animal',n:'动物乐园',e:'🐼',z:'牛 羊 马 鸟 鱼 虫 犬 鹿'},
+ {k:'plant',n:'植物王国',e:'🌱',z:'木 林 森 禾 米 竹 草 花'},
+ {k:'body',n:'我的身体',e:'🧒',z:'口 目 耳 手 足 心 头 牙'},
+ {k:'home',n:'家和生活',e:'🏠',z:'家 门 衣 食 饭 床 灯 窗'},
+ {k:'school',n:'快乐学校',e:'🏫',z:'学 书 笔 写 读 字 文 课'},
+ {k:'feel',n:'心情变化',e:'😊',z:'喜 怒 乐 怕 想 情 忙 急'},
+ {k:'number',n:'数字时间',e:'⏰',z:'一 二 三 十 百 千 年 时'}
+];
+
+/* ================= 工具 ================= */
+const MEM={};
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return k in MEM?MEM[k]:d}},
+          set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){MEM[k]=v}}};
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>ymd(new Date());
+function addDays(s,n){const [y,m,d]=s.split('-').map(Number);const t=new Date(y,m-1,d);t.setDate(t.getDate()+n);return ymd(t)}
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),1800)}
+const isHan=s=>/^[\u3400-\u9fff\uf900-\ufaff]$/.test(s);
+function hrefFor(k,extra){if(k==='path')return '#path';let f=FILES[k];if(!extra)return f;const [a,h]=f.split('#');return a+(a.includes('?')?'&':'?')+extra+(h?'#'+h:'')}
+
+/* 数据读取 */
+const learned=()=>LS.get('xzq_learned',[]);
+function addLearned(zi){const l=learned();if(!l.some(x=>x.zi===zi)){l.push({zi,date:today()});LS.set('xzq_learned',l);return true}return false}
+const meanings=()=>LS.get('xzq_meanings',[]);
+const wrongs=()=>LS.get('hz_wrong',[]);
+const srs=()=>LS.get('hz_srs',[]);
+const dueCount=()=>{const t=today();return srs().filter(x=>x.stage<5&&x.due&&x.due<=t).length};
+const pathData=()=>LS.get('xzq_path',{});
+function trackGet(id){const p=pathData();return p[id]||STAGES.map(()=>false)}
+function trackSet(id,i,v){const p=pathData();const a=p[id]||STAGES.map(()=>false);a[i]=v;p[id]=a;LS.set('xzq_path',p);LS.set('xzq_last_track',id)}
+const doneCount=id=>trackGet(id).filter(Boolean).length;
+
+/* ================= 路由 ================= */
+const S={view:'home',sub:'grade',grade:LS.get('xzq_grade',3),theme:'nature',ub:{g:3,v:'上',u:1}};
+function parseHash(){const h=decodeURIComponent(location.hash.slice(1));const [v,s]=h.split('/');
+  if(v==='path'){S.view='path';if(['grade','unit','theme','report'].includes(s))S.sub=s}else S.view='home';render();window.scrollTo(0,0)}
+window.addEventListener('hashchange',parseHash);
+
+function renderNav(){
+  document.getElementById('nav').innerHTML=MODS.map(m=>'<a href="'+hrefFor(m.k)+'" class="'+(m.k==='path'&&S.view==='path'?'on':'')+'">'+m.n+'</a>').join('');
+}
+function render(){renderNav();document.getElementById('main').innerHTML=S.view==='home'?vHome():vPath();if(S.view==='home')bindSearch()}
+
+/* ================= 首页 ================= */
+function dayIndex(){const d=new Date();return Math.floor((d-new Date(d.getFullYear(),0,0))/864e5)}
+function tasks(){
+  const t=today(),due=dueCount(),todayLearn=learned().filter(x=>x.date===t).length;
+  const last=LS.get('xzq_last_track','grade-'+S.grade);const arr=trackGet(last);const ni=arr.indexOf(false);
+  const manual=LS.get('xzq_tasks_'+t,{});
+  return [
+   {id:'learn',t:'学 3 个新字',s:'在上面搜索一个字，就记为学过（今天 '+Math.min(todayLearn,3)+'/3）',done:todayLearn>=3,auto:true,href:'#home'},
+   {id:'review',t:due?'完成今日复习（'+due+' 张）':'今日复习',s:due?'间隔重复，记得更牢':'今天没有到期的卡片',done:due===0&&srs().length>0||!!manual.review,href:FILES.review},
+   {id:'stage',t:ni<0?'这条路线已全部通关':'闯一关：'+STAGES[ni].n,s:trackName(last),done:ni<0||!!manual.stage,href:'#path/'+(last.startsWith('unit')?'unit':last.startsWith('theme')?'theme':'grade')},
+   {id:'quiz',t:'做一组易错小测',s:'多音字 / 形近字 / 同音别字任选',done:!!manual.quiz,href:FILES.clinic}
+  ];
+}
+function toggleTask(id){const k='xzq_tasks_'+today();const m=LS.get(k,{});m[id]=!m[id];LS.set(k,m);render()}
+function trackName(id){if(id.startsWith('grade-'))return id.slice(6)+'年级路线';if(id.startsWith('theme-')){const th=THEMES.find(x=>'theme-'+x.k===id);return th?'主题：'+th.n:'主题路线'}if(id.startsWith('unit-')){const [, g,v,u]=id.split('-');return g+'年级'+v+'册 第'+u+'单元'}return ''}
+
+function vHome(){
+  const ts=tasks(),dn=ts.filter(x=>x.done).length,c=CODES[dayIndex()%CODES.length];
+  const quick=['好','长','行','明','休','发'];
+  let h='<section class="hero"><div class="bg">识</div><h1>今天想认识哪个字？</h1><p>输入一个汉字，看它的字义扩展图：本义从哪来，又长出了哪些意思。</p>'+
+   '<form class="search" id="sf"><input id="si" maxlength="4" placeholder="输入一个字，比如“好”" autocomplete="off"><button type="submit">查一查</button></form>'+
+   '<div class="err" id="se"></div><div class="quick"><span>试试：</span>'+quick.map(z=>'<a href="'+mapUrl(z)+'" onclick="addLearned(\''+z+'\')">'+z+'</a>').join('')+'</div></section>';
+  h+='<div class="two"><div class="xzq-card"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">📋 今日任务</b><span class="xzq-chip">'+dn+' / '+ts.length+'</span></div>'+
+   '<div class="pbar"><i style="width:'+(dn/ts.length*100)+'%"></i></div>'+
+   ts.map(x=>'<div class="task'+(x.done?' done':'')+'"><span class="ck" '+(x.auto?'title="自动完成"':'onclick="toggleTask(\''+x.id+'\')"')+'>'+(x.done?'✓':'')+'</span><div class="tt">'+x.t+'<small>'+x.s+'</small></div><a class="xzq-btn ghost sm" href="'+x.href+'">去完成</a></div>').join('')+
+   (dn===ts.length?'<div class="xzq-tip" style="margin-top:10px">🎉 今日任务全部完成！休息一下，去外面走走吧。</div>':'')+'</div>';
+  h+='<div class="xzq-card code"><span class="xzq-chip" style="background:#fff;color:var(--xzq-code)">🔐 今天学到的汉字密码</span><div style="display:flex;gap:18px;align-items:center;margin-top:12px"><div class="big">'+c.z+'</div><div><div class="parts">'+c.p.join('<i>＋</i>')+'</div></div></div><p style="margin:8px 0 12px">'+c.t+'</p><a class="xzq-btn sm" style="background:var(--xzq-code);box-shadow:0 3px 0 #A83A76" href="'+FILES.code+'">更多汉字密码 →</a></div></div>';
+  h+='<h2 class="sec">🪐 八大模块</h2><div class="mods">'+MODS.map(m=>'<a class="mod" href="'+hrefFor(m.k)+'"><div class="ic" style="background:var(--xzq-'+m.c+'-soft)">'+m.ic+'</div><b style="color:var(--xzq-'+m.c+')">'+m.n+'</b><p>'+m.d+'</p>'+(m.k==='meaning'?'<p style="margin-top:8px"><span class="xzq-chip" style="background:var(--xzq-meaning-soft);color:var(--xzq-meaning)" onclick="event.preventDefault();location.href=FILES.maps">📁 打开 maps 各批字</span></p>':'')+'<span class="wm">'+m.wm+'</span></a>').join('')+'</div>';
+  return h;
+}
+function bindSearch(){
+  const f=document.getElementById('sf');if(!f)return;
+  f.onsubmit=e=>{e.preventDefault();const v=document.getElementById('si').value.trim();const zi=[...v][0]||'';
+    if(!zi||!isHan(zi)){document.getElementById('se').textContent='请输入一个汉字哦';return}
+    addLearned(zi);location.href=mapUrl(zi)};
+}
+
+/* ================= 学习路径 ================= */
+function vPath(){
+  const side='<aside class="side"><div class="ttl">学习路径</div>'+[['grade','🎒 按年级'],['unit','📚 按教材单元'],['theme','🗺️ 主题闯关'],['report','📊 学习报告']].map(([k,n])=>'<button class="'+(S.sub===k?'on':'')+'" onclick="location.hash=\'path/'+k+'\'">'+n+'</button>').join('')+'</aside>';
+  const V={grade:vGrade,unit:vUnit,theme:vTheme,report:vReport};
+  return '<div class="layout">'+side+'<section>'+V[S.sub]()+'</section></div>';
+}
+function routeHTML(id,label){
+  const a=trackGet(id);const cur=a.indexOf(false);
+  let h='<div class="route">'+STAGES.map((s,i)=>{
+    const st=a[i]?'done':i===cur?'cur':'lock';
+    const stText={done:'✓ 已完成',cur:'▶ 进行中',lock:'🔒 未解锁'}[st];
+    const go=hrefFor(s.k,'from=path&track='+encodeURIComponent(id));
+    return '<div class="stage '+st+'"><div class="node" style="background:var(--xzq-'+s.c+'-soft)">'+s.ic+'</div><div class="info"><b>第'+(i+1)+'关 · '+s.n+'</b> <span class="st '+st+'">'+stText+'</span><small>'+s.d+'</small></div><div class="acts">'+
+     (st==='lock'?'':'<a class="xzq-btn sm" style="background:var(--xzq-'+s.c+');box-shadow:none" href="'+go+'">去闯关</a>')+
+     (st==='cur'?'<button class="xzq-btn ghost sm" onclick="trackSet(\''+id+'\','+i+',true);toast(\'过关！下一关已解锁\');render()">完成本关</button>':'')+
+     (st==='done'?'<button class="xzq-btn ghost sm" onclick="trackSet(\''+id+'\','+i+',false);render()">重置</button>':'')+'</div></div>'}).join('')+'</div>';
+  if(cur<0)h+='<div class="trophy">🏆 '+label+' 全部通关！</div>';
+  return h;
+}
+function vGrade(){
+  const g=GRADES[S.grade-1];
+  return '<div class="phead"><h2>按年级闯关</h2><p>六关路线：认偏旁 → 声旁读音 → 字义扩展 → 字词句 → 汉字密码 → 易错挑战</p></div>'+
+   '<div class="pills">'+GRADES.map(x=>'<button class="'+(x.g===S.grade?'on':'')+'" onclick="S.grade='+x.g+';LS.set(\'xzq_grade\','+x.g+');render()">'+'一二三四五六七八九'[x.g-1]+'年级<span class="pc">'+doneCount('grade-'+x.g)+'/6</span></button>').join('')+'</div>'+
+   '<div class="goal"><div><b>'+'一二三四五六七八九'[g.g-1]+'年级</b><span>'+g.s+'</span></div><div><b style="font-size:15px;line-height:1.5">'+g.goal+'</b><span>课程标准学段目标</span></div><div><b style="font-size:15px;line-height:1.5">'+g.focus+'</b><span>本年级识字重点</span></div></div>'+
+   routeHTML('grade-'+g.g,'一二三四五六七八九'[g.g-1]+'年级路线')+
+   '<p class="xzq-muted" style="font-size:12px">学段目标依据《义务教育语文课程标准（2022年版）》。</p>';
+}
+function vUnit(){
+  const u=S.ub,id='unit-'+u.g+'-'+u.v+'-'+u.u;
+  const sel='<div class="unitsel"><select onchange="S.ub.g=+this.value;render()">'+GRADES.map(x=>'<option value="'+x.g+'"'+(x.g===u.g?' selected':'')+'>'+'一二三四五六七八九'[x.g-1]+'年级</option>').join('')+'</select>'+
+   '<select onchange="S.ub.v=this.value;render()">'+['上','下'].map(v=>'<option'+(v===u.v?' selected':'')+'>'+v+'</option>').join('')+'</select><span class="xzq-muted">册</span></div>';
+  const units='<div class="ugrid">'+[1,2,3,4,5,6,7,8].map(n=>{const c=doneCount('unit-'+u.g+'-'+u.v+'-'+n);return '<button class="'+(n===u.u?'on':'')+'" onclick="S.ub.u='+n+';render()">第'+n+'单元<small>'+(c===6?'🏆 通关':c+'/6 关')+'</small></button>'}).join('')+'</div>';
+  return '<div class="phead"><h2>按教材单元</h2><p>选择年级、册次和单元，跟着课本进度一个单元走完六关。</p></div>'+sel+units+
+   routeHTML(id,'一二三四五六七八九'[u.g-1]+'年级'+u.v+'册 第'+u.u+'单元')+
+   '<p class="xzq-muted" style="font-size:12px">单元中的具体生字以你使用的教材为准；闯关时把本单元的生字带到各模块里练习。</p>';
+}
+function vTheme(){
+  const th=THEMES.find(x=>x.k===S.theme);
+  return '<div class="phead"><h2>主题闯关</h2><p>围绕一个主题认一组字，偏旁和字义更容易串起来。</p></div><div class="themes">'+THEMES.map(t=>'<button class="theme'+(t.k===S.theme?' on':'')+'" onclick="S.theme=\''+t.k+'\';render()"><span class="e">'+t.e+'</span><b>'+t.n+'</b><div class="zs">'+t.z.replace(/ /g,'')+'</div><span class="xzq-chip" style="margin-top:6px">'+doneCount('theme-'+t.k)+'/6</span></button>').join('')+'</div>'+
+   '<div class="xzq-card" style="margin-bottom:14px"><b>'+th.e+' '+th.n+' · 本主题的字</b><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">'+th.z.split(' ').map(z=>'<a href="'+mapUrl(z)+'" onclick="addLearned(\''+z+'\')" class="xzq-hz" style="text-decoration:none;font-size:30px;background:var(--xzq-path-soft);border-radius:12px;padding:2px 12px">'+z+'</a>').join('')+'</div><p class="xzq-muted" style="font-size:13px;margin:8px 0 0">点一个字，查看它的字义扩展图。</p></div>'+
+   routeHTML('theme-'+th.k,'主题「'+th.n+'」');
+}
+
+/* ---- 学习报告 ---- */
+function svgBars(data,color,h=180,max){
+  const W=560,pad=28,bw=(W-pad*2)/data.length,mx=max||Math.max(1,...data.map(d=>d.v));
+  return '<svg viewBox="0 0 '+W+' '+(h+40)+'" width="100%" role="img">'+
+   [0,.5,1].map(f=>'<line x1="'+pad+'" x2="'+(W-pad)+'" y1="'+(10+h-h*f)+'" y2="'+(10+h-h*f)+'" stroke="#EFE8DC" stroke-dasharray="4 4"/>').join('')+
+   data.map((d,i)=>{const bh=d.v/mx*h,x=pad+i*bw+bw*.18,w=bw*.64;return '<rect x="'+x+'" y="'+(10+h-bh)+'" width="'+w+'" height="'+Math.max(bh,2)+'" rx="8" fill="'+(d.c||color)+'"/><text x="'+(x+w/2)+'" y="'+(4+h-bh)+'" text-anchor="middle" font-size="13" font-weight="700" fill="#2B2A4C">'+(d.t!=null?d.t:d.v)+'</text><text x="'+(x+w/2)+'" y="'+(h+32)+'" text-anchor="middle" font-size="12" fill="#7A7896">'+d.l+'</text>'}).join('')+'</svg>';
+}
+function svgDonut(parts,center,sub){
+  const tot=parts.reduce((a,b)=>a+b.v,0),R=70,C=2*Math.PI*R;let off=0;
+  const rings=tot?parts.map(p=>{const len=p.v/tot*C;const s='<circle r="'+R+'" cx="100" cy="100" fill="none" stroke="'+p.c+'" stroke-width="26" stroke-dasharray="'+len+' '+(C-len)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 100 100)"/>';off+=len;return s}).join(''):'';
+  return '<svg viewBox="0 0 200 200" width="190" role="img"><circle r="'+R+'" cx="100" cy="100" fill="none" stroke="#F1EDE5" stroke-width="26"/>'+rings+'<text x="100" y="100" text-anchor="middle" font-size="30" font-weight="800" fill="#2B2A4C">'+center+'</text><text x="100" y="124" text-anchor="middle" font-size="12" fill="#7A7896">'+sub+'</text></svg>';
+}
+function vReport(){
+  const L=learned(),M=meanings(),W=wrongs(),t=today();
+  let h='<div class="phead"><h2>学习报告</h2><p>根据本浏览器里的学习记录自动生成。</p></div>';
+  h+='<div class="kpis"><div class="kpi"><span class="e">📖</span><b style="color:var(--xzq-meaning)">'+L.length+'</b><span>已学字数</span></div><div class="kpi"><span class="e">🌳</span><b style="color:var(--xzq-review)">'+M.length+'</b><span>掌握的义项数</span></div><div class="kpi"><span class="e">🩺</span><b style="color:var(--xzq-clinic)">'+W.length+'</b><span>错题数</span></div></div>';
+  /* 近7天 */
+  const days=[];for(let i=6;i>=0;i--){const d=addDays(t,-i);days.push({l:i===0?'今天':d.slice(5),v:L.filter(x=>x.date===d).length,c:i===0?'#F7A440':null})}
+  /* 闯关：各年级完成关数 */
+  const gd=GRADES.map(g=>({l:g.g+'年级',v:doneCount('grade-'+g.g),t:doneCount('grade-'+g.g)+'/6'}));
+  /* 错题分类 */
+  const CAT={poly:['多音字','#4C7DF0'],misread:['易读错字','#F59E3A'],similar:['形近字','#8B6CEF'],stroke:['笔画笔顺','#16A3C7'],homo:['同音别字','#E8505B']};
+  const wp=Object.entries(CAT).map(([k,[n,c]])=>({n,c,v:W.filter(x=>x.cat===k).length}));
+  /* 学习结构 */
+  const sp=[{n:'已学的字',c:'#4C7DF0',v:L.length},{n:'掌握的义项',c:'#22A98F',v:M.length},{n:'错题',c:'#E8505B',v:W.length}];
+  const allTracks=Object.keys(pathData()),passed=allTracks.reduce((a,k)=>a+doneCount(k),0);
+  h+='<div class="charts">'+
+   '<div class="xzq-card wide"><h3>📈 近 7 天新学的字</h3>'+svgBars(days,'#4C7DF0')+
+     '<div class="addz"><input id="az" maxlength="20" placeholder="补记今天学过的字，可一次输入多个"><button class="xzq-btn sm" onclick="bulkAdd()">记录</button></div></div>'+
+   '<div class="xzq-card"><h3>🧭 各年级闯关进度</h3>'+svgBars(gd,'#3D4FB8',150,6)+'<p class="xzq-muted" style="font-size:13px;margin:4px 0 0">所有路线共通过 '+passed+' 关。</p></div>'+
+   '<div class="xzq-card"><h3>🩺 错题分布</h3><div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'+svgDonut(wp,W.length,'道错题')+'<div class="legend" style="flex-direction:column">'+wp.map(p=>'<span><i style="background:'+p.c+'"></i>'+p.n+' '+p.v+'</span>').join('')+'</div></div>'+(W.length?'':'<p class="xzq-muted" style="font-size:13px">还没有错题。在易错诊所做小测，错题会出现在这里。</p>')+'</div>'+
+   '<div class="xzq-card wide"><h3>🌳 字 · 义项 · 错题</h3><div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">'+svgDonut(sp,L.length?(M.length/L.length).toFixed(1):'0','每字平均义项')+
+     '<div style="flex:1;min-width:220px"><div class="legend">'+sp.map(p=>'<span><i style="background:'+p.c+'"></i>'+p.n+' '+p.v+'</span>').join('')+'</div>'+
+     '<p class="xzq-muted" style="font-size:13px">义项由「字义扩展图」记录：掌握一个字的一个意思，就多一个义项。一个字掌握的义项越多，说明理解得越深。</p>'+
+     (L.length?'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">'+L.slice(-40).map(x=>'<a class="xzq-hz" href="'+mapUrl(x.zi)+'" style="text-decoration:none;font-size:22px;background:var(--xzq-meaning-soft);border-radius:10px;padding:0 8px">'+x.zi+'</a>').join('')+'</div>':'')+'</div></div></div>'+
+  '</div>';
+  return h;
+}
+function bulkAdd(){const v=document.getElementById('az').value;let n=0;[...v].filter(isHan).forEach(z=>{if(addLearned(z))n++});toast(n?'记录了 '+n+' 个字':'这些字已经记录过了');render()}
+
+parseHash();
+</script>
+</body>
+</html>

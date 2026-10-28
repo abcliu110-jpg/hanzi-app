@@ -1,0 +1,2253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>字义扩展图 · 汉字学习</title>
+<style>
+:root{
+  --paper:#faf6ee; --paper2:#f3ecdf; --card:#fffdf8; --ink:#2d2a26; --ink2:#6b645a; --line:#e4dac8;
+  --brand:#b5442e; --brand-soft:#f6e3dc;
+  --t-ben:#b5442e; --t-yin:#2f8f83; --t-bi:#d9822b; --t-zhuan:#7a5bb5; --t-jia:#5a7896;
+  --c-ok:#3f8f4f; --c-common:#3c6fb0; --c-tbd:#c28a12;
+  --radius:16px; --shadow:0 2px 10px rgba(80,60,30,.08),0 1px 2px rgba(80,60,30,.06);
+  --font:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;
+  --kai:"STKaiti","KaiTi","Kaiti SC","楷体","Noto Serif CJK SC",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);color:var(--ink);background:var(--paper);display:flex;flex-direction:column;overflow:hidden}
+/* 顶部 */
+header{background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:18px;padding:0 20px;height:62px;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;white-space:nowrap}
+.logo .seal{width:36px;height:36px;border-radius:10px;background:var(--brand);color:#fff;display:grid;place-items:center;font-family:var(--kai);font-size:22px}
+nav.top{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.top::-webkit-scrollbar{display:none}
+nav.top button{border:0;background:transparent;font:inherit;font-size:14.5px;color:var(--ink2);padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:.15s}
+nav.top button:hover{background:var(--paper2);color:var(--ink)}
+nav.top button.active{background:var(--brand);color:#fff;font-weight:600}
+nav.top .sep{color:var(--line);align-self:center}
+/* 主体 */
+.main{flex:1;display:grid;grid-template-columns:132px 1fr 380px;min-height:0}
+aside.chars{background:var(--paper2);border-right:1px solid var(--line);overflow-y:auto;padding:12px 10px}
+aside.chars h3{font-size:12px;color:var(--ink2);font-weight:600;letter-spacing:1px;padding:4px 6px 10px}
+.charlist{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.charbtn{border:1px solid transparent;background:var(--card);border-radius:12px;cursor:pointer;padding:8px 0 6px;display:flex;flex-direction:column;align-items:center;box-shadow:var(--shadow);transition:.15s;font:inherit}
+.charbtn .c{font-family:var(--kai);font-size:28px;line-height:1.1}
+.charbtn .p{font-size:11px;color:var(--ink2)}
+.charbtn:hover{transform:translateY(-1px);border-color:var(--line)}
+.charbtn.active{background:var(--brand);border-color:var(--brand)}
+.charbtn.active .c,.charbtn.active .p{color:#fff}
+/* 画布 */
+section.stage{position:relative;min-width:0;background:
+  radial-gradient(circle at 1px 1px,#e9dfcd 1px,transparent 1.2px) 0 0/22px 22px, var(--paper)}
+#graph{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+#graph.dragging{cursor:grabbing}
+.stage-head{position:absolute;left:18px;top:14px;display:flex;align-items:baseline;gap:12px;pointer-events:none}
+.stage-head .big{font-family:var(--kai);font-size:44px;color:var(--brand);line-height:1}
+.stage-head .py{font-size:16px;color:var(--ink2)}
+.stage-head .hint{font-size:12px;color:var(--ink2);background:rgba(255,253,248,.85);padding:3px 10px;border-radius:999px;border:1px solid var(--line)}
+.zoombar{position:absolute;right:16px;top:14px;display:flex;flex-direction:column;gap:6px}
+.zoombar button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:18px;cursor:pointer;box-shadow:var(--shadow);color:var(--ink)}
+.zoombar button:hover{background:var(--paper2)}
+.legend{position:absolute;left:18px;bottom:14px;display:flex;flex-wrap:wrap;gap:8px;background:rgba(255,253,248,.92);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:12px;box-shadow:var(--shadow)}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:18px;height:4px;border-radius:2px;display:inline-block}
+/* SVG 元素 */
+.edge{fill:none;stroke-width:2.4}
+.edge.dash{stroke-dasharray:7 5}
+.node{cursor:pointer}
+.node rect{fill:var(--card);stroke-width:2;transition:.15s}
+.node:hover rect{filter:drop-shadow(0 3px 6px rgba(80,60,30,.18))}
+.node.sel rect{stroke-width:3.5}
+.node text{font-size:15px;fill:var(--ink);font-weight:600;dominant-baseline:middle;text-anchor:middle;pointer-events:none}
+.node .confdot{stroke:#fff;stroke-width:1.5}
+.core circle.ring{fill:#fff;stroke:var(--t-ben);stroke-width:3}
+.core circle.fillc{fill:var(--brand-soft)}
+.core text.ch{font-family:var(--kai);font-size:62px;fill:var(--brand);font-weight:400}
+.core text.mean{font-size:14px;fill:var(--ink);font-weight:600}
+.core.sel circle.ring{stroke-width:5}
+.elabel rect{stroke-width:1.5}
+.elabel text.tp{font-size:12.5px;font-weight:700;fill:#fff;text-anchor:middle;dominant-baseline:middle}
+.elabel text.why{font-size:11.5px;fill:var(--ink2);text-anchor:middle}
+.elabel .whybg{fill:rgba(250,246,238,.92)}
+/* 右栏 */
+aside.panel{background:var(--card);border-left:1px solid var(--line);overflow-y:auto;padding:16px 16px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card h2{font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.card h4{font-size:12.5px;color:var(--ink2);font-weight:600;margin:12px 0 6px;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+.card h4::before{content:"";width:4px;height:12px;border-radius:2px;background:var(--brand)}
+.card p,.card li{font-size:14px;line-height:1.75}
+.sectitle{font-size:12px;letter-spacing:2px;color:var(--ink2);margin:6px 2px 10px;font-weight:600}
+.tag{display:inline-block;font-size:11.5px;padding:2px 9px;border-radius:999px;color:#fff;font-weight:600;line-height:1.6;white-space:nowrap}
+.tag.o{background:transparent;border:1px solid currentColor}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--paper2);border-radius:10px;padding:4px 11px;font-size:14px}
+.chip b{color:var(--brand);font-weight:700}
+.quote{font-family:var(--kai);font-size:16.5px;background:var(--paper);border-left:3px solid var(--brand);padding:8px 12px;border-radius:0 10px 10px 0;line-height:1.7}
+.src{font-size:12.5px;color:var(--ink2);margin-top:4px}
+.tr{font-size:13.5px;color:var(--ink);margin-top:4px;line-height:1.7}
+.tr::before{content:"译文：";color:var(--ink2)}
+.sample{font-size:14px;line-height:1.75}
+.sample .tag{margin-right:6px;background:var(--t-jia)}
+.tbd{font-size:13px;color:var(--c-tbd);background:#fbf3df;border-radius:10px;padding:7px 11px}
+.evo{display:flex;flex-direction:column;gap:5px}
+.evo div{font-size:13px;background:var(--paper);border-radius:8px;padding:5px 10px;color:var(--ink2)}
+.evo div:last-child{color:var(--ink);font-weight:600}
+.why-box{font-size:13.5px;background:var(--paper);border-radius:10px;padding:8px 12px;line-height:1.7}
+.parts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.part{border-radius:12px;padding:10px;font-size:13px;line-height:1.6}
+.part .lb{font-size:11.5px;font-weight:700;letter-spacing:1px;margin-bottom:3px}
+.part.m{background:#e8f3f1}.part.m .lb{color:var(--t-yin)}
+.part.s{background:#fbeee0}.part.s .lb{color:var(--t-bi)}
+.formula{grid-column:1/3;text-align:center;font-size:13px;color:var(--ink2);background:var(--paper);border-radius:10px;padding:6px}
+.pit{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.65;margin-bottom:8px}
+.pit .ic{flex-shrink:0;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:13px;font-weight:700;color:#fff}
+.code li{list-style:none;position:relative;padding-left:18px;font-size:13.5px;margin-bottom:6px}
+.code li::before{content:"◆";position:absolute;left:0;color:var(--t-zhuan);font-size:10px;top:5px}
+.toast{position:fixed;left:50%;top:76px;transform:translateX(-50%) translateY(-10px);background:var(--ink);color:#fff;font-size:14px;padding:9px 18px;border-radius:999px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.foot{font-size:11.5px;color:var(--ink2);line-height:1.6;padding:4px 4px 0}
+@media (max-width:1100px){.main{grid-template-columns:110px 1fr 320px}}
+@media (max-width:820px){
+  body{overflow:auto}
+  .main{grid-template-columns:1fr;grid-template-rows:auto 60vh auto}
+  aside.chars{border-right:0;border-bottom:1px solid var(--line)}
+  .charlist{grid-template-columns:repeat(10,1fr)}
+  aside.panel{border-left:0}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="seal">字</div>汉字学习</div>
+  <nav class="top" id="topnav"></nav>
+</header>
+<div class="main">
+  <aside class="chars"><h3>本组 20 字</h3><div class="charlist" id="charlist"></div></aside>
+  <section class="stage">
+    <svg id="graph"><g id="viewport"></g></svg>
+    <div class="stage-head"><span class="big" id="bigChar"></span><span class="py" id="bigPy"></span><span class="hint">滚轮缩放 · 拖动平移 · 点义项看详情</span></div>
+    <div class="zoombar">
+      <button id="zin" title="放大">＋</button>
+      <button id="zout" title="缩小">－</button>
+      <button id="zfit" title="适应画面">⤢</button>
+    </div>
+    <div class="legend" id="legend"></div>
+  </section>
+  <aside class="panel" id="panel"></aside>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="hanzi-data">[
+ {
+  "char": "藩",
+  "pinyin": "fān",
+  "shuowen": "藩，屏也。从艸，潘聲。",
+  "shuowenConf": "确定",
+  "evolution": [
+   "甲骨文：未见（待查）",
+   "金文：［字形图占位］",
+   "小篆：［字形图占位］ 上艸下潘",
+   "隶书：［字形图占位］",
+   "楷书：藩"
+  ],
+  "judge": "《说文》解释为“屏”，就是遮挡用的东西；字从艹，说明是用草木编成的；《周易》里公羊撞上的“藩”就是篱笆。所以本义定为“篱笆”。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "篱笆",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "藩篱",
+     "藩垣",
+     "篱藩"
+    ],
+    "parse": "藩篱 = 藩（篱笆）+ 篱（篱笆），两个意思相同的字并列",
+    "modern": "外婆在菜园四周扎了一圈竹藩篱。",
+    "classic": {
+     "text": "羝羊触藩，羸其角。",
+     "src": "《周易·大壮》",
+     "tr": "公羊用角去撞篱笆，角被篱笆卡住了。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "屏障、护卫",
+    "type": "引申",
+    "why": "篱笆能挡住外人，所以能挡、能护的东西都叫“藩”。",
+    "family": [
+     "藩屏",
+     "藩卫",
+     "藩篱"
+    ],
+    "parse": "藩屏 = 藩（屏障）+ 屏（遮挡），意思相近的字并列",
+    "modern": "高山像一道藩屏，挡住了北方的寒风。",
+    "classic": {
+     "text": "价人维藩，大师维垣。",
+     "src": "《诗经·大雅·板》",
+     "tr": "善良的人是国家的篱障，广大民众是国家的围墙。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "s1",
+    "name": "藩国、属地",
+    "type": "比喻",
+    "why": "诸侯国围在天子四周保护他，就像一圈篱笆。",
+    "family": [
+     "藩国",
+     "藩王",
+     "藩属"
+    ],
+    "parse": "藩王 = 藩（封地）+ 王（君王），前一个字说明后一个字",
+    "modern": "明朝把很多皇子分封到各地做藩王。",
+    "classic": {
+     "text": "故封建亲戚，以蕃屏周。",
+     "src": "《左传·僖公二十四年》",
+     "tr": "所以分封亲族建立诸侯国，来做周王室的屏障。（原文写作“蕃”，与“藩”相通）"
+    },
+    "conf": "通行说法"
+   },
+   {
+    "id": "s3",
+    "from": "s2",
+    "name": "藩镇",
+    "type": "转喻",
+    "why": "唐朝镇守一方的军事长官像守边的篱笆，就用“藩镇”称呼他们和他们的地盘。",
+    "family": [
+     "藩镇",
+     "藩帅",
+     "强藩"
+    ],
+    "parse": "藩镇 = 藩（屏卫一方）+ 镇（镇守），并列",
+    "modern": "唐朝后期藩镇割据，国家四分五裂。",
+    "classic": null,
+    "conf": "通行说法"
+   }
+  ],
+  "parts": {
+   "meaning": "艹：表示和草木有关，篱笆多用竹木草编成",
+   "sound": "潘：表示读音（潘 pān → 藩 fān，声母变了）",
+   "form": "上下结构：艹 + 潘"
+  },
+  "pitfalls": {
+   "read": "读 fān，不读 pān（容易被声旁“潘”带偏）。",
+   "write": "艹下面是完整的“潘”，三点水不能漏；“番”上面的短撇别丢。"
+  },
+  "code": [
+   "艹字头的字多与草木有关：藩、芙、蕴、蔬。",
+   "形声字的声旁读音可能变化：潘 pān → 藩 fān，记字要单独记音。"
+  ]
+ },
+ {
+  "char": "拂",
+  "pinyin": "fú",
+  "shuowen": "拂，過擊也。从手，弗聲。",
+  "shuowenConf": "确定",
+  "evolution": [
+   "甲骨文：未见（待查）",
+   "金文：［字形图占位］",
+   "小篆：［字形图占位］ 左手右弗",
+   "隶书：［字形图占位］",
+   "楷书：拂"
+  ],
+  "judge": "《说文》说“过击”，指手或东西顺势掠过、甩打一下；字从扌，是手的动作。今天的“拂袖”“拂过”都还留着这种“掠过”的动作感。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "掠过击打、甩动",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "拂袖",
+     "拂动",
+     "拂击"
+    ],
+    "parse": "拂袖 = 拂（甩动）+ 袖（袖子），动作 + 对象",
+    "modern": "他气得一拂袖子就走了。",
+    "classic": {
+     "text": "折若木以拂日兮，聊逍遥以相羊。",
+     "src": "《楚辞·离骚》",
+     "tr": "折下若木的枝条去拂打太阳，暂且自在地徘徊。（“拂”的具体解释，注家有分歧）"
+    },
+    "conf": "通行说法"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "轻轻擦过",
+    "type": "引申",
+    "why": "打的力气变小了，就从“击打”变成了“轻轻掠过”。",
+    "family": [
+     "吹拂",
+     "拂面",
+     "拂过"
+    ],
+    "parse": "吹拂 = 吹（风吹）+ 拂（轻擦），意思相近并列",
+    "modern": "晚风轻轻吹拂着我的脸。",
+    "classic": {
+     "text": "云想衣裳花想容，春风拂槛露华浓。",
+     "src": "李白《清平调词》其一",
+     "tr": "见云想起她的衣裳，见花想起她的容貌；春风吹拂栏杆，花上露珠晶莹。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "掸去、擦拭",
+    "type": "引申",
+    "why": "手掠过时顺便把灰尘带走了，就是“掸、擦”。",
+    "family": [
+     "拂拭",
+     "拂尘",
+     "拂去"
+    ],
+    "parse": "拂尘 = 拂（掸）+ 尘（灰尘），原是动作，后来指掸灰的用具",
+    "modern": "奶奶用软布拂去相框上的灰。",
+    "classic": {
+     "text": "时时勤拂拭，勿使惹尘埃。",
+     "src": "《六祖坛经》神秀偈",
+     "tr": "要时常勤快地擦拭，别让它沾上灰尘。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s3",
+    "from": "core",
+    "name": "违背、不顺",
+    "type": "引申",
+    "why": "迎面逆着打过去，就有了“逆着来、不顺从”的意思。",
+    "family": [
+     "拂逆",
+     "拂意",
+     "拂人之性"
+    ],
+    "parse": "拂逆 = 拂（违背）+ 逆（不顺），同义并列",
+    "modern": "他不愿拂逆朋友的一片好意。",
+    "classic": {
+     "text": "行拂乱其所为。",
+     "src": "《孟子·告子下》",
+     "tr": "使他做的事总是不顺、被打乱。"
+    },
+    "conf": "通行说法"
+   },
+   {
+    "id": "s4",
+    "from": "core",
+    "name": "通“弼”：辅佐（bì）",
+    "type": "假借",
+    "why": "古人借“拂”这个字，来写读音相近的“弼（辅佐）”。",
+    "family": [
+     "拂士",
+     "法家拂士",
+     "辅拂"
+    ],
+    "parse": "拂士 = 拂（bì，辅佐）+ 士（人），指辅佐君主的贤士",
+    "modern": "“法家拂士”指敢说真话、辅佐君主的大臣。",
+    "classic": {
+     "text": "入则无法家拂士，出则无敌国外患者，国恒亡。",
+     "src": "《孟子·告子下》",
+     "tr": "国内没有守法度的大臣和辅佐的贤士，国外没有敌国的威胁，这样的国家常常会灭亡。"
+    },
+    "conf": "确定"
+   }
+  ],
+  "parts": {
+   "meaning": "扌：表示手的动作",
+   "sound": "弗：表示读音（fú）",
+   "form": "左右结构：扌 + 弗"
+  },
+  "pitfalls": {
+   "read": "一般读 fú；“法家拂士”里读 bì。",
+   "write": "右边是“弗”（两竖穿过弓形），别写成“弟”。"
+  },
+  "code": [
+   "扌旁的字多是手的动作：拂、捆、拍、推。",
+   "“弗”做声旁一家：拂、佛、沸、氟，读音都接近 fú / fó / fèi。"
+  ]
+ },
+ {
+  "char": "鹤",
+  "pinyin": "hè",
+  "shuowen": "鶴，鳴九皋，聲聞于天。从鳥，隺聲。",
+  "shuowenConf": "确定",
+  "evolution": [
+   "甲骨文：［字形图占位］（字形关系待查）",
+   "金文：［字形图占位］",
+   "小篆：［字形图占位］ 左隺右鳥",
+   "隶书：［字形图占位］",
+   "楷书：鹤"
+  ],
+  "judge": "字从鸟，《说文》直接描写它的叫声能传到天上，说的就是这种长颈长腿的大水鸟，所以本义就是“鹤”这种鸟。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "鹤（一种水鸟）",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "丹顶鹤",
+     "白鹤",
+     "仙鹤"
+    ],
+    "parse": "丹顶鹤 = 丹顶（红色头顶）+ 鹤，前面说明后面",
+    "modern": "湿地里，几只丹顶鹤在翩翩起舞。",
+    "classic": {
+     "text": "鹤鸣于九皋，声闻于野。",
+     "src": "《诗经·小雅·鹤鸣》",
+     "tr": "鹤在深远的沼泽里鸣叫，声音传遍旷野。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "白色（白发）",
+    "type": "比喻",
+    "why": "鹤的羽毛雪白，就用来比喻老人的白头发。",
+    "family": [
+     "鹤发",
+     "鹤发童颜",
+     "鹤鬓"
+    ],
+    "parse": "鹤发童颜 = 鹤发（白发）+ 童颜（孩子般红润的脸），两部分并列",
+    "modern": "这位老爷爷鹤发童颜，精神极好。",
+    "classic": {
+     "text": "宛转蛾眉能几时？须臾鹤发乱如丝。",
+     "src": "刘希夷《代悲白头翁》",
+     "tr": "美丽的容颜能保持多久？转眼间白发就乱得像丝一样。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "长寿",
+    "type": "转喻",
+    "why": "古人相信鹤能活很久，看到鹤就想到长寿。",
+    "family": [
+     "鹤寿",
+     "松鹤延年",
+     "龟鹤遐龄"
+    ],
+    "parse": "松鹤延年 = 松鹤（松树和鹤）+ 延年（延长寿命）",
+    "modern": "爷爷生日时，我们送了一幅《松鹤延年》图。",
+    "classic": null,
+    "conf": "通行说法"
+   },
+   {
+    "id": "s3",
+    "from": "core",
+    "name": "高洁出众、自在隐逸",
+    "type": "比喻",
+    "why": "鹤姿态清高，常独自站在水边，像不爱热闹、与众不同的高人。",
+    "family": [
+     "鹤立鸡群",
+     "闲云野鹤",
+     "梅妻鹤子"
+    ],
+    "parse": "鹤立鸡群 = 鹤 + 立 + 鸡群：鹤站在鸡群里，比喻特别出众",
+    "modern": "他退休后像闲云野鹤一样四处旅行。",
+    "classic": {
+     "text": "嵇延祖卓卓如野鹤之在鸡群。",
+     "src": "《世说新语·容止》",
+     "tr": "嵇绍（字延祖）气度出众，就像野鹤站在鸡群里。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s4",
+    "from": "core",
+    "name": "伸长脖子盼望",
+    "type": "比喻",
+    "why": "鹤脖子长，站着时像踮脚伸脖子往远处看。",
+    "family": [
+     "鹤望",
+     "鹤立",
+     "延颈鹤望"
+    ],
+    "parse": "鹤望 = 鹤（像鹤一样）+ 望，前面说明怎样望",
+    "modern": "全村人鹤望着村口，等孩子们放学回家。",
+    "classic": null,
+    "conf": "通行说法"
+   }
+  ],
+  "parts": {
+   "meaning": "鸟：表示是一种鸟",
+   "sound": "隺：表示读音（hè）",
+   "form": "左右结构：隺 + 鸟"
+  },
+  "pitfalls": {
+   "read": "读 hè（四声），不读 hú、hào。",
+   "write": "左边是“隺”（上面像秃宝盖，下面是“隹”），不是“崔”，上面没有“山”。"
+  },
+  "code": [
+   "鸟字旁、隹字旁都和鸟有关：鹤、鸭、雀、雁。",
+   "动物的特点常被拿来比喻人：鹤的白→白发，鹤的长寿→祝寿，鹤的清高→高洁。"
+  ]
+ },
+ {
+  "char": "蚀",
+  "pinyin": "shí",
+  "shuowen": "蝕，敗創也。从虫、人、食，食亦聲。",
+  "shuowenConf": "通行说法",
+  "evolution": [
+   "甲骨文：未见（待查）",
+   "金文：未见（待查）",
+   "小篆：［字形图占位］ 虫 + 人 + 食",
+   "隶书：［字形图占位］",
+   "楷书：蝕 → 简化为 蚀"
+  ],
+  "judge": "字里有“虫”有“食”，像虫子在啃东西；《说文》说“败创”，就是被咬坏、留下伤口。所以本义定为“虫子蛀坏”。（具体解释学者有讨论，标为通行说法）",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "虫子蛀坏",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "虫蚀",
+     "蛀蚀",
+     "蚀痕"
+    ],
+    "parse": "蛀蚀 = 蛀（虫咬）+ 蚀（损坏），意思相近并列",
+    "modern": "这本旧书的边角被虫蚀出了小洞。",
+    "classic": null,
+    "conf": "通行说法"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "慢慢损坏、侵蚀",
+    "type": "引申",
+    "why": "像虫子一点点啃，东西被水、风、药水一点点弄坏。",
+    "family": [
+     "侵蚀",
+     "腐蚀",
+     "风蚀"
+    ],
+    "parse": "腐蚀 = 腐（烂）+ 蚀（损坏），意思相近并列",
+    "modern": "海浪日夜冲刷，岩石慢慢被侵蚀成奇怪的形状。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "s1",
+    "name": "亏损",
+    "type": "比喻",
+    "why": "钱一点一点变少，就像被虫子吃掉了一样。",
+    "family": [
+     "亏蚀",
+     "蚀本",
+     "蚀耗"
+    ],
+    "parse": "蚀本 = 蚀（亏损）+ 本（本钱），动作 + 对象",
+    "modern": "连下一周雨，小摊没开张，还蚀了本。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s3",
+    "from": "core",
+    "name": "日蚀、月蚀（今多写“食”）",
+    "type": "假借",
+    "why": "古人觉得太阳月亮像被吃掉一块，写作“食”；后来也借同音的“蚀”来写。",
+    "family": [
+     "日蚀",
+     "月蚀",
+     "全蚀"
+    ],
+    "parse": "日蚀 = 日（太阳）+ 蚀（被遮掉一块）；现在规范写作“日食”",
+    "modern": "今天下午能看到日偏食。",
+    "classic": {
+     "text": "君子之过也，如日月之食焉：过也，人皆见之；更也，人皆仰之。",
+     "src": "《论语·子张》",
+     "tr": "君子的过错像日食月食：犯错时人人都看得见，改正后人人都敬仰他。（原文写作“食”）"
+    },
+    "conf": "通行说法"
+   }
+  ],
+  "parts": {
+   "meaning": "虫：表示虫子啃咬；饣（食）：也表意，表示“吃”",
+   "sound": "饣（食）：同时表示读音（食亦声）",
+   "form": "左右结构：饣 + 虫（会意兼形声）"
+  },
+  "pitfalls": {
+   "read": "读 shí（二声），不读 shì。",
+   "write": "左边是“饣”，不是“钅”；“日食”“月食”现在规范用“食”。"
+  },
+  "code": [
+   "会意兼形声：一个部件既表意又表音，如“蚀”的“食”。",
+   "“虫”旁不一定是虫子本身，也可能表示“像虫一样啃坏”。"
+  ]
+ },
+ {
+  "char": "浆",
+  "pinyin": "jiāng",
+  "shuowen": "漿，酢𩱷也。从水，將省聲。",
+  "shuowenConf": "通行说法",
+  "evolution": [
+   "甲骨文：未见（待查）",
+   "金文：［字形图占位］（待查）",
+   "小篆：［字形图占位］ 将省 + 水",
+   "隶书：［字形图占位］",
+   "楷书：漿 → 简化为 浆"
+  ],
+  "judge": "古人把米汤等稍稍发酵，变得微酸，当饮料喝，这就是“浆”；字从水，说明它是液体。（《说文》原文各本用字略有出入，标为通行说法）",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "古代微酸的饮料",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "浆水",
+     "壶浆",
+     "酒浆"
+    ],
+    "parse": "壶浆 = 壶（用壶装的）+ 浆（饮料），前面说明后面",
+    "modern": "古人出远门，常带一壶浆水解渴。",
+    "classic": {
+     "text": "箪食壶浆，以迎王师。",
+     "src": "《孟子·梁惠王下》",
+     "tr": "用竹筐装着饭，用壶盛着汤水，来迎接仁义的军队。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "泛指饮料、美酒",
+    "type": "引申",
+    "why": "从一种饮料扩大到各种好喝的饮料。",
+    "family": [
+     "琼浆",
+     "玉液琼浆",
+     "浆饮"
+    ],
+    "parse": "琼浆 = 琼（美玉，形容美好）+ 浆（饮料）",
+    "modern": "这杯鲜榨果汁，甜得像琼浆。",
+    "classic": {
+     "text": "华酌既陈，有琼浆些。",
+     "src": "《楚辞·招魂》",
+     "tr": "华美的酒杯已经摆好，有美酒琼浆啊。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "较浓的液体",
+    "type": "引申",
+    "why": "像米浆那样稠稠的液体，都可以叫“浆”。",
+    "family": [
+     "豆浆",
+     "泥浆",
+     "纸浆"
+    ],
+    "parse": "豆浆 = 豆（原料）+ 浆（稠液体），前面说明后面",
+    "modern": "早饭我喝了一杯热豆浆。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s3",
+    "from": "s2",
+    "name": "用米汤浆洗衣物",
+    "type": "转喻",
+    "why": "用“浆”这种东西去处理衣服，东西的名字就变成了动作。",
+    "family": [
+     "浆洗",
+     "上浆",
+     "浆硬"
+    ],
+    "parse": "浆洗 = 浆（上浆）+ 洗，两个动作连在一起",
+    "modern": "外婆把白衬衫浆洗得又挺又平。",
+    "classic": null,
+    "conf": "确定"
+   }
+  ],
+  "parts": {
+   "meaning": "水：表示是液体",
+   "sound": "将：表示读音（jiāng）",
+   "form": "上下结构：将 + 水"
+  },
+  "pitfalls": {
+   "read": "读 jiāng；“浆糊”规范写作“糨糊”，读 jiàng。",
+   "write": "下面是“水”。对比：桨（木，划船用）、奖（大）、酱（酉）。"
+  },
+  "code": [
+   "“将”字一家：浆（水）、桨（木）、奖（大）、酱（酉），看下面的部件就知道意思。",
+   "东西的名字可以变成动作：浆 → 浆衣服，锁 → 锁门。"
+  ]
+ },
+ {
+  "char": "芙",
+  "pinyin": "fú",
+  "shuowen": "芙，芙蓉也。从艸，夫聲。（大徐本新附字）",
+  "shuowenConf": "通行说法",
+  "evolution": [
+   "甲骨文：未见",
+   "金文：未见",
+   "小篆：［字形图占位］（新附字）",
+   "隶书：［字形图占位］",
+   "楷书：芙"
+  ],
+  "judge": "字从艹，表示植物；古书里“芙蓉”“芙蕖”都指荷花，“芙”几乎不单独用，总在这些词里出现，所以本义定为“芙蓉（荷花）”。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "芙蓉（荷花）",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "芙蓉",
+     "芙蕖",
+     "出水芙蓉"
+    ],
+    "parse": "芙蓉：两个字合起来才是荷花，不能拆开讲（联绵词）",
+    "modern": "池塘里的芙蓉开得正艳。",
+    "classic": {
+     "text": "制芰荷以为衣兮，集芙蓉以为裳。",
+     "src": "《楚辞·离骚》",
+     "tr": "把菱叶荷叶裁成上衣，把荷花缝成下裳。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "木芙蓉",
+    "type": "转喻",
+    "why": "有一种树开的花又大又美，像荷花，就借用了“芙蓉”这个名字。",
+    "family": [
+     "木芙蓉",
+     "芙蓉花",
+     "蓉城"
+    ],
+    "parse": "木芙蓉 = 木（长在树上的）+ 芙蓉",
+    "modern": "秋天，成都街头的木芙蓉开成一片粉白。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "美丽的容貌",
+    "type": "比喻",
+    "why": "荷花清丽好看，人们用它来比喻美丽的脸。",
+    "family": [
+     "芙蓉面",
+     "芙蓉如面",
+     "芙蓉颜"
+    ],
+    "parse": "芙蓉面 = 芙蓉（荷花般的）+ 面（脸）",
+    "modern": "画中的仙女面如芙蓉。",
+    "classic": {
+     "text": "芙蓉如面柳如眉，对此如何不泪垂。",
+     "src": "白居易《长恨歌》",
+     "tr": "荷花像她的脸，柳叶像她的眉，看到这些怎能不流泪。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s3",
+    "from": "core",
+    "name": "清新自然",
+    "type": "比喻",
+    "why": "荷花从清水里长出来，不用打扮就很美，比喻文章或人自然不做作。",
+    "family": [
+     "清水芙蓉",
+     "出水芙蓉",
+     "天然去雕饰"
+    ],
+    "parse": "清水芙蓉 = 清水 + 芙蓉：清水里长出的荷花",
+    "modern": "她的作文清新自然，像出水芙蓉。",
+    "classic": {
+     "text": "清水出芙蓉，天然去雕饰。",
+     "src": "李白《经乱离后天恩流夜郎忆旧游书怀赠江夏韦太守良宰》",
+     "tr": "像清水里长出的荷花，天然美丽，不用雕琢。"
+    },
+    "conf": "确定"
+   }
+  ],
+  "parts": {
+   "meaning": "艹：表示是植物",
+   "sound": "夫：表示读音（fū → fú）",
+   "form": "上下结构：艹 + 夫"
+  },
+  "pitfalls": {
+   "read": "读 fú（二声），不读 fū。",
+   "write": "下面是“夫”，两横、撇出头；别写成“天”。"
+  },
+  "code": [
+   "联绵词：两个字合起来才有意思，拆开不能讲，如芙蓉、蝴蝶、葡萄、垃圾。",
+   "“夫”做声旁：芙、扶、肤，读音接近 fú / fū。"
+  ]
+ },
+ {
+  "char": "垃",
+  "pinyin": "lā",
+  "shuowen": "《说文》未收此字（后起字）",
+  "shuowenConf": "确定",
+  "evolution": [
+   "甲骨文：无",
+   "金文：无",
+   "小篆：无",
+   "宋代文献已见“垃圾”一词（通行说法）",
+   "楷书：垃"
+  ],
+  "judge": "字从土，“垃圾”原指尘土、渣滓；“垃”从不单独用，只出现在“垃圾”里，所以本义就是“垃圾”。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "垃圾（脏土、废弃物）",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "垃圾",
+     "垃圾桶",
+     "垃圾分类"
+    ],
+    "parse": "垃圾：两个字都从土，合起来指扔掉的脏东西（联绵词）",
+    "modern": "吃完零食，要把包装袋扔进垃圾桶。",
+    "classic": {
+     "text": "更有载垃圾粪土之船，成群搬运而去。",
+     "src": "吴自牧《梦粱录》",
+     "tr": "还有专门装运垃圾粪土的船，成群地运走。"
+    },
+    "conf": "通行说法"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "没用的、质量差的",
+    "type": "比喻",
+    "why": "像垃圾一样没用、不好的东西，也叫“垃圾”。",
+    "family": [
+     "垃圾食品",
+     "垃圾邮件",
+     "垃圾广告"
+    ],
+    "parse": "垃圾食品 = 垃圾（低劣、没营养）+ 食品",
+    "modern": "油炸零食是垃圾食品，少吃为好。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "s1",
+    "name": "电脑里的无用数据",
+    "type": "比喻",
+    "why": "电脑里占地方又没用的文件，像房间里的垃圾。",
+    "family": [
+     "垃圾文件",
+     "垃圾箱（回收站）",
+     "清理垃圾"
+    ],
+    "parse": "垃圾文件 = 垃圾（没用的）+ 文件",
+    "modern": "电脑太慢了，先清理一下垃圾文件。",
+    "classic": null,
+    "conf": "确定"
+   }
+  ],
+  "parts": {
+   "meaning": "土：表示尘土、脏土",
+   "sound": "立：表示读音（音近，通行说法）",
+   "form": "左右结构：土 + 立"
+  },
+  "pitfalls": {
+   "read": "读 lā；台湾等地旧读“垃圾”为 lèsè。",
+   "write": "左边是“土”，别写成“扌”（那是“拉”）。"
+  },
+  "code": [
+   "“垃”和“拉”都用“立”：土旁指尘土，扌旁指手的动作。",
+   "联绵词“垃圾”两个字都带“土”，偏旁相同提示意思相关。"
+  ]
+ },
+ {
+  "char": "烤",
+  "pinyin": "kǎo",
+  "shuowen": "《说文》未收此字（近代字）",
+  "shuowenConf": "确定",
+  "evolution": [
+   "甲骨文：无",
+   "金文：无",
+   "小篆：无",
+   "近代通行（流行来历见下，待查）",
+   "楷书：烤"
+  ],
+  "judge": "从火、考声，是近代才通行的字，意思就是把东西靠近火烘。（有通行说法称画家齐白石为北京“烤肉宛”题匾，使“烤”字流行开来，具体待查）",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "靠近火使食物变熟",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "烤肉",
+     "烤红薯",
+     "烧烤"
+    ],
+    "parse": "烧烤 = 烧 + 烤，意思相近并列",
+    "modern": "冬天，街角飘来烤红薯的香味。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "靠近火取暖",
+    "type": "引申",
+    "why": "不烤食物，烤自己——把身子凑近火让它暖和。",
+    "family": [
+     "烤火",
+     "烤手",
+     "围炉烤火"
+    ],
+    "parse": "烤火 = 烤（靠近取暖）+ 火",
+    "modern": "放学回家，我先在炉子边烤烤手。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "烘干",
+    "type": "引申",
+    "why": "用火的热气，把湿东西弄干。",
+    "family": [
+     "烤干",
+     "烘烤",
+     "烤箱"
+    ],
+    "parse": "烘烤 = 烘 + 烤，意思相近并列",
+    "modern": "妈妈把淋湿的鞋子放在暖气旁烤干。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s3",
+    "from": "core",
+    "name": "非常炎热",
+    "type": "比喻",
+    "why": "太阳太热了，好像有火在烤人。",
+    "family": [
+     "烤人",
+     "炙烤",
+     "烤得发烫"
+    ],
+    "parse": "炙烤 = 炙（用火烤）+ 烤，形容极热",
+    "modern": "正午的太阳把操场烤得发烫。",
+    "classic": null,
+    "conf": "确定"
+   }
+  ],
+  "parts": {
+   "meaning": "火：表示和火、热有关",
+   "sound": "考：表示读音（kǎo，完全同音）",
+   "form": "左右结构：火 + 考"
+  },
+  "pitfalls": {
+   "read": "读 kǎo（三声）。",
+   "write": "右边是“考”，下面是“丂”；别写成“老”（下面是“匕”）。"
+  },
+  "code": [
+   "火字旁与火、热有关：烤、烧、炒、烘。",
+   "声旁和字完全同音最好记：考 → 烤、拷、铐。"
+  ]
+ },
+ {
+  "char": "晒",
+  "pinyin": "shài",
+  "shuowen": "曬，暴也。从日，麗聲。",
+  "shuowenConf": "确定",
+  "evolution": [
+   "甲骨文：未见（待查）",
+   "金文：未见（待查）",
+   "小篆：［字形图占位］ 日 + 麗",
+   "隶书：［字形图占位］",
+   "楷书：曬 → 简化为 晒"
+  ],
+  "judge": "字从日，表示和太阳有关；《说文》的“暴”就是今天的“曝（pù）”，在太阳下晒。所以本义是“在阳光下晒”。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "太阳照射、在阳光下晒",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "晒太阳",
+     "日晒",
+     "曝晒"
+    ],
+    "parse": "曝晒 = 曝（晒）+ 晒，同义并列",
+    "modern": "猫咪趴在窗台上晒太阳。",
+    "classic": {
+     "text": "郝隆七月七日出日中仰卧。人问其故，答曰：“我晒书。”",
+     "src": "《世说新语·排调》",
+     "tr": "郝隆七月初七躺在太阳下，有人问为什么，他说：“我在晒书。”（意思是肚子里全是书）"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "放在阳光下晒干",
+    "type": "引申",
+    "why": "让太阳去照东西，把它晒干、晒暖。",
+    "family": [
+     "晒被子",
+     "晒谷子",
+     "晾晒"
+    ],
+    "parse": "晾晒 = 晾（放在通风处）+ 晒",
+    "modern": "秋收后，农民在场院里晒谷子。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "冷落、搁在一边（口语）",
+    "type": "比喻",
+    "why": "把人丢在一边不理，就像东西晾在太阳底下没人管。",
+    "family": [
+     "晒在一边",
+     "把人晒着",
+     "被晒了"
+    ],
+    "parse": "晒在一边 = 晒（冷落）+ 在一边",
+    "modern": "他们聊得热闹，把我晒在一边。",
+    "classic": null,
+    "conf": "通行说法"
+   },
+   {
+    "id": "s3",
+    "from": "core",
+    "name": "公开展示（网络用语）",
+    "type": "假借",
+    "why": "一般认为来自英文 share 的读音，又正好有“拿出来亮一亮”的意思。",
+    "family": [
+     "晒图",
+     "晒成绩",
+     "晒美食"
+    ],
+    "parse": "晒图 = 晒（公开展示）+ 图",
+    "modern": "姐姐在朋友圈晒了她做的蛋糕。",
+    "classic": null,
+    "conf": "通行说法"
+   }
+  ],
+  "parts": {
+   "meaning": "日：表示和太阳有关",
+   "sound": "繁体“曬”的“麗”表音；简化后的“西”只是近音记号（通行说法）",
+   "form": "左右结构：日 + 西"
+  },
+  "pitfalls": {
+   "read": "读 shài（翘舌、四声），不读 sǎ。",
+   "write": "右边是“西”，不是“酉”。"
+  },
+  "code": [
+   "日字旁与太阳、时间有关：晒、晴、暖、晚。",
+   "简化字有时换了声旁，要和繁体对照着记：曬 → 晒。"
+  ]
+ },
+ {
+  "char": "霜",
+  "pinyin": "shuāng",
+  "shuowen": "霜，喪也。成物者。从雨，相聲。",
+  "shuowenConf": "确定",
+  "evolution": [
+   "甲骨文：未见（待查）",
+   "金文：［字形图占位］（待查）",
+   "小篆：［字形图占位］ 雨 + 相",
+   "隶书：［字形图占位］",
+   "楷书：霜"
+  ],
+  "judge": "字从雨，表示是天上水汽形成的现象；《说文》用“丧”来解释，说霜一来，草木就凋零。本义就是“霜”。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "霜（水汽凝成的白色冰晶）",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "霜冻",
+     "冰霜",
+     "霜降"
+    ],
+    "parse": "霜降 = 霜 + 降（落下）；二十四节气之一",
+    "modern": "清晨，草叶上结了一层白白的霜。",
+    "classic": {
+     "text": "蒹葭苍苍，白露为霜。",
+     "src": "《诗经·秦风·蒹葭》",
+     "tr": "芦苇青青，露水凝结成了霜。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "白色（白发）",
+    "type": "比喻",
+    "why": "霜是白的，用来比喻花白的头发。",
+    "family": [
+     "霜鬓",
+     "两鬓如霜",
+     "霜发"
+    ],
+    "parse": "霜鬓 = 霜（白色的）+ 鬓（耳边的头发）",
+    "modern": "爷爷两鬓染霜，笑起来却很年轻。",
+    "classic": {
+     "text": "艰难苦恨繁霜鬓，潦倒新停浊酒杯。",
+     "src": "杜甫《登高》",
+     "tr": "艰难困苦使我两鬓白发越来越多，衰颓中又刚刚戒了酒。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "冷淡、严厉",
+    "type": "比喻",
+    "why": "霜摸起来很冷，就用来形容人态度冷冰冰。",
+    "family": [
+     "冷若冰霜",
+     "凛若冰霜",
+     "霜威"
+    ],
+    "parse": "冷若冰霜 = 冷 + 若（像）+ 冰霜",
+    "modern": "门卫叔叔看起来冷若冰霜，其实很热心。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s3",
+    "from": "core",
+    "name": "像霜的白色粉末",
+    "type": "比喻",
+    "why": "细细白白的粉，看起来就像一层霜。",
+    "family": [
+     "糖霜",
+     "柿霜",
+     "面霜"
+    ],
+    "parse": "糖霜 = 糖 + 霜（像霜的粉末）",
+    "modern": "饼干上撒了一层糖霜。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s4",
+    "from": "core",
+    "name": "年岁",
+    "type": "转喻",
+    "why": "霜每年秋天来一次，就用“霜”代表一年。",
+    "family": [
+     "星霜",
+     "几度霜",
+     "历经风霜"
+    ],
+    "parse": "星霜 = 星（星辰一年转一圈）+ 霜（一年降一次），合指年岁",
+    "modern": "老校门历经几十载星霜，依旧挺立。",
+    "classic": null,
+    "conf": "通行说法"
+   }
+  ],
+  "parts": {
+   "meaning": "雨：表示天气现象",
+   "sound": "相：表示读音（xiāng → shuāng）",
+   "form": "上下结构：雨 + 相"
+  },
+  "pitfalls": {
+   "read": "读 shuāng（翘舌），不读 suāng、xiāng。",
+   "write": "雨字头做部首时变扁，最后一笔横钩写短；下面是“相”。"
+  },
+  "code": [
+   "雨字头的字多是天气现象：霜、雪、雷、露、雾。",
+   "“相”做声旁：霜、箱、厢、湘，读音接近 xiāng / shuāng。"
+  ]
+ },
+ {
+  "char": "剿",
+  "pinyin": "jiǎo",
+  "shuowen": "劋，絕也。从刀，喿聲。《周書》曰：天用劋絕其命。",
+  "shuowenConf": "通行说法",
+  "evolution": [
+   "甲骨文：未见（待查）",
+   "金文：未见（待查）",
+   "小篆：［字形图占位］ 喿 + 刀（劋）",
+   "隶书：［字形图占位］",
+   "楷书：剿（与“劋”通用，待查）"
+  ],
+  "judge": "字从刀，表示用刀砍断；《说文》解释为“绝”，就是斩断、灭绝。所以本义是“断绝、灭绝”。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "断绝、灭绝",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "剿绝",
+     "剿灭",
+     "剿除"
+    ],
+    "parse": "剿灭 = 剿（消灭）+ 灭，同义并列",
+    "modern": "大家想办法要把厨房里的蟑螂彻底剿灭。",
+    "classic": {
+     "text": "天用剿绝其命。",
+     "src": "《尚书·甘誓》",
+     "tr": "上天因此要断绝他的国运。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "用武力讨伐消灭",
+    "type": "引申",
+    "why": "从“断绝”发展到派军队去消灭坏人。",
+    "family": [
+     "剿匪",
+     "围剿",
+     "清剿"
+    ],
+    "parse": "剿匪 = 剿（讨伐消灭）+ 匪（土匪），动作 + 对象",
+    "modern": "电影讲了一支队伍进山剿匪的故事。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "抄袭（读 chāo）",
+    "type": "假借",
+    "why": "古人借“剿”字，来写读音相近、意思是“抄取”的那个词。",
+    "family": [
+     "剿袭",
+     "剿说",
+     "剿窃"
+    ],
+    "parse": "剿说 = 剿（chāo，抄取）+ 说（别人的话）",
+    "modern": "写作文要用自己的话，不可剿袭别人的文章。",
+    "classic": {
+     "text": "毋剿说，毋雷同。",
+     "src": "《礼记·曲礼上》",
+     "tr": "不要把别人的话当作自己的，也不要随声附和。"
+    },
+    "conf": "确定"
+   }
+  ],
+  "parts": {
+   "meaning": "刂：表示用刀砍、切",
+   "sound": "巢：表示读音（cháo → jiǎo / chāo）",
+   "form": "左右结构：巢 + 刂"
+  },
+  "pitfalls": {
+   "read": "一般读 jiǎo；“剿说”“剿袭”读 chāo。",
+   "write": "左边“巢”：上面三个折笔，中间“田”，下面“木”；右边是立刀。"
+  },
+  "code": [
+   "立刀旁和刀、切割有关：剿、割、削、剪。",
+   "多音字靠意思定读音：消灭读 jiǎo，抄袭读 chāo。"
+  ]
+ },
+ {
+  "char": "蕴",
+  "pinyin": "yùn",
+  "shuowen": "薀，積也。从艸，溫聲。《春秋傳》曰：薀利生孽。",
+  "shuowenConf": "通行说法",
+  "evolution": [
+   "甲骨文：未见（待查）",
+   "金文：未见（待查）",
+   "小篆：［字形图占位］ 艸 + 溫",
+   "隶书：［字形图占位］",
+   "楷书：蘊 → 简化为 蕴"
+  ],
+  "judge": "《说文》解释为“积”，像草一层一层堆积起来，所以本义是“积聚”。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "积聚",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "蕴积",
+     "蕴蓄",
+     "蕴结"
+    ],
+    "parse": "蕴积 = 蕴 + 积，同义并列",
+    "modern": "火山深处蕴积着巨大的能量。",
+    "classic": {
+     "text": "蕴利生孽。",
+     "src": "《左传·昭公十年》",
+     "tr": "积聚财利会产生祸害。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "包含、藏在里面",
+    "type": "引申",
+    "why": "东西积在里面，就是“藏着、包含着”。",
+    "family": [
+     "蕴含",
+     "蕴藏",
+     "蕴涵"
+    ],
+    "parse": "蕴藏 = 蕴（包含）+ 藏，近义并列",
+    "modern": "这首小诗蕴含着对妈妈的爱。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "s1",
+    "name": "深奥的内涵",
+    "type": "转喻",
+    "why": "藏在深处的东西，就用来指深奥的道理和内涵。",
+    "family": [
+     "底蕴",
+     "意蕴",
+     "精蕴"
+    ],
+    "parse": "底蕴 = 底（深处）+ 蕴（蕴藏的内涵）",
+    "modern": "这座古城文化底蕴深厚。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s3",
+    "from": "core",
+    "name": "闷热（热气郁积）",
+    "type": "引申",
+    "why": "热气积在一起散不开，天气就特别闷热。",
+    "family": [
+     "蕴隆",
+     "蕴热",
+     "郁蕴"
+    ],
+    "parse": "蕴隆 = 蕴（郁积）+ 隆（盛大），形容暑气积聚",
+    "modern": "雷雨前，空气蕴热，让人透不过气。",
+    "classic": {
+     "text": "旱既大甚，蕴隆虫虫。",
+     "src": "《诗经·大雅·云汉》",
+     "tr": "旱灾已经非常严重，暑气郁积，热气熏蒸。"
+    },
+    "conf": "通行说法"
+   }
+  ],
+  "parts": {
+   "meaning": "艹：表示草木堆积",
+   "sound": "缊（昷）：表示读音（wēn / yùn）",
+   "form": "上下结构：艹 + 纟 + 昷"
+  },
+  "pitfalls": {
+   "read": "读 yùn（四声），不读 wēn。",
+   "write": "艹下面左“纟”右“昷”；“昷”是“日”下“皿”，别漏写“日”。"
+  },
+  "code": [
+   "“昷”做声旁一家：温、蕴、瘟、氲。",
+   "抽象意思常从具体动作来：积聚 → 包含 → 内涵。"
+  ]
+ },
+ {
+  "char": "圾",
+  "pinyin": "jī",
+  "shuowen": "“垃圾”义《说文》未见；“圾”字是否见于《说文》及其训释待查",
+  "shuowenConf": "待查",
+  "evolution": [
+   "甲骨文：无",
+   "金文：无",
+   "小篆：待查",
+   "宋代文献已见“垃圾”一词（通行说法）",
+   "楷书：圾"
+  ],
+  "judge": "字从土，和“垃”组成“垃圾”，指尘土和废物；“圾”今天不单用，所以以“垃圾”为本义。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "垃圾（脏土、废弃物）",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "垃圾",
+     "垃圾站",
+     "垃圾车"
+    ],
+    "parse": "垃圾：两个字都从土，合起来指扔掉的脏东西（联绵词）",
+    "modern": "社区垃圾站每天早上清运一次。",
+    "classic": {
+     "text": "更有载垃圾粪土之船，成群搬运而去。",
+     "src": "吴自牧《梦粱录》",
+     "tr": "还有专门装运垃圾粪土的船，成群地运走。"
+    },
+    "conf": "通行说法"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "没用的、低劣的",
+    "type": "比喻",
+    "why": "像垃圾一样没价值的东西，也拿“垃圾”来说。",
+    "family": [
+     "垃圾时间",
+     "垃圾短信",
+     "垃圾话"
+    ],
+    "parse": "垃圾时间 = 垃圾（没有意义的）+ 时间：比赛胜负已定后的时段",
+    "modern": "比分拉开后，最后五分钟成了垃圾时间。",
+    "classic": null,
+    "conf": "确定"
+   }
+  ],
+  "parts": {
+   "meaning": "土：表示尘土、脏土",
+   "sound": "及：表示读音（jí → jī）",
+   "form": "左右结构：土 + 及"
+  },
+  "pitfalls": {
+   "read": "读 jī，在“垃圾”中读 lājī；旧读 sè。",
+   "write": "右边“及”：撇、横折折撇、捺，三笔；别写成“乃”。"
+  },
+  "code": [
+   "“及”做声旁一家：圾、级、极、汲，读音都是 jí / jī。",
+   "垃、圾都带“土”：同一个词里的两个字，偏旁常常相同。"
+  ]
+ },
+ {
+  "char": "绸",
+  "pinyin": "chóu",
+  "shuowen": "綢，繆也。从糸，周聲。",
+  "shuowenConf": "确定",
+  "evolution": [
+   "甲骨文：未见（待查）",
+   "金文：未见（待查）",
+   "小篆：［字形图占位］ 糸 + 周",
+   "隶书：［字形图占位］",
+   "楷书：綢 → 简化为 绸"
+  ],
+  "judge": "字从糸（丝线），《说文》用“缪”来解释，“绸缪”就是用绳子一圈圈缠绕捆紧。所以本义是“缠绕”，“丝绸”是后来的意思。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "缠绕、捆扎（绸缪）",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "绸缪",
+     "绸缪束薪",
+     "缠绸"
+    ],
+    "parse": "绸缪：两字连用，表示缠绕、捆紧",
+    "modern": "诗里的“绸缪束薪”，就是把柴草捆得紧紧的。",
+    "classic": {
+     "text": "绸缪束薪，三星在天。",
+     "src": "《诗经·唐风·绸缪》",
+     "tr": "把柴草紧紧捆好，三星已经升上了天空。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "事先做好准备",
+    "type": "比喻",
+    "why": "下雨前先把门窗捆扎修好，比喻提前做准备。",
+    "family": [
+     "未雨绸缪",
+     "绸缪牖户",
+     "早作绸缪"
+    ],
+    "parse": "未雨绸缪 = 未雨（还没下雨）+ 绸缪（修补捆扎好）",
+    "modern": "考试前一周就开始复习，这叫未雨绸缪。",
+    "classic": {
+     "text": "迨天之未阴雨，彻彼桑土，绸缪牖户。",
+     "src": "《诗经·豳风·鸱鸮》",
+     "tr": "趁天还没下雨，剥些桑树根皮，把窗户和门修补好。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "情意缠绵",
+    "type": "比喻",
+    "why": "感情像丝线一样缠在一起，分也分不开。",
+    "family": [
+     "情意绸缪",
+     "绸缪缱绻",
+     "绸缪之情"
+    ],
+    "parse": "情意绸缪 = 情意 + 绸缪（缠绵深厚）",
+    "modern": "两位老朋友久别重逢，情意绸缪。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s3",
+    "from": "core",
+    "name": "丝织品",
+    "type": "假借",
+    "why": "丝织品古代多写作“紬”，后来借用同音的“绸”来写。",
+    "family": [
+     "丝绸",
+     "绸缎",
+     "绸布"
+    ],
+    "parse": "丝绸 = 丝 + 绸，近义并列",
+    "modern": "丝绸之路把中国的丝绸运到了遥远的西方。",
+    "classic": null,
+    "conf": "通行说法"
+   }
+  ],
+  "parts": {
+   "meaning": "纟：表示和丝线有关",
+   "sound": "周：表示读音（zhōu → chóu）",
+   "form": "左右结构：纟 + 周"
+  },
+  "pitfalls": {
+   "read": "读 chóu（二声），不读 zhōu。",
+   "write": "右边“周”里面是“土”加“口”，别写成“吉”。"
+  },
+  "code": [
+   "绞丝旁和丝线、纺织有关：绸、缎、绣、编、绳。",
+   "“周”做声旁：绸、稠、惆、调、雕，读音变化较大。"
+  ]
+ },
+ {
+  "char": "屿",
+  "pinyin": "yǔ",
+  "shuowen": "《说文》正文未收“嶼”；是否见于新附字待查",
+  "shuowenConf": "待查",
+  "evolution": [
+   "甲骨文：无",
+   "金文：无",
+   "小篆：待查",
+   "隶书：［字形图占位］",
+   "楷书：嶼 → 简化为 屿"
+  ],
+  "judge": "字从山，海或江中露出水面的小山，就是小岛，所以本义是“小岛”。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "小岛",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "岛屿",
+     "孤屿",
+     "小屿"
+    ],
+    "parse": "岛屿 = 岛 + 屿（小岛），同类并列",
+    "modern": "南海散布着许多美丽的岛屿。",
+    "classic": {
+     "text": "乱流趋正绝，孤屿媚中川。",
+     "src": "谢灵运《登江中孤屿》",
+     "tr": "横渡急流直奔江心，孤零零的小岛在江中秀美动人。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "地名用字",
+    "type": "转喻",
+    "why": "用“屿”给一座座小岛起名字，成了地名的一部分。",
+    "family": [
+     "鼓浪屿",
+     "大屿山",
+     "火烧屿"
+    ],
+    "parse": "鼓浪屿 = 鼓浪（浪击礁石如击鼓）+ 屿（小岛）",
+    "modern": "暑假我们去厦门鼓浪屿听海浪声。",
+    "classic": null,
+    "conf": "确定"
+   }
+  ],
+  "parts": {
+   "meaning": "山：表示和山、陆地有关",
+   "sound": "与：表示读音（yǔ）",
+   "form": "左右结构：山 + 与"
+  },
+  "pitfalls": {
+   "read": "读 yǔ（三声）；旧读 xù，现在不用。别读成 yú。",
+   "write": "右边是“与”（共三笔），最后一横要长、穿过竖折折钩；别和“马”的右半混淆。"
+  },
+  "code": [
+   "山字旁和山有关：屿、峰、岭、峡。",
+   "“岛”和“屿”：大的叫岛，小的叫屿，常合用为“岛屿”。"
+  ]
+ },
+ {
+  "char": "氢",
+  "pinyin": "qīng",
+  "shuowen": "《说文》无此字（近代化学新造字）",
+  "shuowenConf": "确定",
+  "evolution": [
+   "甲骨文：无",
+   "金文：无",
+   "小篆：无",
+   "近代化学命名时新造",
+   "楷书：氫 → 简化为 氢"
+  ],
+  "judge": "这是化学家为元素造的新字：“气”字头表示常温下是气体；里面的“巠”取“轻”的读音和意思——氢是最轻的元素。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "氢元素（最轻的气体）",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "氢气",
+     "氢原子",
+     "氢元素"
+    ],
+    "parse": "氢气 = 氢（元素）+ 气（气体状态）",
+    "modern": "氢气球一松手就飞上了天。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "氢能源",
+    "type": "转喻",
+    "why": "用氢来做燃料，“氢”就代表了一种干净的能源。",
+    "family": [
+     "氢能",
+     "氢燃料",
+     "氢能源汽车"
+    ],
+    "parse": "氢能 = 氢 + 能（能源）",
+    "modern": "氢能源汽车排出的只有水。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "氢弹",
+    "type": "转喻",
+    "why": "一种利用氢的同位素聚变的武器，就用“氢”来命名。",
+    "family": [
+     "氢弹",
+     "重氢",
+     "氢核"
+    ],
+    "parse": "氢弹 = 氢（原料）+ 弹（炸弹）",
+    "modern": "1967 年，中国成功试爆了第一颗氢弹。",
+    "classic": null,
+    "conf": "确定"
+   }
+  ],
+  "parts": {
+   "meaning": "气：表示常温下是气体",
+   "sound": "巠：表示读音，取“轻”字的音和义",
+   "form": "半包围结构：气 + 巠"
+  },
+  "pitfalls": {
+   "read": "读 qīng，不读 jīng。",
+   "write": "“气”字头里面是“巠”的简化形（又 + 工），横折弯钩包住里面。"
+  },
+  "code": [
+   "化学元素造字规律：气字头 = 常温气体（氢、氧、氮）；金字旁 = 金属（铅、铜）；石字旁 = 固态非金属（碳、硅）。",
+   "新造字的声旁也可以兼表意：“氢”取“轻”。"
+  ]
+ },
+ {
+  "char": "驼",
+  "pinyin": "tuó",
+  "shuowen": "《说文》未收“驼”字；古书多写作“橐驼”“橐它”（具体字形待查）",
+  "shuowenConf": "通行说法",
+  "evolution": [
+   "甲骨文：无",
+   "金文：无",
+   "小篆：无“驼”（古作“橐驼”）",
+   "隶书：［字形图占位］",
+   "楷书：駝 → 简化为 驼"
+  ],
+  "judge": "字从马，指像马一样能驮东西的大牲口；古代叫“橐驼”，一般认为是因为它的背像背着口袋（橐）。本义是“骆驼”。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "骆驼",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "骆驼",
+     "驼峰",
+     "驼铃"
+    ],
+    "parse": "驼峰 = 驼（骆驼）+ 峰（像山峰的鼓包）",
+    "modern": "沙漠里，驼铃叮当作响。",
+    "classic": {
+     "text": "其奇畜则橐駞、驴、骡……",
+     "src": "《史记·匈奴列传》（原文用字待查）",
+     "tr": "他们奇特的牲畜有骆驼、驴、骡等。"
+    },
+    "conf": "通行说法"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "背弯曲隆起",
+    "type": "比喻",
+    "why": "人的背弯得鼓起来，像骆驼的驼峰。",
+    "family": [
+     "驼背",
+     "驼着腰",
+     "背有点驼"
+    ],
+    "parse": "驼背 = 驼（弯曲隆起）+ 背",
+    "modern": "爷爷年纪大了，背有点驼。",
+    "classic": {
+     "text": "病偻，隆然伏行，有类橐驼者，故乡人号之驼。",
+     "src": "柳宗元《种树郭橐驼传》",
+     "tr": "他患了驼背病，弯着腰走路，样子像骆驼，所以乡里人叫他“驼”。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "驼色（浅棕色）",
+    "type": "转喻",
+    "why": "用骆驼毛的颜色来称呼这种浅棕色。",
+    "family": [
+     "驼色",
+     "驼绒",
+     "驼毛"
+    ],
+    "parse": "驼色 = 驼（骆驼毛的）+ 色",
+    "modern": "妈妈买了一件驼色大衣。",
+    "classic": null,
+    "conf": "确定"
+   }
+  ],
+  "parts": {
+   "meaning": "马：表示马一类的牲口",
+   "sound": "它：表示读音（古音与 tuó 相近）",
+   "form": "左右结构：马 + 它"
+  },
+  "pitfalls": {
+   "read": "读 tuó（二声），不读 tā。",
+   "write": "右边是“它”，别写成“宅”（多了一撇）。"
+  },
+  "code": [
+   "马字旁和马或牲口有关：驼、驴、骑、驮。",
+   "“它”做声旁一家：驼、陀、沱、舵，读音多为 tuó / duò。"
+  ]
+ },
+ {
+  "char": "妆",
+  "pinyin": "zhuāng",
+  "shuowen": "妝，飾也。从女，牀省聲。",
+  "shuowenConf": "确定",
+  "evolution": [
+   "甲骨文：［字形图占位］（待查）",
+   "金文：［字形图占位］",
+   "小篆：［字形图占位］ 爿 + 女",
+   "隶书：［字形图占位］",
+   "楷书：妝 → 简化为 妆"
+  ],
+  "judge": "字从女，古代女子梳头打扮最常见；《说文》解释为“饰”，就是修饰、打扮。本义是“打扮”。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "修饰打扮",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "化妆",
+     "梳妆",
+     "妆扮"
+    ],
+    "parse": "梳妆 = 梳（梳头）+ 妆（打扮），两个动作并列",
+    "modern": "演出前，老师帮我们化了淡妆。",
+    "classic": {
+     "text": "阿姊闻妹来，当户理红妆。",
+     "src": "《木兰诗》",
+     "tr": "姐姐听说妹妹回来了，对着门户梳妆打扮。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "打扮出来的样子（妆容）",
+    "type": "转喻",
+    "why": "用“打扮”这个动作，指打扮之后的样子。",
+    "family": [
+     "淡妆",
+     "浓妆",
+     "卸妆"
+    ],
+    "parse": "淡妆 = 淡（素雅的）+ 妆（妆容）",
+    "modern": "京剧演员下台后，要先卸妆。",
+    "classic": {
+     "text": "欲把西湖比西子，淡妆浓抹总相宜。",
+     "src": "苏轼《饮湖上初晴后雨二首》其二",
+     "tr": "想把西湖比作西施，不论淡雅还是浓艳的打扮，都那么合适。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "打扮用品、嫁妆",
+    "type": "转喻",
+    "why": "打扮要用的东西，和出嫁时带的物品，也叫“妆”。",
+    "family": [
+     "嫁妆",
+     "妆奁",
+     "妆台"
+    ],
+    "parse": "嫁妆 = 嫁（出嫁）+ 妆（带去的物品）",
+    "modern": "外婆的嫁妆里有一只雕花木箱。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s3",
+    "from": "s1",
+    "name": "景物被装点",
+    "type": "比喻",
+    "why": "大自然像人一样，被雪、花“化了妆”。",
+    "family": [
+     "新妆",
+     "晨妆",
+     "妆点"
+    ],
+    "parse": "妆点 = 妆（打扮）+ 点（点缀），近义并列",
+    "modern": "一夜大雪，给城市换上了一身新妆。",
+    "classic": null,
+    "conf": "通行说法"
+   }
+  ],
+  "parts": {
+   "meaning": "女：表示和女子、打扮有关",
+   "sound": "丬（爿，“床”省）：表示读音",
+   "form": "左右结构：丬 + 女"
+  },
+  "pitfalls": {
+   "read": "读 zhuāng（翘舌、一声）。",
+   "write": "左边“丬”是三笔（点、提、竖），别写成两点水“冫”；化妆用“妆”，服装用“装”。"
+  },
+  "code": [
+   "“丬”做声旁一家：妆、状、壮、装，读音接近 zhuàng / zhuāng。",
+   "同音字靠部首分：妆（女，打扮）—装（衣，衣服）—庄（广，村庄）。"
+  ]
+ },
+ {
+  "char": "捆",
+  "pinyin": "kǔn",
+  "shuowen": "《说文》未收此字（后起字；古代相关写法待查）",
+  "shuowenConf": "待查",
+  "evolution": [
+   "甲骨文：无",
+   "金文：无",
+   "小篆：无（待查）",
+   "隶书：待查",
+   "楷书：捆"
+  ],
+  "judge": "字从扌，表示手的动作；“困”是把“木”围在框里，提示读音，也像把东西围住扎紧。本义是“用绳子扎紧”。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "用绳子扎紧",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "捆绑",
+     "捆扎",
+     "捆紧"
+    ],
+    "parse": "捆绑 = 捆 + 绑，同义并列",
+    "modern": "爸爸把旧报纸捆好，送去回收。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "量词：成束的东西",
+    "type": "转喻",
+    "why": "捆好的一束东西，就用“捆”来数。",
+    "family": [
+     "一捆柴",
+     "一捆书",
+     "成捆"
+    ],
+    "parse": "一捆柴 = 一 + 捆（量词）+ 柴",
+    "modern": "爷爷从山上挑回两捆柴。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "束缚、限制",
+    "type": "比喻",
+    "why": "不是绳子捆，而是规矩或事情让人不自由。",
+    "family": [
+     "捆住手脚",
+     "被捆住",
+     "捆绑销售"
+    ],
+    "parse": "捆住手脚 = 捆住 + 手脚：比喻放不开做事",
+    "modern": "别让手机把你的周末全捆住了。",
+    "classic": null,
+    "conf": "确定"
+   }
+  ],
+  "parts": {
+   "meaning": "扌：表示手的动作",
+   "sound": "困：表示读音（kùn → kǔn），也像把东西围住（通行说法）",
+   "form": "左右结构：扌 + 困"
+  },
+  "pitfalls": {
+   "read": "读 kǔn（三声），不读 kùn。",
+   "write": "右边“困”里面是“木”，别写成“禾”或“米”。"
+  },
+  "code": [
+   "扌旁的字多是手的动作：捆、绑、拂、扎。",
+   "“困”做声旁：捆、悃、阃，读音 kǔn / kùn。"
+  ]
+ },
+ {
+  "char": "铅",
+  "pinyin": "qiān",
+  "shuowen": "鉛，青金也。从金，㕣聲。",
+  "shuowenConf": "确定",
+  "evolution": [
+   "甲骨文：未见（待查）",
+   "金文：［字形图占位］（待查）",
+   "小篆：［字形图占位］ 金 + 㕣",
+   "隶书：［字形图占位］",
+   "楷书：鉛 → 简化为 铅"
+  ],
+  "judge": "字从金，表示是金属；《说文》说是“青金”，就是青灰色的金属。本义是金属“铅”。",
+  "senses": [
+   {
+    "id": "core",
+    "from": null,
+    "name": "金属铅",
+    "type": "本义",
+    "why": "",
+    "family": [
+     "铅块",
+     "铅球",
+     "铅锤"
+    ],
+    "parse": "铅球 = 铅（金属）+ 球；一种体育器材",
+    "modern": "体育课上，我们练习推铅球。",
+    "classic": null,
+    "conf": "确定"
+   },
+   {
+    "id": "s1",
+    "from": "core",
+    "name": "古代的白色妆粉",
+    "type": "转喻",
+    "why": "古人用铅制成白粉擦脸，就用“铅”指这种妆粉。",
+    "family": [
+     "铅华",
+     "铅粉",
+     "洗尽铅华"
+    ],
+    "parse": "铅华 = 铅（铅粉）+ 华（光彩）",
+    "modern": "她洗尽铅华，过上了朴素安静的生活。",
+    "classic": {
+     "text": "芳泽无加，铅华弗御。",
+     "src": "曹植《洛神赋》",
+     "tr": "不涂香脂，也不搽铅粉。"
+    },
+    "conf": "确定"
+   },
+   {
+    "id": "s2",
+    "from": "core",
+    "name": "铅笔芯",
+    "type": "转喻",
+    "why": "笔芯其实是石墨，但颜色像铅，名字就一直沿用下来。",
+    "family": [
+     "铅笔",
+     "铅芯",
+     "自动铅笔"
+    ],
+    "parse": "铅笔 = 铅（笔芯）+ 笔",
+    "modern": "我的铅笔芯又断了。",
+    "classic": null,
+    "conf": "通行说法"
+   },
+   {
+    "id": "s3",
+    "from": "core",
+    "name": "铅字、印刷",
+    "type": "转喻",
+    "why": "用铅合金铸成的活字印书，“铅”就代表了印刷。",
+    "family": [
+     "铅字",
+     "铅印",
+     "铅排"
+    ],
+    "parse": "铅字 = 铅（铅合金）+ 字（活字）",
+    "modern": "以前的报纸是用铅字一个个排出来的。",
+    "classic": null,
+    "conf": "确定"
+   }
+  ],
+  "parts": {
+   "meaning": "钅：表示是金属",
+   "sound": "㕣（yǎn）：表示读音（古今读音变化大）",
+   "form": "左右结构：钅 + 㕣"
+  },
+  "pitfalls": {
+   "read": "读 qiān；江西地名“铅山”读 yán。",
+   "write": "右边是“几”下加“口”，和“船”“沿”的右边一样。"
+  },
+  "code": [
+   "金字旁表示金属：铅、铜、铁、银。",
+   "“㕣”做声旁：铅、沿、船，读音差别很大，要单独记。"
+  ]
+ }
+]</script>
+<script>
+(function(){
+const DATA = JSON.parse(document.getElementById('hanzi-data').textContent);
+const TYPE_COLOR = {"本义":"var(--t-ben)","引申":"var(--t-yin)","比喻":"var(--t-bi)","转喻":"var(--t-zhuan)","假借":"var(--t-jia)"};
+const TYPE_HEX = {"本义":"#b5442e","引申":"#2f8f83","比喻":"#d9822b","转喻":"#7a5bb5","假借":"#5a7896"};
+const TYPE_DESC = {"引申":"从原来的意思自然延伸","比喻":"像……一样，借相似点","转喻":"借相关的事物来指代","假借":"借字形记录读音相近的词"};
+const CONF_COLOR = {"确定":"#3f8f4f","通行说法":"#3c6fb0","待查":"#c28a12"};
+const MENUS = ["字义扩展图","偏旁部首","声旁音部","字词句","汉字密码","易错诊所","记忆复习","学习路径"];
+const NS = "http://www.w3.org/2000/svg";
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let cur = 0, selId = "core";
+const view = {k:1,x:0,y:0};
+
+/* 顶部菜单 */
+const nav = $('topnav');
+MENUS.forEach((m,i)=>{
+  if(i) { const s=document.createElement('span'); s.className='sep'; s.textContent='｜'; nav.appendChild(s); }
+  const b=document.createElement('button'); b.textContent=m; if(i===0) b.className='active';
+  b.onclick=()=>{ if(i!==0) toast('「'+m+'」模块即将上线，敬请期待'); };
+  nav.appendChild(b);
+});
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),1800); }
+
+/* 图例 */
+$('legend').innerHTML = Object.keys(TYPE_HEX).map(t=>`<span><i style="background:${TYPE_HEX[t]}"></i>${t}</span>`).join('') +
+  `<span style="margin-left:6px;color:var(--ink2)">把握：</span>` + Object.keys(CONF_COLOR).map(c=>`<span><i style="width:9px;height:9px;border-radius:50%;background:${CONF_COLOR[c]}"></i>${c}</span>`).join('');
+
+/* 左侧字表 */
+const list = $('charlist');
+DATA.forEach((d,i)=>{
+  const b=document.createElement('button'); b.className='charbtn';
+  b.innerHTML=`<span class="c">${esc(d.char)}</span><span class="p">${esc(d.pinyin)}</span>`;
+  b.onclick=()=>select(i); list.appendChild(b);
+});
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  if(e.key==='ArrowDown'||e.key==='ArrowRight'){ select((cur+1)%DATA.length); e.preventDefault(); }
+  if(e.key==='ArrowUp'||e.key==='ArrowLeft'){ select((cur-1+DATA.length)%DATA.length); e.preventDefault(); }
+});
+
+function select(i){
+  cur=i; selId="core";
+  [...list.children].forEach((b,j)=>b.classList.toggle('active',j===i));
+  list.children[i].scrollIntoView({block:'nearest'});
+  const d=DATA[i];
+  $('bigChar').textContent=d.char; $('bigPy').textContent=d.pinyin;
+  drawGraph(d); renderPanel(d); fit();
+}
+
+/* ---------- 布局 ---------- */
+function layout(d){
+  const byId={}; d.senses.forEach(s=>byId[s.id]={...s,children:[]});
+  const root=byId.core;
+  d.senses.forEach(s=>{ if(s.from && byId[s.from]) byId[s.from].children.push(byId[s.id]); });
+  // 叶子数决定扇区大小
+  function leaves(n){ return n.children.length? n.children.reduce((a,c)=>a+leaves(c),0):1; }
+  const total=leaves(root); const R=[0,310,540,750];
+  function place(n,a0,a1,depth){
+    n.depth=depth; const mid=(a0+a1)/2;
+    if(depth===0){n.x=0;n.y=0;} else { n.x=Math.cos(mid)*R[depth]; n.y=Math.sin(mid)*R[depth]; n.angle=mid; }
+    let a=a0;
+    n.children.forEach(c=>{ const span=(a1-a0)*leaves(c)/leaves(n); place(c,a,a+span,depth+1); a+=span; });
+  }
+  const start=-Math.PI/2 - Math.PI/Math.max(total,2);
+  place(root,start,start+Math.PI*2,0);
+  return Object.values(byId);
+}
+function el(tag,attrs,parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
+function wrap(text,n){ const out=[]; let s=String(text); while(s.length>n){ out.push(s.slice(0,n)); s=s.slice(n);} if(s) out.push(s); return out; }
+
+function drawGraph(d){
+  const vp=$('viewport'); vp.innerHTML='';
+  const nodes=layout(d); const map={}; nodes.forEach(n=>map[n.id]=n);
+  const gE=el('g',{},vp), gL=el('g',{},vp), gN=el('g',{},vp);
+  const CORE_R=78;
+  nodes.forEach(n=>{
+    if(!n.from) return; const p=map[n.from]; if(!p) return;
+    const col=TYPE_HEX[n.type]||'#999';
+    // 弧线
+    const mx=(p.x+n.x)/2, my=(p.y+n.y)/2, dx=n.x-p.x, dy=n.y-p.y, len=Math.hypot(dx,dy)||1;
+    const bend=p.depth===0?0:22; const cx=mx-dy/len*bend, cy=my+dx/len*bend;
+    el('path',{d:`M${p.x},${p.y} Q${cx},${cy} ${n.x},${n.y}`,class:'edge'+(n.type==='假借'?' dash':''),stroke:col,opacity:.85},gE);
+    // 箭头点
+        // 标签
+    const t=p.depth===0?0.56:0.5, lx=(1-t)*(1-t)*p.x+2*(1-t)*t*cx+t*t*n.x, ly=(1-t)*(1-t)*p.y+2*(1-t)*t*cy+t*t*n.y;
+    const g=el('g',{class:'elabel',transform:`translate(${lx},${ly})`},gL);
+    const lines=wrap(n.why,11);
+    const bh=lines.length*15+8, bw=Math.max(...lines.map(l=>l.length))*12+14;
+    const vertical=Math.abs(dx)<Math.abs(dy)*0.8;
+    // 竖向连线：原因放在药丸右侧；横向/斜向：放在下方
+    const side=vertical?(dx>=0?1:1):0;
+    const bx=vertical? 30 : -bw/2, by=vertical? -bh/2 : 14;
+    el('rect',{x:bx,y:by,width:bw,height:bh,rx:7,class:'whybg'},g);
+    lines.forEach((l,i)=>{ const tx=el('text',{x:bx+bw/2,y:by+15+i*15,class:'why'},g); tx.textContent=l; });
+    el('rect',{x:-24,y:-11,width:48,height:22,rx:11,fill:col,stroke:'#fff'},g);
+    const tt=el('text',{x:0,y:1,class:'tp'},g); tt.textContent=n.type;
+    const title=el('title',{},g); title.textContent=n.type+'：'+(TYPE_DESC[n.type]||'')+'\n'+n.why;
+  });
+  nodes.forEach(n=>{
+    if(!n.from){
+      const g=el('g',{class:'node core'+(selId==='core'?' sel':''),transform:'translate(0,0)'},gN);
+      el('circle',{r:CORE_R+10,class:'fillc'},g);
+      el('circle',{r:CORE_R,class:'ring'},g);
+      const c=el('text',{y:-10,class:'ch','text-anchor':'middle','dominant-baseline':'middle'},g); c.textContent=d.char;
+      const mean=n.name.length>6? n.name.slice(0,5)+'…':n.name;
+      const m=el('text',{y:44,class:'mean'},g); m.textContent='本义 · '+mean;
+      el('circle',{cx:CORE_R*0.7,cy:-CORE_R*0.7,r:7,fill:CONF_COLOR[n.conf],class:'confdot'},g);
+      g.onclick=ev=>{ev.stopPropagation(); choose('core');};
+      return;
+    }
+    const col=TYPE_HEX[n.type];
+    const lines=wrap(n.name,11); const w=Math.max(...lines.map(l=>l.length))*15.5+30, h=lines.length*20+20;
+    const g=el('g',{class:'node'+(selId===n.id?' sel':''),transform:`translate(${n.x},${n.y})`,'data-id':n.id},gN);
+    el('rect',{x:-w/2,y:-h/2,width:w,height:h,rx:12,stroke:col},g);
+    el('rect',{x:-w/2,y:-h/2,width:6,height:h,rx:3,fill:col,stroke:'none'},g);
+    lines.forEach((l,i)=>{ const tx=el('text',{x:3,y:-((lines.length-1)*10)+i*20},g); tx.textContent=l; });
+    el('circle',{cx:w/2-2,cy:-h/2+2,r:6,fill:CONF_COLOR[n.conf],class:'confdot'},g);
+    g.onclick=ev=>{ev.stopPropagation(); choose(n.id);};
+  });
+}
+function choose(id){
+  selId=id; const d=DATA[cur];
+  document.querySelectorAll('#viewport .node').forEach(g=>{
+    const gid=g.classList.contains('core')?'core':g.getAttribute('data-id'); g.classList.toggle('sel',gid===id);
+  });
+  renderPanel(d);
+  $('panel').scrollTop=0;
+}
+
+/* ---------- 缩放平移 ---------- */
+const svg=$('graph');
+function apply(){ $('viewport').setAttribute('transform',`translate(${view.x},${view.y}) scale(${view.k})`); }
+function fit(){
+  const bb=$('viewport').getBBox(); const W=svg.clientWidth, H=svg.clientHeight; if(!W||!H||!bb.width) return;
+  const pad=70; const k=Math.min((W-pad*2)/bb.width,(H-pad*2-40)/bb.height,1.25);
+  view.k=Math.max(k,0.3); view.x=W/2-(bb.x+bb.width/2)*view.k; view.y=H/2+20-(bb.y+bb.height/2)*view.k; apply();
+}
+function zoomAt(f,px,py){
+  const nk=Math.min(3,Math.max(0.25,view.k*f)); const r=nk/view.k;
+  view.x=px-(px-view.x)*r; view.y=py-(py-view.y)*r; view.k=nk; apply();
+}
+svg.addEventListener('wheel',e=>{ e.preventDefault(); const r=svg.getBoundingClientRect(); zoomAt(e.deltaY<0?1.12:1/1.12,e.clientX-r.left,e.clientY-r.top); },{passive:false});
+let drag=null; const pts=new Map();
+svg.addEventListener('pointerdown',e=>{ pts.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(pts.size===1){ drag={x:e.clientX,y:e.clientY,vx:view.x,vy:view.y,moved:false}; } });
+window.addEventListener('pointermove',e=>{
+  if(!pts.has(e.pointerId)) return;
+  const prev=pts.get(e.pointerId); pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pts.size===2){ const [a,b]=[...pts.values()]; const pa=e.pointerId===[...pts.keys()][0]?prev:a; 
+    const d1=Math.hypot(a.x-b.x,a.y-b.y); const other=[...pts.entries()].find(([k])=>k!==e.pointerId)[1];
+    const d0=Math.hypot(prev.x-other.x,prev.y-other.y); if(d0>0){ const r=svg.getBoundingClientRect(); zoomAt(d1/d0,(a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top);} return; }
+  if(drag){ const dx=e.clientX-drag.x, dy=e.clientY-drag.y; if(Math.abs(dx)+Math.abs(dy)>3){ drag.moved=true; svg.classList.add('dragging'); }
+    if(drag.moved){ view.x=drag.vx+dx; view.y=drag.vy+dy; apply(); } }
+});
+window.addEventListener('pointerup',e=>{ pts.delete(e.pointerId); if(pts.size===0){ drag=null; svg.classList.remove('dragging'); } });
+svg.addEventListener('click',e=>{ /* 空白点击不做事 */ },true);
+$('zin').onclick=()=>zoomAt(1.2,svg.clientWidth/2,svg.clientHeight/2);
+$('zout').onclick=()=>zoomAt(1/1.2,svg.clientWidth/2,svg.clientHeight/2);
+$('zfit').onclick=fit;
+window.addEventListener('resize',fit);
+
+/* ---------- 右栏 ---------- */
+function typeTag(t){ return `<span class="tag" style="background:${TYPE_HEX[t]}">${esc(t)}</span>`; }
+function confTag(c){ return `<span class="tag" style="background:${CONF_COLOR[c]||'#999'}" title="把握程度">${esc(c)}</span>`; }
+const MODERN_ONLY=["垃","烤","氢","圾"];
+function senseCard(d,s){
+  const isCore=s.id==='core';
+  let h=`<div class="card"><h2>${isCore?'本义：':''}${esc(s.name)} ${typeTag(s.type)} ${confTag(s.conf)}</h2>`;
+  if(!isCore){
+    const parent=d.senses.find(x=>x.id===s.from);
+    h+=`<div class="why-box"><b style="color:${TYPE_HEX[s.type]}">${esc(s.type)}</b>（${esc(TYPE_DESC[s.type])}）：从「${esc(parent?parent.name:'')}」来——${esc(s.why)}</div>`;
+  }
+  if(isCore){
+    h+=`<h4>《说文解字》</h4><div class="quote">${esc(d.shuowen)}</div><div class="src">把握：${confTag(d.shuowenConf)}</div>`;
+    h+=`<h4>字形演变（图片占位）</h4><div class="evo">${d.evolution.map(e=>`<div>${esc(e)}</div>`).join('')}</div>`;
+    h+=`<h4>为什么这是本义</h4><div class="why-box">${esc(d.judge)}</div>`;
+  }
+  h+=`<h4>词族</h4><div class="chips">${s.family.map(w=>`<span class="chip">${esc(w).replace(esc(d.char),'<b>'+esc(d.char)+'</b>')}</span>`).join('')}</div>`;
+  h+=`<h4>构词拆解</h4><div class="why-box">${esc(s.parse)}</div>`;
+  h+=`<h4>现代例句</h4><div class="sample"><span class="tag">示例</span>${esc(s.modern)}</div>`;
+  h+=`<h4>文言原句</h4>`;
+  if(s.classic){ h+=`<div class="quote">${esc(s.classic.text)}</div><div class="src">—— ${esc(s.classic.src)}</div><div class="tr">${esc(s.classic.tr)}</div>`; }
+  else if(MODERN_ONLY.includes(d.char)){ h+=`<div class="tbd">近现代才通行的字或用法，古书中暂无可靠用例。</div>`; }
+  else { h+=`<div class="tbd">待查：暂未核实到可靠出处，宁缺不编。</div>`; }
+  h+=`<h4>把握程度</h4><div style="font-size:13px;color:var(--ink2)">${confTag(s.conf)}&nbsp; 确定＝辞书与古籍明确；通行说法＝多数教材采用、学界有讨论；待查＝需进一步核对</div>`;
+  return h+`</div>`;
+}
+function renderPanel(d){
+  const s=d.senses.find(x=>x.id===selId)||d.senses[0];
+  let h=`<div class="sectitle">义项详情</div>`+senseCard(d,s);
+  h+=`<div class="sectitle">「${esc(d.char)}」字档案</div>`;
+  h+=`<div class="card"><h2>偏旁拆分</h2><div class="parts">
+      <div class="part m"><div class="lb">表义部分</div>${esc(d.parts.meaning)}</div>
+      <div class="part s"><div class="lb">表音部分</div>${esc(d.parts.sound)}</div>
+      <div class="formula">${esc(d.parts.form)}</div></div></div>`;
+  h+=`<div class="card"><h2>易错提醒</h2>
+      <div class="pit"><span class="ic" style="background:var(--t-bi)">读</span><span>${esc(d.pitfalls.read)}</span></div>
+      <div class="pit"><span class="ic" style="background:var(--brand)">写</span><span>${esc(d.pitfalls.write)}</span></div></div>`;
+  h+=`<div class="card"><h2>汉字密码 <span class="tag o" style="color:var(--t-zhuan)">规律</span></h2><ul class="code">${d.code.map(c=>`<li>${esc(c)}</li>`).join('')}</ul></div>`;
+  h+=`<div class="card"><h2>义项一览</h2><div class="chips">${d.senses.map(x=>`<span class="chip" style="cursor:pointer;border:1.5px solid ${x.id===selId?TYPE_HEX[x.type]:'transparent'}" data-sid="${x.id}">${esc(x.name)}</span>`).join('')}</div></div>`;
+  h+=`<div class="foot">说明：现代例句均为自编，标“示例”；古文引文只收常见出处，拿不准的标“待查”。字形演变为文字占位，后续替换为字形图。</div>`;
+  $('panel').innerHTML=h;
+  $('panel').querySelectorAll('[data-sid]').forEach(c=>c.onclick=()=>choose(c.dataset.sid));
+}
+
+select(0);
+})();
+</script>
+</body>
+</html>

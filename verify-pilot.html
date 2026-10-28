@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>核对报告（试点）· 字义扩展图「待查」条目</title>
+<style>
+:root{--paper:#fbf7ef;--card:#fffdf8;--ink:#2b2622;--ink2:#6b625a;--line:#e8dfd0;--accent:#c2412d;--ok:#2e8b57;--todo:#b0463a;--shadow:0 6px 22px rgba(80,60,30,.08);
+--serif:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC","SimSun",serif;--sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans)}
+header{display:flex;align-items:center;gap:12px;padding:12px 24px;background:var(--card);border-bottom:1px solid var(--line)}
+.logo{width:34px;height:34px;border-radius:10px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--serif);font-size:20px}
+header b{font-size:16px}header span{color:var(--ink2);font-size:13px}
+main{max-width:1280px;margin:0 auto;padding:20px 24px 60px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow)}
+.card .n{font-size:28px;font-weight:700;font-family:var(--serif)}.card .k{font-size:12px;color:var(--ink2)}
+.rules{font-size:13px;line-height:1.8;color:#4c4540}
+.bar{display:flex;gap:8px;align-items:center;margin:16px 0 10px;flex-wrap:wrap}
+.bar button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer;font:inherit;font-size:13px}
+.bar button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bar input{flex:1;min-width:180px;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;background:#fff}
+table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+th,td{padding:10px 12px;text-align:left;vertical-align:top;font-size:13px;line-height:1.65;border-bottom:1px solid #f1eadf}
+th{background:#faf5ec;font-weight:600;color:var(--ink2);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+td.zi{font-family:var(--serif);font-size:24px;font-weight:700;text-align:center;width:52px}
+td.f{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--ink2);width:150px}
+td.old{color:#8a7f74;width:20%}td.new{font-family:var(--serif);font-size:14px;width:24%}
+.st{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid}
+.st.ok{color:var(--ok);border-color:var(--ok);background:#ebf6ef}.st.todo{color:var(--todo);border-color:var(--todo);background:#fbeceb}
+tr.warn td.zi{box-shadow:inset 4px 0 0 var(--accent)}
+.flag{display:inline-block;margin-left:4px;font-size:11px;color:#fff;background:var(--accent);border-radius:6px;padding:0 6px}
+footer{margin-top:18px;font-size:12px;color:var(--ink2);line-height:1.8}
+@media(max-width:900px){.cards{grid-template-columns:1fr 1fr}td.old{display:none}th.old{display:none}}
+</style></head><body>
+<header><div class="logo">核</div><div><b>核对报告（试点）</b><br><span>识字星球 · 字义扩展图 · 「待查」条目逐条核对（maps-146、maps-166）</span></div></header>
+<main>
+<div class="cards">
+ <div class="card"><div class="n" id="cTotal">0</div><div class="k">条目总数</div></div>
+ <div class="card"><div class="n" id="cOk" style="color:var(--ok)">0</div><div class="k">已核（有可靠出处）</div></div>
+ <div class="card"><div class="n" id="cTodo" style="color:var(--todo)">0</div><div class="k">保持待查</div></div>
+ <div class="card"><div class="n" id="cWarn" style="color:var(--accent)">0</div><div class="k">发现原内容有误</div></div>
+</div>
+<div class="card rules"><b>核对规则：</b>只有书名、篇名、原句都核到时才标“已核”；只拿到线索、或断代和归属存在争议的，一律保持“待查”，原因写在说明里。转引自《康熙字典》的地方都已注明，建议再对一次原书。来源：汉典（含《说文解字》大徐本、段玉裁注、《康熙字典》）和中国哲学书电子化计划。条目由 maps-146、maps-166 中含“待查”的字段机械摘出，共 42 条。</div>
+<div class="bar">
+ <button data-f="all" class="on">全部</button><button data-f="已核">已核</button><button data-f="待查">待查</button><button data-f="warn">原内容有误</button>
+ <input id="q" placeholder="搜索字、字段或内容…">
+</div>
+<table><thead><tr><th>字</th><th>字段</th><th class="old">原内容</th><th>核对后</th><th>状态</th><th>说明 / 出处</th></tr></thead><tbody id="tb"></tbody></table>
+<footer>机器可读数据在本文件 &lt;script type="application/json" id="verify-data"&gt; 中，格式为 [{zi, field, old, new, status, reason}]。“原内容有误”表示核对发现现有文字和原典不符，必须修改，不能只改状态。</footer>
+</main>
+<script type="application/json" id="verify-data">
+[
+ {
+  "zi": "凹",
+  "field": "maps-146 · evo[0]",
+  "old": "始见时代待查",
+  "new": "始见时代待查",
+  "status": "待查",
+  "reason": "《康熙字典》引《神异经》“大荒石湖，千里無凸凹”，又引江淹《青苔赋》“悲凹險兮”。但《神异经》旧题东方朔撰，成书年代有争议，不能据此断定始见时代。（汉典·康熙字典）"
+ },
+ {
+  "zi": "凹",
+  "field": "maps-146 · err.write[1]",
+  "old": "共 5 画，笔顺请对照字典书写（待查核）",
+  "new": "共 5 画，笔顺代码 25251（丨、折、丨、折、一）",
+  "status": "已核",
+  "reason": "汉典“凹”字条：总笔画5，笔顺25251。折笔的具体名称没有在来源里核到，所以只写笔顺代码。"
+ },
+ {
+  "zi": "屯",
+  "field": "maps-146 · reason",
+  "old": "……也有学者另有解释，待查。",
+  "new": "……也有学者另有解释，待查。",
+  "status": "待查",
+  "reason": "“另有解释”需要具体指明学者和著作（古文字学专著）。本轮没有核到，不补写。"
+ },
+ {
+  "zi": "膛",
+  "field": "maps-146 · evo[0]",
+  "old": "后起形声字，始见时代待查",
+  "new": "后起形声字，始见时代待查",
+  "status": "待查",
+  "reason": "汉典、康熙字典都没有给出始见书证。断代要查语料库，本轮无法确认。"
+ },
+ {
+  "zi": "浇",
+  "field": "maps-146 · swConf",
+  "old": "待查",
+  "new": "确定",
+  "status": "已核",
+  "reason": "《说文·水部》原文是“澆，𣵽也。从水，堯聲。”（汉典·说文解字）。注意：maps-146 现在写的“澆，沃也”有误，要改成“𣵽也”。"
+ },
+ {
+  "zi": "浇",
+  "field": "maps-146 · nodes[s3].why",
+  "old": "古人说世风“浇薄”，意思是人情像兑了水一样变淡。（来源解释待查）",
+  "new": "段玉裁《说文解字注》：“凡醲者，澆之則薄，故其引伸之義爲薄。”——浓酒兑了水就变淡，所以“浇”引申为“薄”。",
+  "status": "已核",
+  "reason": "出处：《说文解字注·水部》“澆”字下（汉典）。段注说这是“引伸”，所以这条连线的类型最好从“比喻”改成“引申”。"
+ },
+ {
+  "zi": "浇",
+  "field": "maps-146 · nodes[s3].conf",
+  "old": "待查",
+  "new": "确定",
+  "status": "已核",
+  "reason": "书证：《淮南子·齐俗》“澆天下之淳”（注：“薄也”）；《庄子·缮性》“澆淳散朴”。（汉典·详细解释）"
+ },
+ {
+  "zi": "砰",
+  "field": "maps-146 · evo[0]",
+  "old": "后起形声字，始见时代待查",
+  "new": "后起形声字，始见时代待查",
+  "status": "待查",
+  "reason": "没有核到始见书证。断代要查语料库。"
+ },
+ {
+  "zi": "棘",
+  "field": "maps-146 · parts.yinNote",
+  "old": "无单独声旁（朿是否兼表音，待查）",
+  "new": "无单独声旁。《说文》：“从並朿。”段注：“棘庳於棗而朿尤多，故从並朿會意。”",
+  "status": "已核",
+  "reason": "《说文·朿部》及段注（汉典）。段玉裁明确说是会意，没有提到兼表音。"
+ },
+ {
+  "zi": "橡",
+  "field": "maps-146 · sw",
+  "old": "《说文》未见「橡」字头；「栩」下有“其皁，一曰樣”……（待查）",
+  "new": "《说文》没有“橡”字头。《说文·木部》：“樣，栩實。从木，羕聲。”段注：“様橡正俗字。”",
+  "status": "已核",
+  "reason": "汉典·说文解字“樣”字条及段注。原写法里“栩下有‘其皁，一曰樣’”这一句没有核实，应该删掉，改成以“樣”字条为准。"
+ },
+ {
+  "zi": "橡",
+  "field": "maps-146 · swConf",
+  "old": "待查",
+  "new": "确定",
+  "status": "已核",
+  "reason": "同上：《说文·木部》“樣，栩實”；段注说“様”“橡”是正字和俗字的关系。"
+ },
+ {
+  "zi": "橡",
+  "field": "maps-146 · evo[0]",
+  "old": "古作「樣」？（待查）",
+  "new": "古作「樣」（《说文》“樣，栩實”；段注：“様橡正俗字”）",
+  "status": "已核",
+  "reason": "汉典·说文解字注。"
+ },
+ {
+  "zi": "姥",
+  "field": "maps-146 · sw",
+  "old": "《说文》未收此字（待查）",
+  "new": "《说文》未收此字",
+  "status": "已核",
+  "reason": "汉典没有《说文》版块，《康熙字典》也只说“同姆”，没有引《说文》。另外，《广韵》有“姥，老母，或作姆，女师也”。"
+ },
+ {
+  "zi": "姥",
+  "field": "maps-146 · swConf",
+  "old": "待查",
+  "new": "确定",
+  "status": "已核",
+  "reason": "同上（结论是“未收”）。"
+ },
+ {
+  "zi": "姥",
+  "field": "maps-146 · evo[0]",
+  "old": "始见时代待查",
+  "new": "始见时代待查",
+  "status": "待查",
+  "reason": "有较早书证：《玉台新咏·古诗为焦仲卿妻作》“便可白公姥”（这里“姥”指婆婆，汉典）。但不能证明这就是最早出现，断代仍然待查。"
+ },
+ {
+  "zi": "姥",
+  "field": "maps-146 · nodes[s2].why",
+  "old": "相传山和仙姥（老婆婆）有关……（传说来源待查）",
+  "new": "相传山和仙姥（老婆婆）有关……（传说来源待查）",
+  "status": "待查",
+  "reason": "《康熙字典》只记了天姥山在新昌县东，引谢灵运诗“明登天姥岑”，没有说山名和老婆婆有关的传说，所以这条传说来源没有核到。"
+ },
+ {
+  "zi": "娅",
+  "field": "maps-146 · sw",
+  "old": "婭，兩壻相謂也。从女，亞聲。（原文待查）",
+  "new": "《说文》未收此字。《尔雅·释亲》：“兩壻相謂曰婭。”（据《康熙字典》转引）",
+  "status": "已核",
+  "reason": "汉典“娅”字条没有《说文》版块，《康熙字典》也没有引《说文》，只引了《尔雅·释亲》（作“兩壻相謂曰婭，言相亞次也”）。注意：原内容把一句没有出处的话当成《说文》原文，属于错误，必须改。汉典引作“两婿相谓为娅”，和《康熙字典》用字不同，建议拿《尔雅注疏》原书再核一次。"
+ },
+ {
+  "zi": "娅",
+  "field": "maps-146 · swConf",
+  "old": "待查",
+  "new": "确定",
+  "status": "已核",
+  "reason": "结论是“《说文》未收”。"
+ },
+ {
+  "zi": "娅",
+  "field": "maps-146 · nodes[s1].conf",
+  "old": "待查",
+  "new": "待查",
+  "status": "待查",
+  "reason": "“姻娅”泛指一切姻亲，这个用法没有核到可靠书证，保持待查。"
+ },
+ {
+  "zi": "萌",
+  "field": "maps-146 · nodes[s2].conf",
+  "old": "待查",
+  "new": "确定",
+  "status": "已核",
+  "reason": "“萌”通“氓”，指百姓：《管子·山国轨》“謂高田之萌曰”，注：“萌，民也”；《战国策》“施及萌隷”（以上为《康熙字典》转引）；《史记·三王世家》“奸巧边萌”（汉典）。附带发现：《说文》原文是“从艸，朙聲”，maps-146 写成“明聲”，属于用字小差异，建议统一。"
+ },
+ {
+  "zi": "俏",
+  "field": "maps-146 · sw",
+  "old": "《说文》未收此字（待查）",
+  "new": "《说文》未收此字",
+  "status": "已核",
+  "reason": "汉典没有《说文》版块；《康熙字典》最早引的是《广韵》（七肖切）。"
+ },
+ {
+  "zi": "俏",
+  "field": "maps-146 · swConf",
+  "old": "待查",
+  "new": "确定",
+  "status": "已核",
+  "reason": "同上（结论是“未收”）。"
+ },
+ {
+  "zi": "俏",
+  "field": "maps-146 · evo[0]",
+  "old": "始见时代待查",
+  "new": "始见时代待查",
+  "status": "待查",
+  "reason": "有较早书证：《列子·力命》“佹佹成者，俏成也”，但这里的“俏”意思是“像”，不是“俊俏”。《列子》成书年代本身也有争议，不能据此断代。"
+ },
+ {
+  "zi": "蕊",
+  "field": "maps-166 · sw",
+  "old": "《说文》未收「蕊」（古或作「蘂」「惢」，待查）",
+  "new": "《说文》未收「蕊」。《说文·惢部》：“惢，心疑也。从三心。”段注：“今花蘂字當作此。蘂橤皆俗字也。”",
+  "status": "已核",
+  "reason": "汉典·说文解字“惢”字条及段注。"
+ },
+ {
+  "zi": "蕊",
+  "field": "maps-166 · swConf",
+  "old": "待查",
+  "new": "确定",
+  "status": "已核",
+  "reason": "同上。"
+ },
+ {
+  "zi": "蕊",
+  "field": "maps-166 · evo[0]",
+  "old": "古作「蘂」「惢」？（待查）",
+  "new": "本字作「惢」，「蘂」「橤」为俗字（段注）",
+  "status": "已核",
+  "reason": "《说文解字注》“惢”字下。"
+ },
+ {
+  "zi": "蕊",
+  "field": "maps-166 · parts.yinNote",
+  "old": "三心：表花心丛聚；表音关系待查",
+  "new": "惢：段注认为是“花蘂”的本字；今人多分析为“从艸，惢声”（声旁兼表义）",
+  "status": "已核",
+  "reason": "段注“今花蘂字當作此”；汉典字形分析作“形声；上形下声”。《康熙字典》引《精蕴》：“華惢也。从三心。象形。”"
+ },
+ {
+  "zi": "梵",
+  "field": "maps-166 · sw",
+  "old": "《说文》正文未收；徐铉新附字有「梵」（原文待查）",
+  "new": "《说文·林部》（新附）：“梵，出自西域釋書，未詳意義。”",
+  "status": "已核",
+  "reason": "原文见中国哲学书电子化计划（ctext）的《说文解字·林部》，《康熙字典》也引作“《說文》出自西域釋書”。说它是徐铉新附字是通行的说法，本轮没有另外查到版本说明。"
+ },
+ {
+  "zi": "梵",
+  "field": "maps-166 · swConf",
+  "old": "待查",
+  "new": "确定",
+  "status": "已核",
+  "reason": "原文已核到；“新附”的归属按通行说法。"
+ },
+ {
+  "zi": "梵",
+  "field": "maps-166 · evo[0]",
+  "old": "随佛经翻译出现，时代待查",
+  "new": "随佛经翻译出现，时代待查",
+  "status": "待查",
+  "reason": "《东观汉记》有人名“樊梵”，《后汉书》有人名“高梵”，但这都是用作人名，不能用来证明“梵”作佛教义的出现时代。"
+ },
+ {
+  "zi": "梵",
+  "field": "maps-166 · parts.yiNote",
+  "old": "表义关系待查",
+  "new": "表义关系待查",
+  "status": "待查",
+  "reason": "《说文》本身说“未詳意義”。《广韵》有“梵，木得風皃”，《类篇》有“風行木上曰檒，或作梵”，这些只是线索，不足以确定“林”的表义关系。"
+ },
+ {
+  "zi": "梵",
+  "field": "maps-166 · nodes[s2].conf",
+  "old": "待查",
+  "new": "确定",
+  "status": "已核",
+  "reason": "书证：《维摩诘所说经·方便品第二》“示有妻子，常修梵行”（重编国语辞典引）。《康熙字典》引《韵会》：“華言淸淨，正言寂靜。”"
+ },
+ {
+  "zi": "颌",
+  "field": "maps-166 · sw",
+  "old": "《说文》「頜」字原文待查",
+  "new": "《说文·頁部》：“頜，𩔞也。从頁，合聲。”（《广韵》引作“顄也”）",
+  "status": "已核",
+  "reason": "中国哲学书电子化计划（ctext）《说文解字·頁部》；《宋本广韵·感韵》引《说文》作“顄也”。"
+ },
+ {
+  "zi": "颌",
+  "field": "maps-166 · swConf",
+  "old": "待查",
+  "new": "确定",
+  "status": "已核",
+  "reason": "同上。"
+ },
+ {
+  "zi": "颌",
+  "field": "maps-166 · evo[0]",
+  "old": "小篆「頜」（待查）",
+  "new": "小篆「頜」（见《说文·頁部》）",
+  "status": "已核",
+  "reason": "ctext“頜”字条有《说文》小篆字形。"
+ },
+ {
+  "zi": "狒",
+  "field": "maps-166 · sw",
+  "old": "《说文》未收此字（待查）",
+  "new": "《说文》未收「狒」，有「𥝋」（卷十四·禸部）：“周成王時，州靡國獻𥝋。人身，反踵，自笑，笑即上脣掩其目。食人。……《尔疋》云：‘𥝋𥝋，如人，被髮。’……从厹，象形。”",
+  "status": "已核",
+  "reason": "汉典·说文解字“𥝋”字条。名称一句汉典的字形显示不清，段注说“許作梟陽”，所以这里省略不录。"
+ },
+ {
+  "zi": "狒",
+  "field": "maps-166 · swConf",
+  "old": "待查",
+  "new": "确定",
+  "status": "已核",
+  "reason": "同上。"
+ },
+ {
+  "zi": "狒",
+  "field": "maps-166 · evo[0]",
+  "old": "古书写法待查",
+  "new": "古作「𥝋」（《说文》）；《广韵》本作「𦦷」，《集韵》本作「𥝋」",
+  "status": "已核",
+  "reason": "汉典·说文解字，《康熙字典》“狒”字条。"
+ },
+ {
+  "zi": "狒",
+  "field": "maps-166 · nodes[s1].why",
+  "old": "古书说有一种像人、披着头发的野兽也叫“狒狒”……（古书出处待查）",
+  "new": "《尔雅·释兽》：“狒狒如人，被髮，迅走，食人。”郭璞注：“梟羊也。”——古书里的“狒狒”是一种像人的怪兽。",
+  "status": "已核",
+  "reason": "这是《康熙字典》转引的《尔雅》和郭注，建议拿《尔雅注疏》原书再对一次。"
+ },
+ {
+  "zi": "狒",
+  "field": "maps-166 · nodes[s1].words[1]",
+  "old": "枭羊（待查）",
+  "new": "枭羊",
+  "status": "已核",
+  "reason": "郭璞《尔雅注》：“梟羊也”（《康熙字典》转引）。《说文》段注作“梟陽”。"
+ },
+ {
+  "zi": "狒",
+  "field": "maps-166 · nodes[s1].parse",
+  "old": "古称，具体所指待查",
+  "new": "古称，具体所指待查",
+  "status": "待查",
+  "reason": "古书的描述已经核到，但这种怪兽具体对应现实中的哪种动物、和今天的狒狒是不是同一种，没有可靠依据，保持待查。"
+ },
+ {
+  "zi": "狒",
+  "field": "maps-166 · nodes[s1].conf",
+  "old": "待查",
+  "new": "确定",
+  "status": "已核",
+  "reason": "这个义项（古书里像人的怪兽）有《尔雅·释兽》《说文》“𥝋”字条两处可靠出处。"
+ }
+]
+</script>
+<script>
+(function(){
+var D=JSON.parse(document.getElementById('verify-data').textContent);
+var WARN=function(r){return /有误|错误|与原文不符|应该删掉/.test(r.reason)};
+function esc(s){return String(s).replace(/[&<>]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m]})}
+document.getElementById('cTotal').textContent=D.length;
+document.getElementById('cOk').textContent=D.filter(function(r){return r.status==='已核'}).length;
+document.getElementById('cTodo').textContent=D.filter(function(r){return r.status==='待查'}).length;
+document.getElementById('cWarn').textContent=D.filter(WARN).length;
+var f='all',q='';
+function render(){
+ var rows=D.filter(function(r){
+  if(f==='warn'&&!WARN(r))return false;
+  if(f!=='all'&&f!=='warn'&&r.status!==f)return false;
+  if(q&&(r.zi+r.field+r.old+r.new+r.reason).indexOf(q)<0)return false;return true});
+ document.getElementById('tb').innerHTML=rows.map(function(r){
+  var w=WARN(r);
+  return '<tr'+(w?' class="warn"':'')+'><td class="zi">'+esc(r.zi)+'</td><td class="f">'+esc(r.field)+'</td><td class="old">'+esc(r.old)+'</td><td class="new">'+esc(r.new)+'</td><td><span class="st '+(r.status==='已核'?'ok':'todo')+'">'+esc(r.status)+'</span>'+(w?'<span class="flag">需改</span>':'')+'</td><td>'+esc(r.reason)+'</td></tr>'}).join('');
+}
+document.querySelectorAll('.bar button').forEach(function(b){b.onclick=function(){document.querySelectorAll('.bar button').forEach(function(x){x.classList.remove('on')});b.classList.add('on');f=b.dataset.f;render()}});
+document.getElementById('q').oninput=function(e){q=e.target.value.trim();render()};
+render();
+})();
+</script></body></html>

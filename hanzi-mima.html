@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>汉字密码 · 儿童汉字学习</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#f6f1ff;--ink:#2a2547;--sub:#6e678f;--line:#e6defa;--c1:#ff7a59;--c2:#4f8cff;--c3:#22b07d;--c4:#b05cff;--c5:#e0a100}
+html{font-size:clamp(15px,1vw + 10px,19px)}
+body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;background:radial-gradient(circle at 10% 0%,#fff3e6 0,transparent 40%),radial-gradient(circle at 100% 20%,#e7f0ff 0,transparent 40%),var(--bg);color:var(--ink);min-height:100vh}
+.kai{font-family:"KaiTi","STKaiti","楷体","Kaiti SC",serif}
+/* 顶部一级菜单 */
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.88);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:.6rem;padding:.6rem 1rem .2rem;max-width:1280px;margin:0 auto}
+.logo{width:2.4rem;height:2.4rem;border-radius:.8rem;background:linear-gradient(135deg,#ff9a62,#b05cff);color:#fff;display:grid;place-items:center;font-size:1.5rem;font-weight:900}
+.brand h1{font-size:1.25rem}.brand small{color:var(--sub);font-weight:400;font-size:.85rem;margin-left:.4rem}
+nav.topnav{display:flex;gap:.4rem;overflow-x:auto;padding:.4rem 1rem .6rem;max-width:1280px;margin:0 auto;scrollbar-width:none}
+nav.topnav::-webkit-scrollbar{display:none}
+.tn{flex:none;border:none;background:#f1ecff;color:var(--ink);border-radius:1.2rem;padding:.55rem 1rem;font-size:1rem;cursor:pointer;white-space:nowrap;font-weight:700}
+.tn.on{background:linear-gradient(135deg,#ff8a5c,#b05cff);color:#fff;box-shadow:0 .25rem .8rem rgba(176,92,255,.35)}
+.tn .soon{font-size:.7rem;opacity:.6;margin-left:.2rem}
+/* 布局 */
+.wrap{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:17rem 1fr;gap:1.2rem;padding:1rem}
+aside{position:sticky;top:7.2rem;align-self:start;max-height:calc(100vh - 8rem);overflow:auto;background:#fff;border-radius:1.4rem;padding:.8rem;box-shadow:0 .4rem 1.4rem rgba(80,60,160,.08)}
+.search{position:relative;margin-bottom:.7rem}
+.search input{width:100%;border:2px solid var(--line);border-radius:1rem;padding:.65rem .8rem .65rem 2.3rem;font-size:1rem;outline:none;background:#faf8ff}
+.search input:focus{border-color:#b05cff}
+.search span{position:absolute;left:.75rem;top:50%;transform:translateY(-50%)}
+.cat{margin-bottom:.4rem}
+.cat-h{display:flex;align-items:center;gap:.5rem;width:100%;border:none;background:none;padding:.6rem .5rem;border-radius:.9rem;cursor:pointer;font-size:1.05rem;font-weight:800;color:var(--ink);text-align:left}
+.cat-h .dot{width:2rem;height:2rem;border-radius:.7rem;display:grid;place-items:center;color:#fff;font-size:1rem;flex:none}
+.cat-h .arr{margin-left:auto;transition:transform .2s;color:var(--sub)}
+.cat.open .cat-h .arr{transform:rotate(90deg)}
+.cat-h.on{background:#f4efff}
+.subs{display:none;padding:.1rem 0 .3rem 2.6rem}
+.cat.open .subs{display:block}
+.sub{display:block;width:100%;text-align:left;border:none;background:none;padding:.45rem .6rem;border-radius:.7rem;cursor:pointer;font-size:.95rem;color:var(--sub);line-height:1.35}
+.sub:hover{background:#f7f4ff;color:var(--ink)}
+.sub.on{background:#efe7ff;color:var(--ink);font-weight:700}
+.menu-btn{display:none}
+/* 主区 */
+main{min-width:0}
+.hero{border-radius:1.6rem;padding:1.2rem 1.4rem;color:#fff;margin-bottom:1rem;position:relative;overflow:hidden}
+.hero h2{font-size:1.6rem}.hero p{opacity:.95;margin-top:.3rem;font-size:1rem}
+.hero .big{position:absolute;right:1rem;top:50%;transform:translateY(-50%);font-size:5.5rem;opacity:.2;font-weight:900}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(21rem,1fr));gap:1rem}
+.card{background:#fff;border-radius:1.4rem;padding:1.1rem 1.2rem;box-shadow:0 .4rem 1.4rem rgba(80,60,160,.08);border-top:.4rem solid var(--cc);scroll-margin-top:8rem;display:flex;flex-direction:column;gap:.7rem}
+.card.flash{animation:flash 1.2s}
+@keyframes flash{30%{box-shadow:0 0 0 .4rem rgba(176,92,255,.35)}}
+.card h3{font-size:1.25rem;display:flex;align-items:center;gap:.5rem}
+.card h3 .no{font-size:.8rem;background:var(--cc);color:#fff;border-radius:.6rem;padding:.1rem .45rem}
+.one{font-size:1.05rem;line-height:1.6;background:#faf7ff;border-radius:1rem;padding:.6rem .8rem}
+.lab{font-size:.85rem;font-weight:800;color:var(--sub);margin-bottom:.3rem;letter-spacing:.05em}
+.ex{list-style:none;display:flex;flex-direction:column;gap:.35rem}
+.ex li{font-size:1rem;line-height:1.5;padding-left:1.6rem;position:relative}
+.ex li::before{content:"✓";position:absolute;left:.2rem;color:#22b07d;font-weight:900}
+.ex li b{font-family:"KaiTi","STKaiti","楷体",serif;font-size:1.2rem;color:var(--ink)}
+.counter{background:#fff3f0;border-radius:1rem;padding:.6rem .8rem;font-size:1rem;line-height:1.55}
+.counter .lab{color:#d9534f}
+.src{font-size:.85rem;color:var(--sub);line-height:1.5}
+.src .tag{display:inline-block;border-radius:.5rem;padding:0 .4rem;font-size:.75rem;margin-left:.3rem;background:#fff1c2;color:#8a6100}
+.src .tag.q{background:#ffe0e0;color:#c0392b}
+.quiz{border:2px dashed var(--line);border-radius:1rem;padding:.7rem .8rem}
+.quiz .q{font-size:1.05rem;margin-bottom:.5rem;line-height:1.5}
+.opts{display:flex;flex-wrap:wrap;gap:.5rem}
+.opt{border:2px solid var(--line);background:#fff;border-radius:.9rem;padding:.55rem 1rem;font-size:1.05rem;cursor:pointer;color:var(--ink);min-height:2.8rem}
+.opt:hover{border-color:#b05cff}
+.opt.ok{background:#e3f8ee;border-color:#22b07d}
+.opt.bad{background:#ffe9e9;border-color:#e45b5b}
+.fb{margin-top:.5rem;font-size:.98rem;line-height:1.5;display:none}
+.fb.show{display:block}
+mark{background:#ffe27a;border-radius:.2rem;padding:0 .1rem}
+.empty{text-align:center;padding:3rem 1rem;color:var(--sub);font-size:1.1rem}
+.soonbox{background:#fff;border-radius:1.6rem;padding:3rem 1.5rem;text-align:center;box-shadow:0 .4rem 1.4rem rgba(80,60,160,.08)}
+.soonbox .em{font-size:4rem}
+.soonbox h2{margin:.6rem 0}
+.soonbox button{margin-top:1rem;border:none;background:linear-gradient(135deg,#ff8a5c,#b05cff);color:#fff;border-radius:1.2rem;padding:.8rem 1.4rem;font-size:1.05rem;cursor:pointer;font-weight:700}
+.stat{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.6rem}
+.stat span{background:rgba(255,255,255,.25);border-radius:1rem;padding:.2rem .7rem;font-size:.9rem}
+@media(max-width:860px){
+ .wrap{grid-template-columns:1fr;padding:.7rem}
+ aside{position:fixed;left:0;top:0;bottom:0;width:82%;max-width:20rem;max-height:none;border-radius:0 1.4rem 1.4rem 0;z-index:40;transform:translateX(-105%);transition:transform .25s}
+ aside.show{transform:none}
+ .mask{position:fixed;inset:0;background:rgba(30,20,60,.35);z-index:35;display:none}
+ .mask.show{display:block}
+ .menu-btn{display:inline-flex;align-items:center;gap:.4rem;border:none;background:#fff;border-radius:1rem;padding:.6rem 1rem;font-size:1rem;font-weight:700;margin-bottom:.8rem;box-shadow:0 .3rem 1rem rgba(80,60,160,.1);cursor:pointer;color:var(--ink)}
+ .cards{grid-template-columns:1fr}
+ .hero .big{font-size:4rem}
+}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand"><div class="logo kai">字</div><h1>汉字学堂<small>8–14岁 · 汉字的秘密</small></h1></div>
+ <nav class="topnav" id="topnav"></nav>
+</header>
+<div class="mask" id="mask" onclick="toggleSide(false)"></div>
+<div class="wrap" id="wrap">
+ <aside id="side">
+  <div class="search"><span>🔍</span><input id="q" type="search" placeholder="搜一搜：比如 汤、右文、量词" oninput="onSearch(this.value)"></div>
+  <div id="catlist"></div>
+ </aside>
+ <main id="main"></main>
+</div>
+
+<script>
+/* ===================== 数据 ===================== */
+/* 来源字段：能确认出处的写出处并标"待核对"；没有把握的写"待查"，不编造。 */
+const CATS=[
+{id:"c1",name:"形体密码",icon:"形",color:"#ff7a59",grad:"linear-gradient(135deg,#ff9a62,#ff6f91)",intro:"看字的样子，找出它藏着的意思和读音线索。",rules:[
+ {t:"偏旁表义",one:"形旁常常告诉我们：这个字的意思和什么有关。",
+  ex:["<b>氵</b>：河、湖、海、洗——都和水有关","<b>木</b>：林、松、桥、桌——都和树木、木头有关","<b>扌</b>：打、拍、提、推——都是手的动作","<b>口</b>：吃、喝、叫、唱——都要用到嘴"],
+  no:"“特”是牛字旁，可“特别”和牛没关系。偏旁只提示字最早的意思，字义变了以后就不能硬套。",
+  src:"《说文解字》按部首把字分组（待核对）",
+  quiz:{q:"哪个字的偏旁告诉我们它和“手”有关？",o:["拍","柏","怕"],a:0,e:"“拍”是提手旁，拍手要用手。“柏”是木字旁，“怕”是竖心旁。"}},
+ {t:"易混偏旁",one:"长得很像的偏旁，管的意思却不一样，要分清楚。",
+  ex:["<b>衤</b>（衣字旁）：衬、衫、裙、袖——和衣服有关","<b>礻</b>（示字旁）：礼、祝、福、神——和祭祀、祝福有关","<b>冫</b>（两点水）：冰、冷、冻——和寒冷有关","<b>氵</b>（三点水）：河、流、洗——和水有关"],
+  no:"“初”是衣字旁，意思却是“开始”。古人做衣服先用刀裁布，裁布是做衣服的开头，所以不能只看偏旁猜今天的意思。",
+  src:"《说文解字》：“初，始也。从刀从衣，裁衣之始也。”（待核对）",
+  quiz:{q:"“袜子”的“袜”是什么旁？",o:["衤 衣字旁","礻 示字旁"],a:0,e:"袜子是穿的，和衣服有关，所以是衣字旁“衤”，比“礻”多一点。"}},
+ {t:"声旁表音",one:"形声字的声旁，会提示这个字大概怎么读。",
+  ex:["<b>青</b>：清、晴、情、请——都读 qing（声调不同）","<b>包</b>：跑、泡、饱、抱——韵母都是 ao","<b>马</b>：妈、吗、骂——都读 ma","<b>方</b>：芳、房、访——都读 fang"],
+  no:"“江”的声旁是“工”，今天却读 jiāng，不读 gōng。读音几千年里变了，声旁只能“提示”，不能当标准答案。",
+  src:"《说文解字·叙》：“形声者，以事为名，取譬相成。”（待核对）",
+  quiz:{q:"猜一猜，“蜻蜓”的“蜻”怎么读？",o:["qīng","zhēng","mǎ"],a:0,e:"声旁是“青”，所以读 qīng。"}},
+ {t:"声旁表义（右文说）",one:"有些声旁不只管读音，还带着一点意思。宋代有人发现了这个规律，叫“右文说”。",
+  ex:["<b>浅</b>：水少——“小”的水","<b>钱</b>：古代指小块的金属钱","<b>残</b>：剩下的一点点","<b>贱</b>：价钱小、便宜"],
+  no:"不是每个声旁都带意思。“请”“情”里的“青”主要是表音，硬说它们都和“青色”有关就牵强了。",
+  src:"沈括《梦溪笔谈》卷十四记王圣美“右文”之说，以“戋”为“小”（待核对）",
+  quiz:{q:"按“右文说”，“浅、钱、残、贱”里的“戋”表示什么？",o:["小","大","红"],a:0,e:"“戋”有“小”的意思：水小是浅，剩下一点是残。"}},
+ {t:"古今字",one:"古时一个字身兼好几职，后来加个偏旁造出新字，帮它分担一个意思。",
+  ex:["<b>莫 → 暮</b>：“莫”本来是太阳落进草丛，后来加“日”写成“暮”","<b>然 → 燃</b>：“然”本来就是烧，后来加“火”写成“燃”","<b>要 → 腰</b>：“要”本来指腰，后来加“月”写成“腰”","<b>责 → 债</b>：“责”本来有欠债的意思，后来写成“债”"],
+  no:"分开以后就各管各的。今天“然”表示“这样、但是”，“燃”表示烧，写“自然”不能写成“自燃”。",
+  src:"《说文解字》：“莫，日且冥也。”“然，烧也。”“要，身中也。”（待核对）",
+  quiz:{q:"“要”字最早的意思是什么？",o:["腰","想要","重要"],a:0,e:"“要”本义是腰，后来另造了“腰”字。"}},
+ {t:"同源分化与只是像",one:"有的字是从同一个字变出来的，意思也连着；有的字只是长得像，其实毫无关系。",
+  ex:["同源：<b>木 → 本、末</b>——在“木”下面加一横指树根，上面加一横指树梢","同源：<b>刀 → 刃</b>——在刀上加一点，指刀口","只是像：<b>已、己、巳</b>——差一点点，来历各不相同","只是像：<b>人、入</b>——一撇一捺方向不同，意思无关"],
+  no:"不要因为“己”和“已”长得像，就以为它们意思相近。“自己”和“已经”完全不是一回事。",
+  src:"《说文解字》：“木下曰本”“木上曰末”（待核对）；已己巳、人入的来源：待查",
+  quiz:{q:"下面哪一组只是长得像，没有亲戚关系？",o:["本—末","己—已","刀—刃"],a:1,e:"“本末”“刀刃”都是在原字上加记号变来的；“己”和“已”只是像。"}}
+]},
+{id:"c2",name:"字义演变密码",icon:"义",color:"#4f8cff",grad:"linear-gradient(135deg,#5aa8ff,#7b6cff)",intro:"一个字的意思会长大、搬家、换方向，看看它是怎么变的。",rules:[
+ {t:"由具体到抽象",one:"先指看得见、摸得着的东西，后来指看不见的意思。",
+  ex:["<b>头</b>：脑袋 → 带头、开头","<b>口</b>：嘴巴 → 人口、口才","<b>手</b>：人的手 → 能手、手段","<b>心</b>：心脏 → 心情、用心"],
+  no:"旧意思没有消失。“头发”“洗手”里的“头”“手”还是具体的身体部位，要看在哪个词里。",
+  src:"待查",
+  quiz:{q:"“他是我们队的带头人”里的“头”是什么意思？",o:["脑袋","领头、在前面"],a:1,e:"这里不是脑袋，是“走在前面、领头”，是抽象的意思。"}},
+ {t:"由空间到时间",one:"表示位置、长短的字，后来也用来说时间。",
+  ex:["<b>前</b>：前门 → 前天","<b>后</b>：后院 → 后来","<b>长</b>：长绳子 → 长久","<b>短</b>：短裤 → 短暂"],
+  no:"“向前走”“排在后面”里的“前”“后”还是空间方向，不是时间。",
+  src:"待查",
+  quiz:{q:"“三天以后”的“后”说的是什么？",o:["位置","时间"],a:1,e:"“三天以后”说的是时间。"}},
+ {t:"转喻",one:"用和它紧紧连在一起的东西，来代替它本身（也叫借代）。",
+  ex:["<b>巾帼</b>：古代女子的头巾 → 指女子","<b>须眉</b>：胡子眉毛 → 指男子","<b>丝竹</b>：琴弦和竹笛 → 指音乐","<b>烽火</b>：报警的烟火 → 指战争"],
+  no:"要看语境。“她织了一条头巾”里的“头巾”就是头巾本身，没有指代谁。",
+  src:"待查",
+  quiz:{q:"“巾帼英雄”的“巾帼”指什么？",o:["头巾","女子","帽子"],a:1,e:"用古代女子戴的头巾来代指女子。"}},
+ {t:"比喻引申",one:"因为两样东西很像，打的比方用久了，就变成了字词的新意思。",
+  ex:["<b>骨干</b>：撑起身体的骨头 → 团队里最重要的人","<b>桥梁</b>：连接两岸的桥 → 起沟通作用的人或事","<b>包袱</b>：布包 → 心里的负担","<b>尾巴</b>：动物的尾巴 → 事情剩下的一小部分"],
+  no:"临时打的比方不算。“他像一头狮子”并没有让“狮子”多出“勇敢的人”这个固定意思，大家都这么用、词典收了才算。",
+  src:"待查",
+  quiz:{q:"“放下思想包袱”的“包袱”是什么意思？",o:["布做的包","心里的负担"],a:1,e:"把心里的负担比作背着的包袱。"}},
+ {t:"扩大、缩小、转移",one:"字义会变宽（扩大）、变窄（缩小），或干脆换成别的意思（转移）。",
+  ex:["扩大：<b>江、河</b>——古代专指长江、黄河 → 今天泛指河流","缩小：<b>臭</b>——古代指各种气味 → 今天只指难闻的气味","转移：<b>走</b>——古代是“跑” → 今天是“走路”","转移：<b>汤</b>——古代指热水 → 今天指菜汤"],
+  no:"不是所有字都变了。“山”“水”“人”的基本意思几千年来差不多没变。",
+  src:"王力主编《古代汉语》常举此类例子（待核对）",
+  quiz:{q:"“赴汤蹈火”的“汤”是什么？",o:["菜汤","热水"],a:1,e:"“汤”古义是热水，成语里保留了古义。"}},
+ {t:"反训",one:"同一个字，可以表示两个相反的意思。",
+  ex:["<b>受</b>：古时“接受”和“给予”都写作“受”，后来“给予”另写成“授”","<b>借</b>：借进来、借出去都叫“借”","<b>乱</b>：古书里有时表示“治理”，如“予有乱臣十人”","<b>租</b>：租进、租出都叫“租”"],
+  no:"“买卖”“东西”是两个字组成一个词，不是一个字有相反的意思，不算反训。",
+  src:"《论语·泰伯》：“予有乱臣十人。”（待核对）",
+  quiz:{q:"“我借你一本书”和“我向你借一本书”，书走的方向相反吗？",o:["相反","一样"],a:0,e:"前一句书从我到你，后一句从你到我，同一个“借”方向相反。"}}
+]},
+{id:"c3",name:"构词密码",icon:"词",color:"#22b07d",grad:"linear-gradient(135deg,#34c38f,#1fa2b8)",intro:"两个字怎么搭成一个词？搭法不同，意思大不一样。",rules:[
+ {t:"同义项近义",one:"两个词里有同一个字，并且这个字取的是同一个意思，词义就比较接近。",
+  ex:["<b>成功、成就、成果</b>——“成”都是“做成、完成”","<b>明亮、光明</b>——“明”都是“亮”","<b>美丽、美好</b>——“美”都是“好看、好”"],
+  no:"有同一个字不一定意思近。“开心”和“开门”都有“开”，但一个是心情好，一个是打开门。",
+  src:"待查",
+  quiz:{q:"哪一组词意思最接近？",o:["成功—成就","成功—成本"],a:0,e:"“成功”“成就”里的“成”都是“做成”。"}},
+ {t:"同字不同义",one:"同一个字放进不同的词，可能取的是完全不同的意思。",
+  ex:["<b>成功</b>的“成”是做成；<b>成本</b>是做东西要花掉的钱，不能按“做成”去理解","<b>打</b>人、<b>打</b>水、<b>打</b>伞——“打”意思各不同","<b>开</b>门、<b>开</b>花、<b>开</b>会——“开”意思各不同","<b>老</b>人的“老”是年纪大；<b>老</b>虎的“老”没有“年纪大”的意思"],
+  no:"“打球”“打牌”里的“打”都是“玩、进行”，意思差不多，不算不同义。",
+  src:"待查",
+  quiz:{q:"“老虎”的“老”是“年纪大”的意思吗？",o:["是","不是"],a:1,e:"小老虎也叫老虎，这里的“老”不表示年纪大。"}},
+ {t:"并列近义",one:"两个意思相近的字并排放在一起，组成一个词。",
+  ex:["<b>道路</b>：道 = 路","<b>寒冷</b>：寒 = 冷","<b>休息</b>：休 = 息","<b>朋友</b>：朋 = 友"],
+  no:"“马路”不是“马”和“路”意思相近，而是“马走的路”，属于前面修饰后面的偏正结构。",
+  src:"待查",
+  quiz:{q:"哪个词是两个近义字并排组成的？",o:["寒冷","冷饮"],a:0,e:"“寒”和“冷”意思相近；“冷饮”是“冷的饮料”。"}},
+ {t:"并列反义",one:"两个意思相反的字放在一起，有时还会变出一个全新的意思。",
+  ex:["<b>大小</b>：大和小 → 尺寸","<b>买卖</b>：买和卖 → 生意","<b>东西</b>：东和西 → 物品（读 dōngxi）","<b>矛盾</b>：矛和盾 → 说的话前后冲突"],
+  no:"“东西”读 dōngxī、指方向时，就只是“东边和西边”，没有“物品”的意思，要看读音和句子。",
+  src:"“矛盾”出自《韩非子·难一》“自相矛盾”的故事（待核对）",
+  quiz:{q:"“这件事有矛盾”的“矛盾”指什么？",o:["古代武器","互相冲突"],a:1,e:"从“自相矛盾”的故事来，意思是互相冲突。"}},
+ {t:"偏正定类",one:"后一个字定大类，前一个字说是哪一种。",
+  ex:["<b>火车、汽车、马车</b>——都是“车”","<b>松树、柳树</b>——都是“树”","<b>皮鞋、布鞋</b>——都是“鞋”","<b>苹果</b>——是一种“果”，也就是水果"],
+  no:"“马虎”既不是马也不是虎，它是不能拆的词，不能用“后字定大类”去套。",
+  src:"待查",
+  quiz:{q:"“皮鞋”属于哪一大类？",o:["皮","鞋"],a:1,e:"后字“鞋”定大类，“皮”说它是哪一种鞋。"}},
+ {t:"不能拆的词",one:"有些词两个字合起来才有意思，拆开单看字就讲不通。",
+  ex:["<b>葡萄</b>","<b>马虎</b>","<b>蝴蝶</b>","<b>玻璃</b>","<b>沙发</b>（外来词，照着读音写的）"],
+  no:"不是读起来顺就不能拆。“书包”拆开是“书”和“包”，意思是“装书的包”，可以拆。",
+  src:"待查",
+  quiz:{q:"哪个词不能拆开来理解？",o:["葡萄","书包"],a:0,e:"“葡”“萄”分开没有意思，“书包”可以拆。"}}
+]},
+{id:"c4",name:"用法密码",icon:"用",color:"#b05cff",grad:"linear-gradient(135deg,#c084fc,#7c5cff)",intro:"同一个字，放在句子里不同的位置，用法会变。",rules:[
+ {t:"名动兼类",one:"有些字既能当东西的名字，又能当动作。",
+  ex:["<b>锁</b>：一把锁 / 锁门","<b>画</b>：一幅画 / 画画","<b>钉</b>：一颗钉子 / 钉钉子","<b>刷</b>：一把刷子 / 刷牙"],
+  no:"不是所有名字都能当动作。“桌子”只能是东西，不能说“桌一下”。",
+  src:"待查",
+  quiz:{q:"“把门锁好”里的“锁”是什么？",o:["一样东西","一个动作"],a:1,e:"这里是“锁上”这个动作。"}},
+ {t:"量词看形状",one:"很多量词和东西的样子有关。",
+  ex:["<b>条</b>：长长的——一条河、一条鱼、一条绳子","<b>张</b>：平平能展开的——一张纸、一张桌子、一张脸","<b>颗</b>：小小圆圆的——一颗星、一颗豆子、一颗牙","<b>把</b>：有把手的——一把伞、一把刀、一把椅子"],
+  no:"量词也有约定俗成的。“一条新闻”“一条消息”并不是长条形的。",
+  src:"待查",
+  quiz:{q:"一（ ）珍珠，括号里填哪个？",o:["颗","张","条"],a:0,e:"珍珠小小圆圆的，用“颗”。"}},
+ {t:"数字虚指",one:"“三、九、百、千、万”常常不是真的数目，而是表示“很多”。",
+  ex:["<b>三思而行</b>：多想想再做","<b>九死一生</b>：非常危险","<b>千言万语</b>：话非常多","<b>三番五次</b>：很多次"],
+  no:"“三角形有三条边”“九月一日开学”里的数字是实指，一点不能少。",
+  src:"清代汪中《释三九》讨论三、九多表虚数（待核对）",
+  quiz:{q:"“三番五次”是什么意思？",o:["正好三次和五次","很多次"],a:1,e:"这里的数字是虚指，表示很多次。"}},
+ {t:"重叠变化",one:"字重叠起来，意思会有小小的变化。",
+  ex:["动作重叠表示试一下、时间短：<b>看看、试试、想想</b>","形容词重叠更生动、程度更深：<b>红红的、高高的</b>","名词或量词重叠表示“每一个”：<b>人人、天天、个个</b>"],
+  no:"“妈妈”“猩猩”“星星”本来就这么说，不是重叠出来的新意思。",
+  src:"待查",
+  quiz:{q:"“人人都爱读书”的“人人”是什么意思？",o:["每个人","两个人"],a:0,e:"名词重叠表示“每一个”。"}},
+ {t:"多音别义",one:"一个字有几个读音，读音不同，意思也不同。",
+  ex:["<b>好</b>：hǎo 好人 / hào 爱好","<b>长</b>：cháng 长短 / zhǎng 长大","<b>乐</b>：lè 快乐 / yuè 音乐","<b>行</b>：xíng 行走 / háng 银行"],
+  no:"有的字两个读音意思一样，比如“谁”读 shéi 或 shuí 都可以，这不算多音别义。",
+  src:"待查",
+  quiz:{q:"“好奇”的“好”读什么？",o:["hǎo","hào"],a:1,e:"“好奇”是喜欢探究，读 hào，和“爱好”一样。"}}
+]},
+{id:"c5",name:"古文密码",icon:"古",color:"#e0a100",grad:"linear-gradient(135deg,#f7b733,#fc7a57)",intro:"古人的意思，偷偷藏在今天的成语和词里。",rules:[
+ {t:"古义留在今词",one:"很多成语和词保留着字的古代意思。",
+  ex:["<b>走马观花</b>：“走”是跑","<b>短兵相接</b>：“兵”是兵器","<b>赴汤蹈火</b>：“汤”是热水","<b>不速之客</b>：“速”是邀请"],
+  no:"“走路”“士兵”里的“走”“兵”是今天的意思，不要都按古义去理解。",
+  src:"待查",
+  quiz:{q:"“短兵相接”的“兵”是什么？",o:["士兵","兵器"],a:1,e:"“兵”古义是兵器，短兵就是刀剑一类的短兵器。"}},
+ {t:"通假字",one:"古人写字时，用一个读音相同或相近的字，代替本来该用的字。",
+  ex:["<b>说</b> 通 <b>悦</b>：“学而时习之，不亦说乎”——高兴","<b>女</b> 通 <b>汝</b>：“诲女知之乎”——你","<b>知</b> 通 <b>智</b>：“是知也”——聪明","<b>见</b> 通 <b>现</b>：“风吹草低见牛羊”——出现"],
+  no:"通假只存在于古书里。今天写作文把“高兴”写成别的字，那是错别字，不能说是通假。",
+  src:"《论语·学而》《论语·为政》；“风吹草低见牛羊”出自北朝民歌《敕勒歌》（待核对）",
+  quiz:{q:"“不亦说乎”的“说”怎么读？",o:["shuō","yuè"],a:1,e:"“说”通“悦”，读 yuè，是高兴的意思。"}},
+ {t:"古今异义",one:"同一个词，古代的意思和今天不一样。",
+  ex:["<b>妻子</b>：古指妻子和儿女——“率妻子邑人来此绝境”","<b>交通</b>：古指交错相通——“阡陌交通”","<b>无论</b>：古指“更不用说”——“无论魏晋”","<b>牺牲</b>：古指祭祀用的牲畜"],
+  no:"很多词古今意思差不多，比如“山水”“日月”，不用每个都往古义上想。",
+  src:"陶渊明《桃花源记》（待核对）；“牺牲”古义：待查",
+  quiz:{q:"《桃花源记》里“阡陌交通”的“交通”是什么意思？",o:["车辆运输","田间小路交错相通"],a:1,e:"古义是交错相通，不是今天的交通运输。"}},
+ {t:"成语对举",one:"成语前后两半对称，意思相近或相反，互相照应。",
+  ex:["<b>千方百计</b>：千—百、方—计，意思相近","<b>大同小异</b>：大—小、同—异，意思相反","<b>东张西望</b>：东—西、张—望","<b>南来北往</b>：南—北、来—往"],
+  no:"“画蛇添足”是讲一个故事，前后不是对称配对，不能拆成两半去对。",
+  src:"待查",
+  quiz:{q:"“大同小异”里，和“同”相对的是哪个字？",o:["异","大","小"],a:0,e:"“同”对“异”，“大”对“小”。"}}
+]}
+];
+const TOP=["字义扩展图","偏旁部首","声旁音部","字词句","汉字密码","易错诊所","记忆复习","学习路径"];
+
+/* ===================== 状态与渲染 ===================== */
+let topSel=4,catSel="c1",ruleSel=null,query="";
+const $=id=>document.getElementById(id);
+const strip=s=>s.replace(/<[^>]+>/g,"");
+const escR=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+function hl(html){if(!query)return html;const re=new RegExp("("+escR(query)+")","g");
+ return html.split(/(<[^>]+>)/).map(p=>p.startsWith("<")?p:p.replace(re,"<mark>$1</mark>")).join("")}
+
+function renderTop(){
+ $("topnav").innerHTML=TOP.map((t,i)=>`<button class="tn ${i===topSel?"on":""}" onclick="pickTop(${i})">${t}${i===4?"":'<span class="soon">· 待开放</span>'}</button>`).join("");
+}
+function pickTop(i){topSel=i;renderTop();$("wrap").style.gridTemplateColumns=i===4?"":"1fr";$("side").style.display=i===4?"":"none";renderMain()}
+function renderSide(){
+ $("catlist").innerHTML=CATS.map((c,ci)=>`<div class="cat ${c.id===catSel||query?"open":""}">
+  <button class="cat-h ${c.id===catSel&&!query?"on":""}" onclick="pickCat('${c.id}')"><span class="dot kai" style="background:${c.color}">${c.icon}</span>${ci+1} ${c.name}<span class="arr">›</span></button>
+  <div class="subs">${c.rules.map((r,ri)=>`<button class="sub ${ruleSel===c.id+"-"+ri?"on":""}" onclick="pickRule('${c.id}',${ri})">${ci+1}.${ri+1} ${r.t}</button>`).join("")}</div></div>`).join("");
+}
+function pickCat(id){catSel=id;ruleSel=null;clearSearch();renderSide();renderMain();window.scrollTo({top:0,behavior:"smooth"})}
+function pickRule(cid,ri){
+ const changed=catSel!==cid||query;catSel=cid;ruleSel=cid+"-"+ri;clearSearch();renderSide();if(changed)renderMain();
+ toggleSide(false);
+ setTimeout(()=>{const el=$("card-"+cid+"-"+ri);if(el){el.scrollIntoView({behavior:"smooth",block:"start"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash")}},50);
+}
+function clearSearch(){if(query){query="";$("q").value=""}}
+function onSearch(v){query=v.trim();renderSide();renderMain()}
+
+function card(c,ci,r,ri){
+ const id=c.id+"-"+ri;
+ return`<article class="card" id="card-${id}" style="--cc:${c.color}">
+  <h3><span class="no">${ci+1}.${ri+1}</span>${hl(r.t)}</h3>
+  <div class="one">💡 ${hl(r.one)}</div>
+  <div><div class="lab">✅ 正例</div><ul class="ex">${r.ex.map(e=>`<li>${hl(e)}</li>`).join("")}</ul></div>
+  <div class="counter"><div class="lab">⚠️ 反例：什么时候不能套用</div>${hl(r.no)}</div>
+  <div class="src">📚 来源：${hl(r.src)}${/待查/.test(r.src)&&!/待核对/.test(r.src)?'<span class="tag q">待查</span>':'<span class="tag">请老师核对</span>'}</div>
+  <div class="quiz"><div class="lab">🎯 小练习</div><div class="q">${r.quiz.q}</div>
+   <div class="opts">${r.quiz.o.map((o,oi)=>`<button class="opt" onclick="answer(this,'${id}',${oi})">${o}</button>`).join("")}</div>
+   <div class="fb" id="fb-${id}"></div></div>
+ </article>`;
+}
+function answer(btn,id,oi){
+ const [cid,ri]=[id.split("-")[0],+id.split("-")[1]];const r=CATS.find(c=>c.id===cid).rules[ri];
+ const box=btn.parentNode;box.querySelectorAll(".opt").forEach((b,i)=>{b.classList.remove("ok","bad");if(i===r.quiz.a&&oi===r.quiz.a)b.classList.add("ok")});
+ const fb=$("fb-"+id);
+ if(oi===r.quiz.a){btn.classList.add("ok");fb.innerHTML="🎉 答对啦！"+r.quiz.e}
+ else{btn.classList.add("bad");fb.innerHTML="🤔 再想想，可以换一个试试。"}
+ fb.classList.add("show");
+}
+function renderMain(){
+ const m=$("main");
+ if(topSel!==4){m.innerHTML=`<div class="soonbox"><div class="em">🚧</div><h2>「${TOP[topSel]}」正在建设中</h2><p style="color:var(--sub)">本页先开放「汉字密码」模块。</p><button onclick="pickTop(4)">去看汉字密码 →</button></div>`;return}
+ const menuBtn=`<button class="menu-btn" onclick="toggleSide(true)">☰ 规律目录 / 搜索</button>`;
+ if(query){
+  const q=query;let html="",n=0;
+  CATS.forEach((c,ci)=>c.rules.forEach((r,ri)=>{const text=[r.t,r.one,...r.ex,r.no,r.src,r.quiz.q].map(strip).join(" ");
+   if(text.includes(q)){html+=card(c,ci,r,ri);n++}}));
+  m.innerHTML=menuBtn+`<div class="hero" style="background:linear-gradient(135deg,#6c5ce7,#b05cff)"><h2>🔍 “${q.replace(/</g,"&lt;")}” 的搜索结果</h2><p>找到 ${n} 条规律</p></div>`+(n?`<div class="cards">${html}</div>`:`<div class="empty">没找到哦，换个字试试，比如“汤”“量词”“通假”。</div>`);
+  return}
+ const ci=CATS.findIndex(c=>c.id===catSel),c=CATS[ci];
+ m.innerHTML=menuBtn+`<div class="hero" style="background:${c.grad}"><div class="big kai">${c.icon}</div><h2>${ci+1} ${c.name}</h2><p>${c.intro}</p>
+  <div class="stat"><span>📇 ${c.rules.length} 条规律</span><span>🎯 每条一道小练习</span></div></div>
+  <div class="cards">${c.rules.map((r,ri)=>card(c,ci,r,ri)).join("")}</div>`;
+}
+function toggleSide(v){$("side").classList.toggle("show",v);$("mask").classList.toggle("show",v)}
+
+renderTop();renderSide();renderMain();
+</script>
+</body>
+</html>

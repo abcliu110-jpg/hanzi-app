@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>识字星球 · 汉字学习</title>
+<!-- 默认变量：xzq-theme.css 缺失时兜底；外部主题文件加载后会覆盖这些值 -->
+<style>
+:root{
+  --xzq-bg:#fbf7ef; --xzq-surface:#ffffff; --xzq-surface-2:#fffdf8;
+  --xzq-ink:#2b2a33; --xzq-sub:#6f6b7a; --xzq-line:#e8e1d3;
+  --xzq-radius:16px; --xzq-shadow:0 6px 20px rgba(80,60,30,.08);
+  --xzq-font:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  --xzq-kai:"STKaiti","KaiTi","Kaiti SC","楷体",serif;
+  --xzq-meaning:#c2483d;  /* 字义扩展图 */
+  --xzq-radical:#2f8f6a;  /* 偏旁部首 */
+  --xzq-phonetic:#3b74c9; /* 声旁音部 */
+  --xzq-words:#e08a2b;    /* 字词句 */
+  --xzq-code:#8a56c2;     /* 汉字密码 */
+  --xzq-clinic:#d65a7a;   /* 易错诊所 */
+  --xzq-review:#1f9aa8;   /* 记忆复习 */
+  --xzq-path:#5a7d2a;     /* 学习路径 */
+}
+</style>
+<link rel="stylesheet" href="xzq-theme.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--xzq-font);background:var(--xzq-bg);color:var(--xzq-ink);display:flex;flex-direction:column;overflow:hidden;--mc:var(--xzq-meaning)}
+.kai{font-family:var(--xzq-kai)}
+button{font:inherit;cursor:pointer}
+/* ---------- 顶部 ---------- */
+header{display:flex;align-items:center;gap:16px;padding:10px 18px;background:var(--xzq-surface);border-bottom:1px solid var(--xzq-line);box-shadow:0 2px 10px rgba(80,60,30,.04);z-index:20;position:relative}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;white-space:nowrap;border:0;background:none;color:var(--xzq-ink)}
+.logo .planet{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd28a,#f08a4b 60%,#c2483d);display:grid;place-items:center;color:#fff;font-size:18px;position:relative;box-shadow:0 4px 10px rgba(194,72,61,.3)}
+.logo .planet::after{content:"";position:absolute;width:50px;height:12px;border:2px solid rgba(194,72,61,.45);border-radius:50%;transform:rotate(-18deg)}
+nav.top{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1}
+nav.top::-webkit-scrollbar{display:none}
+nav.top button{border:0;background:transparent;padding:9px 14px;border-radius:999px;font-size:14px;color:var(--xzq-sub);white-space:nowrap;transition:.2s;display:flex;align-items:center;gap:6px}
+nav.top button i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+nav.top button:hover{background:#f4efe5;color:var(--xzq-ink)}
+nav.top button.on{background:var(--c);color:#fff;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+nav.top button.on i{background:#fff}
+.search{position:relative;width:240px;flex:none}
+.search input{width:100%;border:1px solid var(--xzq-line);background:var(--xzq-bg);border-radius:999px;padding:9px 14px 9px 34px;font:inherit;font-size:14px;outline:none;transition:.2s}
+.search input:focus{border-color:var(--mc);background:#fff;box-shadow:0 0 0 3px color-mix(in srgb,var(--mc) 18%,transparent)}
+.search::before{content:"🔍";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.6}
+.drop{position:absolute;top:calc(100% + 6px);right:0;width:320px;max-height:420px;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.14);display:none;padding:6px;z-index:30}
+.drop.show{display:block}
+.drop .it{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer}
+.drop .it:hover,.drop .it.act{background:color-mix(in srgb,var(--xzq-meaning) 10%,#fff)}
+.drop .it .z{font-size:26px;width:36px;text-align:center}
+.drop .it .m{font-size:12px;color:var(--xzq-sub);line-height:1.5}
+.drop .none{padding:14px;color:var(--xzq-sub);font-size:13px;text-align:center}
+/* ---------- 主体 ---------- */
+.main{flex:1;display:grid;grid-template-columns:230px 1fr;min-height:0}
+aside{background:var(--xzq-surface-2);border-right:1px solid var(--xzq-line);overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:10px}
+.mhead{display:flex;align-items:center;gap:10px;padding:6px 6px 10px;border-bottom:1px dashed var(--xzq-line)}
+.mhead .ic{width:38px;height:38px;border-radius:12px;background:var(--mc);color:#fff;display:grid;place-items:center;font-size:20px}
+.mhead b{font-size:15px;display:block}
+.mhead small{font-size:11px;color:var(--xzq-sub)}
+.sub button.si{width:100%;text-align:left;border:0;background:transparent;padding:9px 12px;border-radius:10px;font-size:14px;color:var(--xzq-ink);display:flex;align-items:center;gap:8px;transition:.15s}
+.sub button.si:hover{background:#f4efe5}
+.sub button.si.on{background:color-mix(in srgb,var(--mc) 14%,#fff);color:var(--mc);font-weight:600}
+.sub button.si .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5}
+.panel{background:#fff;border-radius:12px;padding:10px;box-shadow:var(--xzq-shadow)}
+.panel h5{font-size:12px;color:var(--xzq-sub);font-weight:500;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid var(--xzq-line);background:#fff;border-radius:8px;padding:4px 9px;font-size:12.5px;color:var(--xzq-ink);transition:.15s}
+.chips button:hover{border-color:var(--mc);color:var(--mc)}
+.chips button.on{background:var(--mc);border-color:var(--mc);color:#fff}
+.chips button.has::after{content:"•";color:var(--mc);margin-left:2px}
+.chips button.on.has::after{color:#fff}
+.groups{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;max-height:240px;overflow:auto}
+.groups button{border:1px solid var(--xzq-line);background:#fff;border-radius:6px;padding:4px 0;font-size:11.5px;color:var(--xzq-sub)}
+.groups button.has{color:var(--xzq-ink);font-weight:600;border-color:color-mix(in srgb,var(--mc) 40%,var(--xzq-line))}
+.groups button:hover{border-color:var(--mc)}
+.groups button.on{background:var(--mc);color:#fff;border-color:var(--mc)}
+.zis{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.zis button{border:1px solid var(--xzq-line);background:#fff;border-radius:10px;padding:5px 0 3px;transition:.15s;color:var(--xzq-ink)}
+.zis button .c{font-size:22px;display:block;line-height:1.15;font-family:var(--xzq-kai)}
+.zis button .p{font-size:9.5px;color:var(--xzq-sub)}
+.zis button:hover{border-color:var(--mc);transform:translateY(-1px)}
+.zis button.on{background:var(--mc);border-color:var(--mc);color:#fff}
+.zis button.on .p{color:#ffffffcc}
+.local-s input{width:100%;border:1px solid var(--xzq-line);border-radius:10px;padding:8px 10px;font:inherit;font-size:13px;outline:none}
+.local-s input:focus{border-color:var(--mc)}
+.hint{font-size:11.5px;color:var(--xzq-sub);line-height:1.6}
+.idxstate{margin-top:auto;font-size:11px;color:var(--xzq-sub);line-height:1.6;padding:8px;border-top:1px dashed var(--xzq-line)}
+.idxstate label{color:var(--mc);cursor:pointer;text-decoration:underline}
+.idxstate input{display:none}
+/* ---------- 内容区 ---------- */
+.stage{position:relative;min-width:0;display:flex;flex-direction:column}
+.crumb{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:12.5px;color:var(--xzq-sub);border-bottom:1px solid var(--xzq-line);background:var(--xzq-surface)}
+.crumb b{color:var(--mc)}
+.crumb .sp{flex:1}
+.crumb button{border:1px solid var(--xzq-line);background:#fff;border-radius:8px;padding:3px 10px;font-size:12px;color:var(--xzq-sub)}
+.crumb button:hover{border-color:var(--mc);color:var(--mc)}
+iframe{flex:1;width:100%;border:0;background:var(--xzq-bg);display:block}
+.pane{position:absolute;inset:41px 0 0 0;overflow:auto;display:none;padding:28px}
+.pane.show{display:block}
+.building{display:grid;place-items:center;text-align:center;color:var(--xzq-sub)}
+.building .rocket{font-size:64px;animation:fl 2.4s ease-in-out infinite}
+@keyframes fl{50%{transform:translateY(-10px)}}
+.building h2{color:var(--mc);margin:12px 0 6px}
+/* 首页 */
+.home h1{font-size:26px;margin-bottom:4px}
+.home p.lead{color:var(--xzq-sub);margin-bottom:20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.mcard{background:#fff;border-radius:var(--xzq-radius);box-shadow:var(--xzq-shadow);padding:16px;border:0;text-align:left;position:relative;overflow:hidden;transition:.2s;color:var(--xzq-ink)}
+.mcard:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(80,60,30,.13)}
+.mcard::before{content:"";position:absolute;right:-30px;top:-30px;width:100px;height:100px;border-radius:50%;background:var(--c);opacity:.12}
+.mcard .ic{width:42px;height:42px;border-radius:13px;background:var(--c);color:#fff;display:grid;place-items:center;font-size:22px;margin-bottom:10px}
+.mcard b{font-size:16px;display:block;margin-bottom:4px}
+.mcard span{font-size:12.5px;color:var(--xzq-sub);line-height:1.5}
+.mcard em{position:absolute;right:12px;top:12px;font-style:normal;font-size:11px;background:#f4efe5;color:var(--xzq-sub);border-radius:999px;padding:2px 8px}
+.resume{display:flex;align-items:center;gap:12px;background:#fff;border-radius:var(--xzq-radius);box-shadow:var(--xzq-shadow);padding:14px 16px;margin-bottom:20px;border-left:5px solid var(--xzq-meaning)}
+.resume button{margin-left:auto;border:0;background:var(--xzq-meaning);color:#fff;border-radius:999px;padding:8px 16px}
+@media (max-width:860px){.main{grid-template-columns:1fr}aside{display:none}.search{width:160px}}
+</style>
+<script>if(location.protocol==="file:")document.write('<script src="data/char-index.js"><\/script>')</script><script>/* file:// 离线兜底：本地直接打开时从 data/*.js 读数据 */(function(){if(location.protocol!=='file:')return;var of=window.fetch;window.fetch=function(u,o){var k=String(u).replace(/^\.\//,'');var F=window.XZQ_FILES||{};if(k in F)return Promise.resolve(new Response(JSON.stringify(F[k]),{status:200,headers:{'Content-Type':'application/json'}}));if(/\.json$/.test(k))return Promise.resolve(new Response('',{status:404}));return of.apply(this,arguments)}})();</script></head>
+<body>
+<header>
+  <button class="logo" id="logo" title="回到首页"><span class="planet kai">识</span>识字星球</button>
+  <nav class="top" id="topnav"></nav>
+  <div class="search"><input id="gsearch" placeholder="搜字：汉字或拼音" autocomplete="off"><div class="drop" id="gdrop"></div></div>
+</header>
+<div class="main">
+  <aside id="side"></aside>
+  <section class="stage">
+    <div class="crumb"><span id="crumb"></span><span class="sp"></span><button id="btnNew" title="在新窗口打开当前页面">新窗口打开</button><button id="btnReload" title="重新加载">刷新</button></div>
+    <iframe id="frame" title="模块内容"></iframe>
+    <div class="pane home" id="homePane"></div>
+    <div class="pane building" id="buildPane"><div><div class="rocket">🚀</div><h2>声旁音部 · 建设中</h2><p>宇航员正在给这个星球铺路，敬请期待。</p></div></div>
+  </section>
+</div>
+
+<script>
+/* ================= 配置 ================= */
+const LS_KEY = 'xzq_last';
+const MODULES = [
+  {id:'meaning',  name:'字义扩展图', ic:'🌳', color:'--xzq-meaning',  desc:'一个字怎样长出许多意思',
+   subs:[{id:'grade',name:'按年级'},{id:'group',name:'按组（1–177）'},{id:'radical',name:'按部首'},{id:'search',name:'搜索'}]},
+  {id:'radical',  name:'偏旁部首',   ic:'🧩', color:'--xzq-radical',  desc:'认识表义的偏旁', page:'pianpang-bushou.html',
+   subs:[{id:'main',name:'偏旁部首总览',url:'pianpang-bushou.html'}]},
+  {id:'phonetic', name:'声旁音部',   ic:'🎵', color:'--xzq-phonetic', desc:'声旁一家人', building:true,
+   subs:[{id:'main',name:'建设中',building:true}]},
+  {id:'words',    name:'字词句',     ic:'📖', color:'--xzq-words',    desc:'从字到词到句子', page:'zicijv.html',
+   subs:[{id:'main',name:'字词句练习',url:'zicijv.html'}]},
+  {id:'code',     name:'汉字密码',   ic:'🔑', color:'--xzq-code',     desc:'破解汉字的构字规律', page:'hanzi-mima.html',
+   subs:[{id:'main',name:'汉字密码总览',url:'hanzi-mima.html'}]},
+  {id:'clinic',   name:'易错诊所',   ic:'🩺', color:'--xzq-clinic',   desc:'易读错、易写错的字', page:'yicuo-fuxi.html#yicuo',
+   subs:[{id:'main',name:'易错诊所',url:'yicuo-fuxi.html#yicuo'}]},
+  {id:'review',   name:'记忆复习',   ic:'🧠', color:'--xzq-review',   desc:'按记忆曲线复习', page:'yicuo-fuxi.html#fuxi',
+   subs:[{id:'main',name:'记忆复习',url:'yicuo-fuxi.html#fuxi'}]},
+  {id:'path',     name:'学习路径',   ic:'🗺️', color:'--xzq-path',     desc:'我的识字进度与路线', page:'learning-path.html',
+   subs:[{id:'main',name:'学习路径',url:'learning-path.html'}]}
+];
+const VIEWER = 'ziyi-viewer.html';
+
+/* char-index.json 读取失败（如 file:// 下浏览器禁止 fetch）时的兜底样例 */
+const FALLBACK_INDEX = [
+ ..."撇粟粪尹苟癫蚂禹廖俭帖煎缕窦簇棱叩呐瑶墅".split('').map(z=>({zi:z,group:147})),
+ ..."樊镕垢瘟缪菇琦剃迸溺炫惚嗨陨赃羁臻嘀膳赣".split('').map(z=>({zi:z,group:167}))
+];
+const FALLBACK_RAD = {撇:'扌',粟:'米',粪:'米',尹:'尸',苟:'艹',癫:'疒',蚂:'虫',禹:'禸',廖:'广',俭:'亻',帖:'巾',煎:'灬',缕:'纟',窦:'穴',簇:'竹',棱:'木',叩:'口',呐:'口',瑶:'王',墅:'土',
+ 樊:'木',镕:'钅',垢:'土',瘟:'疒',缪:'纟',菇:'艹',琦:'王',剃:'刂',迸:'辶',溺:'氵',炫:'火',惚:'忄',嗨:'口',陨:'阝',赃:'贝',羁:'罒',臻:'至',嘀:'口',膳:'月',赣:'贝'};
+FALLBACK_INDEX.forEach(o=>o.radical=FALLBACK_RAD[o.zi]);
+
+/* ================= 状态 ================= */
+let INDEX = [], indexSource = '';
+let state = {module:null, sub:null, url:'', zi:'', group:null, grade:null, radical:null};
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const mod = id => MODULES.find(m=>m.id===id);
+
+/* ================= 索引 ================= */
+// 兼容多种字段名：zi/char/hanzi/c；py/pinyin；grade/年级；group/组；radical/bushou/部首
+function normalize(raw){
+  let arr = Array.isArray(raw) ? raw : (raw.chars || raw.data || raw.list || null);
+  if(!arr && raw && typeof raw==='object') arr = Object.entries(raw).map(([k,v])=>Object.assign({zi:k}, typeof v==='object'?v:{}));
+  return (arr||[]).map(o=>{
+    if(typeof o==='string') return {zi:o};
+    const zi=o.zi||o.char||o.hanzi||o.c||o['字'];
+    const g=o.grade??o['年级']; const gp=o.group??o.zu??o['组'];
+    return {zi, py:o.py||o.pinyin||o['拼音']||'', grade:g!=null&&g!==''?String(g):'', group:gp!=null&&gp!==''?Number(gp):null,
+      radical:o.radical||o.bushou||o['部首']||'', mean:o.mean||o.meaning||o.gloss||''};
+  }).filter(o=>o.zi);
+}
+async function loadIndex(){
+  try{
+    const r = await fetch('char-index.json',{cache:'no-cache'});
+    if(!r.ok) throw 0;
+    INDEX = normalize(await r.json()); indexSource = 'char-index.json';
+    if(!INDEX.length) throw 0;
+  }catch(e){ INDEX = FALLBACK_INDEX.slice(); indexSource = 'fallback'; }
+}
+function toneless(s){return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ü/g,'v').toLowerCase().replace(/[^a-z\s\/]/g,'')}
+function searchIndex(q){
+  q=q.trim(); if(!q) return [];
+  const t=toneless(q);
+  const hits=[];
+  INDEX.forEach(o=>{
+    let score=-1;
+    if(q.includes(o.zi)) score=0;
+    else if(t && o.py){const p=toneless(o.py); if(p.split(/[\s\/]+/).some(x=>x===t)) score=1; else if(p.includes(t)) score=2;}
+    if(score<0 && o.mean && o.mean.includes(q)) score=3;
+    if(score>=0) hits.push([score,o]);
+  });
+  return hits.sort((a,b)=>a[0]-b[0]).slice(0,40).map(h=>h[1]);
+}
+
+/* ================= 记忆位置 ================= */
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(Object.assign({ts:Date.now()}, state))); }catch(e){} }
+function restore(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; } }
+
+/* ================= 渲染 ================= */
+function renderTop(){
+  const nav=$('topnav'); nav.innerHTML='';
+  MODULES.forEach(m=>{
+    const b=document.createElement('button');
+    b.style.setProperty('--c',`var(${m.color})`);
+    b.innerHTML=`<i></i>${m.name}`;
+    b.className = state.module===m.id?'on':'';
+    b.onclick=()=>openModule(m.id);
+    nav.appendChild(b);
+  });
+}
+function setColor(m){ document.body.style.setProperty('--mc', m?`var(${m.color})`:'var(--xzq-meaning)'); }
+
+function showFrame(url){
+  $('homePane').classList.remove('show'); $('buildPane').classList.remove('show');
+  const f=$('frame'); f.style.display='block';
+  if(f.getAttribute('src')!==url) f.setAttribute('src',url);
+  state.url=url;
+}
+function showPane(id){
+  $('frame').style.display='none'; $('frame').removeAttribute('src');
+  ['homePane','buildPane'].forEach(p=>$(p).classList.toggle('show',p===id));
+  state.url='';
+}
+function crumb(){
+  const m=mod(state.module);
+  if(!m){$('crumb').innerHTML='<b>识字星球</b> · 首页';return}
+  const s=(m.subs||[]).find(x=>x.id===state.sub);
+  let t=`<b>${m.name}</b>`; if(s && m.subs.length>1) t+=` › ${s.name}`;
+  if(state.module==='meaning'){ if(state.group) t+=` › 第 ${state.group} 组`; if(state.grade) t+=` › ${state.grade} 年级`; if(state.radical) t+=` › ${esc(state.radical)} 部`; if(state.zi) t+=` › <span class="kai" style="font-size:15px">${esc(state.zi)}</span>`; }
+  $('crumb').innerHTML=t;
+}
+
+function renderSide(){
+  const m=mod(state.module), side=$('side');
+  if(!m){
+    side.innerHTML=`<div class="mhead"><div class="ic" style="background:var(--xzq-meaning)">🪐</div><div><b>识字星球</b><small>选择一个星球开始探险</small></div></div>
+    <div class="sub">${MODULES.map(x=>`<button class="si" data-m="${x.id}" style="color:var(${x.color})"><span class="dot"></span><span style="color:var(--xzq-ink)">${x.name}</span></button>`).join('')}</div>`+idxState();
+    side.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>openModule(b.dataset.m));
+    bindIdx(); return;
+  }
+  let h=`<div class="mhead"><div class="ic">${m.ic}</div><div><b>${m.name}</b><small>${m.desc}</small></div></div><div class="sub">`;
+  m.subs.forEach(s=>h+=`<button class="si ${state.sub===s.id?'on':''}" data-s="${s.id}"><span class="dot"></span>${s.name}</button>`);
+  h+='</div>';
+  if(m.id==='meaning') h+=meaningPanel();
+  h+=idxState();
+  side.innerHTML=h;
+  side.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>openSub(b.dataset.s));
+  if(m.id==='meaning') bindMeaning();
+  bindIdx();
+}
+function idxState(){
+  const n=INDEX.length;
+  return `<div class="idxstate">字表：${indexSource==='fallback'?`未能读取 char-index.json，暂用内置样例（${n} 字）。<br><label>手动载入 char-index.json<input type="file" id="idxFile" accept=".json,application/json"></label>`:`char-index.json · 共 ${n} 字`}</div>`;
+}
+function bindIdx(){
+  const f=$('idxFile'); if(!f) return;
+  f.onchange=()=>{const file=f.files[0]; if(!file) return; const rd=new FileReader();
+    rd.onload=()=>{try{const arr=normalize(JSON.parse(rd.result)); if(arr.length){INDEX=arr; indexSource='char-index.json'; renderSide();}}catch(e){alert('文件格式无法识别');}};
+    rd.readAsText(file,'utf-8');};
+}
+function ziGrid(list){
+  if(!list.length) return '<div class="hint">这里还没有收录的字。</div>';
+  return `<div class="zis">${list.map(o=>`<button data-zi="${esc(o.zi)}" class="${state.zi===o.zi?'on':''}"><span class="c">${esc(o.zi)}</span><span class="p">${esc((o.py||'').split(/[\s\/]/)[0]||'　')}</span></button>`).join('')}</div>`;
+}
+function meaningPanel(){
+  const s=state.sub;
+  if(s==='grade'){
+    const grades=[...new Set(INDEX.map(o=>o.grade).filter(Boolean))].sort((a,b)=>Number(a)-Number(b)||a.localeCompare(b));
+    const all = grades.length?grades:['1','2','3','4','5','6'];
+    const list = state.grade?INDEX.filter(o=>o.grade===state.grade):[];
+    return `<div class="panel"><h5>年级</h5><div class="chips">${all.map(g=>`<button data-grade="${esc(g)}" class="${state.grade===g?'on':''}">${esc(g)}${/^\d+$/.test(g)?' 年级':''}</button>`).join('')}</div>
+      ${grades.length?'':'<div class="hint" style="margin-top:6px">字表里还没有年级信息。</div>'}</div>
+      ${state.grade?`<div class="panel"><h5>${esc(state.grade)} 年级 <span>${list.length} 字</span></h5>${ziGrid(list)}</div>`:''}`;
+  }
+  if(s==='group'){
+    const has=new Set(INDEX.map(o=>o.group).filter(x=>x!=null));
+    let btns=''; for(let i=1;i<=177;i++) btns+=`<button data-group="${i}" class="${has.has(i)?'has':''} ${state.group===i?'on':''}">${i}</button>`;
+    const list = state.group?INDEX.filter(o=>o.group===state.group):[];
+    return `<div class="panel"><h5>选择组 <span>加粗＝已有字表</span></h5><div class="groups">${btns}</div></div>
+      ${state.group?`<div class="panel"><h5>第 ${state.group} 组 <span>${list.length} 字</span></h5>${ziGrid(list)}</div>`:''}`;
+  }
+  if(s==='radical'){
+    const cnt={}; INDEX.forEach(o=>{if(o.radical) cnt[o.radical]=(cnt[o.radical]||0)+1});
+    const rads=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]||a.localeCompare(b,'zh'));
+    const list = state.radical?INDEX.filter(o=>o.radical===state.radical):[];
+    return `<div class="panel"><h5>部首 <span>${rads.length} 个</span></h5><div class="chips">${rads.map(r=>`<button data-rad="${esc(r)}" class="${state.radical===r?'on':''}"><span class="kai" style="font-size:15px">${esc(r)}</span> ${cnt[r]}</button>`).join('')||'<span class="hint">字表里还没有部首信息。</span>'}</div></div>
+      ${state.radical?`<div class="panel"><h5>${esc(state.radical)} 部 <span>${list.length} 字</span></h5>${ziGrid(list)}</div>`:''}`;
+  }
+  if(s==='search'){
+    return `<div class="panel local-s"><h5>搜索字义</h5><input id="lsearch" placeholder="输入汉字或拼音，如 su / 粟"><div id="lres" style="margin-top:8px"></div>
+      <div class="hint" style="margin-top:6px">拼音不用标声调；也可以直接粘贴一串汉字。</div></div>`;
+  }
+  return '';
+}
+function bindMeaning(){
+  const side=$('side');
+  side.querySelectorAll('[data-grade]').forEach(b=>b.onclick=()=>{state.grade=b.dataset.grade;renderSide();save()});
+  side.querySelectorAll('[data-group]').forEach(b=>b.onclick=()=>{state.group=Number(b.dataset.group);renderSide();crumb();save()});
+  side.querySelectorAll('[data-rad]').forEach(b=>b.onclick=()=>{state.radical=b.dataset.rad;renderSide();crumb();save()});
+  side.querySelectorAll('[data-zi]').forEach(b=>b.onclick=()=>openZi(b.dataset.zi));
+  const ls=$('lsearch');
+  if(ls){const run=()=>{$('lres').innerHTML=ls.value.trim()?ziGrid(searchIndex(ls.value)):'';$('lres').querySelectorAll('[data-zi]').forEach(b=>b.onclick=()=>openZi(b.dataset.zi))};
+    ls.oninput=run; ls.focus();}
+}
+
+/* ================= 导航 ================= */
+function goHome(){
+  state={module:null,sub:null,url:'',zi:'',group:null,grade:null,radical:null};
+  setColor(null); renderTop(); renderSide(); renderHome(); showPane('homePane'); crumb(); save();
+}
+function openModule(id, keep){
+  const m=mod(id); if(!m) return;
+  if(!keep){ state={module:id,sub:m.subs[0].id,url:'',zi:'',group:null,grade:null,radical:null}; }
+  setColor(m); renderTop(); renderSide();
+  if(m.building){ showPane('buildPane'); }
+  else if(id==='meaning'){
+    if(state.zi) showFrame(viewerUrl(state.zi));
+    else showFrame(state.url || VIEWER);
+  } else {
+    const s=m.subs.find(x=>x.id===state.sub)||m.subs[0];
+    showFrame(state.url || s.url);
+  }
+  crumb(); save();
+}
+function openSub(sid){
+  const m=mod(state.module), s=m.subs.find(x=>x.id===sid); state.sub=sid;
+  if(s.building){ showPane('buildPane'); }
+  else if(s.url){ showFrame(s.url); }
+  renderSide(); crumb(); save();
+}
+function viewerUrl(zi){ return `${VIEWER}?zi=${encodeURIComponent(zi)}`; }
+function openZi(zi){
+  if(state.module!=='meaning'){ state={module:'meaning',sub:'search',url:'',zi:'',group:null,grade:null,radical:null}; setColor(mod('meaning')); renderTop(); }
+  state.zi=zi;
+  const o=INDEX.find(x=>x.zi===zi); if(o && o.group && state.sub==='group') state.group=o.group;
+  showFrame(viewerUrl(zi)); renderSide(); crumb(); save();
+}
+
+/* ================= 首页 ================= */
+function renderHome(){
+  const last=restore();
+  let resume='';
+  if(last && last.module){
+    const m=mod(last.module);
+    if(m) resume=`<div class="resume"><span style="font-size:26px">🛰️</span><div><b>继续上次的探险</b><div class="hint">${m.name}${last.zi?' · '+esc(last.zi):''}${last.group?' · 第 '+last.group+' 组':''}</div></div><button id="resumeBtn">继续</button></div>`;
+  }
+  $('homePane').innerHTML=`<h1>欢迎来到识字星球 🪐</h1><p class="lead">每个模块是一颗星球，选一颗出发吧。也可以在右上角直接搜字。</p>${resume}
+  <div class="cards">${MODULES.map(m=>`<button class="mcard" data-m="${m.id}" style="--c:var(${m.color})">${m.building?'<em>建设中</em>':''}<div class="ic">${m.ic}</div><b>${m.name}</b><span>${m.desc}</span></button>`).join('')}</div>`;
+  $('homePane').querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>openModule(b.dataset.m));
+  const rb=$('resumeBtn'); if(rb) rb.onclick=()=>{state=Object.assign(state,last);openModule(last.module,true)};
+}
+
+/* ================= 全局搜字 ================= */
+let act=-1, curHits=[];
+function renderDrop(){
+  const q=$('gsearch').value, d=$('gdrop');
+  if(!q.trim()){d.classList.remove('show');return}
+  curHits=searchIndex(q); act=curHits.length?0:-1;
+  d.innerHTML = curHits.length ? curHits.map((o,i)=>`<div class="it ${i===act?'act':''}" data-i="${i}"><span class="z kai">${esc(o.zi)}</span><div class="m">${esc(o.py||'')}${o.group?` · 第 ${o.group} 组`:''}${o.grade?` · ${esc(o.grade)} 年级`:''}${o.radical?` · ${esc(o.radical)} 部`:''}${o.mean?`<br>${esc(o.mean)}`:''}</div></div>`).join('')
+    : `<div class="none">字表里还没有“${esc(q)}”</div>`;
+  d.classList.add('show');
+  d.querySelectorAll('.it').forEach(el=>el.onmousedown=e=>{e.preventDefault();pick(Number(el.dataset.i))});
+}
+function pick(i){const o=curHits[i]; if(!o) return; $('gsearch').value=''; $('gdrop').classList.remove('show'); openZi(o.zi);}
+$('gsearch').addEventListener('input',renderDrop);
+$('gsearch').addEventListener('keydown',e=>{
+  const items=$('gdrop').querySelectorAll('.it');
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault(); if(!items.length) return; act=(act+(e.key==='ArrowDown'?1:-1)+items.length)%items.length; items.forEach((x,i)=>x.classList.toggle('act',i===act)); items[act].scrollIntoView({block:'nearest'});}
+  else if(e.key==='Enter'){ if(act>=0) pick(act); }
+  else if(e.key==='Escape'){ $('gdrop').classList.remove('show'); }
+});
+$('gsearch').addEventListener('blur',()=>setTimeout(()=>$('gdrop').classList.remove('show'),120));
+document.addEventListener('keydown',e=>{ if(e.key==='/' && document.activeElement.tagName!=='INPUT'){e.preventDefault();$('gsearch').focus();} });
+
+/* 子页面可通过 postMessage 通知外壳：{type:'xzq-open', zi:'粟'} 打开字义；{type:'xzq-nav', module:'radical'} 切换模块 */
+window.addEventListener('message',e=>{
+  const d=e.data||{};
+  if(d.type==='xzq-open' && d.zi) openZi(d.zi);
+  if(d.type==='xzq-nav' && d.module) openModule(d.module);
+});
+/* 记录子页面内部跳转（同源时可读到；file:// 下部分浏览器不允许，忽略即可） */
+$('frame').addEventListener('load',()=>{
+  try{ const loc=$('frame').contentWindow.location; if(loc && loc.href && loc.href!=='about:blank'){ const rel=loc.pathname.split('/').pop()+loc.search+loc.hash; if(rel && state.module){ state.url=rel; save(); } } }catch(e){}
+});
+$('btnReload').onclick=()=>{const f=$('frame'); if(f.style.display!=='none' && state.url){ f.setAttribute('src','about:blank'); setTimeout(()=>f.setAttribute('src',state.url),30);} };
+$('btnNew').onclick=()=>{ if(state.url) window.open(state.url,'_blank'); };
+$('logo').onclick=goHome;
+
+/* ================= 启动 ================= */
+(async function(){
+  await loadIndex();
+  // 支持外壳自身的 URL 参数：app-shell.html?zi=粟 或 ?m=radical
+  const qp=new URLSearchParams(location.search);
+  if(qp.get('zi')){ state={module:'meaning',sub:'search',url:'',zi:'',group:null,grade:null,radical:null}; openZi(qp.get('zi')); return; }
+  if(qp.get('m') && mod(qp.get('m'))){ openModule(qp.get('m')); return; }
+  const last=restore();
+  if(last && last.module && mod(last.module)){ state=Object.assign(state,last); openModule(last.module,true); }
+  else goHome();
+})();
+</script>
+</body>
+</html>

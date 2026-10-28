@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>字义扩展图 · 节（節）</title>
+<style>
+:root{
+  --paper:#FBF6EA;--card:#fff;--ink:#2B2A28;--muted:#7B7266;--line:#EADFCB;
+  --bamboo:#3C8D5A;--bamboo-d:#2A6B42;--bamboo-l:#E4F2E8;
+  --orange:#F08A2C;--purple:#7F5AD6;--red:#D64B4B;--blue:#2F86D6;
+  --t-yin:#2F86D6;--t-bi:#2FA35A;--t-zhuan:#F08A2C;
+  --r:22px;--sh:0 4px 0 rgba(60,40,10,.06),0 10px 24px rgba(60,40,10,.07)
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--paper);color:var(--ink);font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC",sans-serif;font-size:17px}
+.kai{font-family:"KaiTi","STKaiti","Kaiti SC","楷体","AR PL UKai CN","Noto Serif CJK SC",serif}
+button{font-family:inherit;color:inherit;border:none;cursor:pointer;background:none}
+/* 顶部 */
+header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#fffdf7,#FBF6EA);border-bottom:2px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;padding:10px 18px 4px}
+.logo{width:46px;height:46px;border-radius:14px;background:var(--bamboo);color:#fff;display:grid;place-items:center;font-size:30px;box-shadow:0 4px 0 var(--bamboo-d)}
+.brand h1{margin:0;font-size:22px;letter-spacing:1px}
+.brand small{color:var(--muted);font-size:14px;display:block;font-weight:400}
+.topnav{display:flex;gap:6px;overflow-x:auto;padding:6px 14px 10px;scrollbar-width:none}
+.topnav::-webkit-scrollbar{display:none}
+.topnav button{flex:none;font-size:17px;font-weight:700;padding:11px 16px;border-radius:14px;color:#5d554b;min-height:46px}
+.topnav button:hover{background:#F2EAD9}
+.topnav button.on{background:var(--bamboo);color:#fff;box-shadow:0 3px 0 var(--bamboo-d)}
+/* 布局 */
+.layout{display:grid;grid-template-columns:200px minmax(0,1fr) 330px;gap:16px;padding:16px;max-width:1500px;margin:0 auto}
+@media (max-width:1180px){.layout{grid-template-columns:180px minmax(0,1fr)}.side{grid-column:1/-1}}
+@media (max-width:760px){.layout{grid-template-columns:1fr;padding:12px}.subnav{flex-direction:row!important;overflow-x:auto}.subnav button{flex:none}}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh)}
+/* 二级菜单 */
+.subnav{display:flex;flex-direction:column;gap:6px;padding:10px;align-self:start;position:sticky;top:118px}
+@media (max-width:760px){.subnav{position:static}}
+.subnav button{text-align:left;font-size:17px;font-weight:700;padding:12px 14px;border-radius:14px;display:flex;gap:8px;align-items:center;min-height:48px;color:#5d554b}
+.subnav button.on{background:var(--bamboo-l);color:var(--bamboo-d)}
+.subnav button:hover{background:#F5EFE2}
+.subbox{padding:8px 4px 2px}
+.search{display:flex;gap:6px}
+.search input{flex:1;min-width:0;font-size:18px;padding:10px 12px;border-radius:12px;border:2px solid var(--line);font-family:inherit}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:16px;font-weight:700;background:#F5EFE2;border-radius:99px;padding:5px 12px;margin:4px 4px 0 0}
+/* 主区 */
+.main{display:flex;flex-direction:column;gap:14px;min-width:0}
+.hero{display:flex;align-items:center;gap:18px;padding:14px 20px;flex-wrap:wrap}
+.bigchar{width:110px;height:110px;border-radius:26px;background:repeating-linear-gradient(0deg,transparent 0 54px,#e9dfc9 54px 56px),repeating-linear-gradient(90deg,transparent 0 54px,#e9dfc9 54px 56px),#FFFCF3;border:3px solid #E2D2B2;display:grid;place-items:center;font-size:84px;line-height:1;color:var(--bamboo-d);position:relative}
+.bigchar sup{position:absolute;right:-12px;top:-12px;background:var(--orange);color:#fff;font-size:20px;border-radius:12px;padding:3px 8px;font-family:"PingFang SC","Microsoft YaHei",sans-serif}
+.hero .meta{display:flex;flex-direction:column;gap:6px}
+.hero .py{font-size:32px;font-weight:800;letter-spacing:1px}
+.hero .sw{font-size:17px;color:var(--muted);line-height:1.6}
+.hero .sw b{color:var(--ink)}
+.hero .act{margin-left:auto;display:flex;gap:10px}
+.rbtn{width:54px;height:54px;border-radius:50%;background:#F5EFE2;font-size:24px;display:grid;place-items:center}
+.rbtn.fav.on{background:#FFE7A8}
+.mapcard{position:relative;overflow:hidden}
+.maptool{position:absolute;right:12px;top:12px;display:flex;gap:8px;z-index:3}
+.maptool button{width:50px;height:50px;border-radius:15px;background:#fff;box-shadow:var(--sh);font-size:24px;font-weight:900}
+.maptitle{position:absolute;left:16px;top:14px;z-index:3;font-size:18px;font-weight:800;background:rgba(255,255,255,.9);padding:6px 12px;border-radius:12px}
+#net{display:block;width:100%;height:clamp(420px,62vh,680px);touch-action:none;cursor:grab;background:radial-gradient(circle at 34% 50%,#F4FAF2 0,#fff 60%)}
+#net.drag{cursor:grabbing}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;padding:10px 16px 14px;border-top:2px dashed var(--line);font-size:15px;font-weight:700;color:#5d554b}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:30px;height:0;border-top:5px solid}
+.legend b{display:inline-block;width:16px;height:16px;border-radius:50%}
+.tip{font-size:15px;color:var(--muted);padding:0 16px 12px}
+/* SVG */
+.edge{fill:none;stroke-width:5;stroke-linecap:round}
+.node{cursor:pointer}
+.node circle.bg{stroke-width:4;filter:drop-shadow(0 4px 0 rgba(0,0,0,.08))}
+.node text{font-weight:800;fill:#2B2A28;pointer-events:none}
+.node .lv{font-size:14px;font-weight:700;fill:#7B7266}
+.node:hover circle.bg{stroke-width:7}
+.node.sel circle.bg{stroke-width:9}
+.elab rect{stroke:#fff;stroke-width:3}
+.elab .t{font-size:15px;font-weight:800;fill:#fff}
+.elab .why{font-size:13.5px;font-weight:600;fill:#5d554b}
+.elab .whybg{fill:rgba(255,255,255,.92)}
+/* 建设中 */
+.wip{padding:60px 20px;text-align:center}
+.wip .ic{font-size:70px}
+.wip h2{margin:10px 0 6px;font-size:28px}
+.wip p{color:var(--muted);font-size:18px}
+/* 侧栏 */
+.side{display:flex;flex-direction:column;gap:14px;align-self:start}
+.side .card{padding:14px 16px}
+.side h3{margin:0 0 10px;font-size:19px;display:flex;align-items:center;gap:8px}
+.evo{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:4px}
+.glyph{border-radius:16px;background:#FFFCF3;border:2px dashed #DCCBA8;text-align:center;padding:8px 4px}
+.glyph .g{font-size:40px;line-height:56px;height:56px;color:#8A6A3A}
+.glyph .g.ph{font-size:13px;line-height:1.35;display:flex;align-items:center;justify-content:center;color:#A08A66}
+.glyph .n{font-size:14px;font-weight:800;color:#5d554b}
+.arr{color:#C9B48A;font-weight:900}
+.note{font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+.split{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.part{text-align:center;border-radius:16px;padding:8px 10px;min-width:74px}
+.part .g{font-size:44px;line-height:1.15}
+.part .n{font-size:14px;font-weight:800}
+.op{font-size:28px;font-weight:900;color:#C9B48A}
+.p-yi{background:var(--bamboo-l);color:var(--bamboo-d)}
+.p-yin{background:#FFF0DE;color:#B85F10}
+.p-all{background:#F5EFE2}
+.warnlist{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.warnlist li{background:#FFF4F0;border-radius:14px;padding:10px 12px;font-size:16px;line-height:1.55}
+.warnlist li b{color:var(--red)}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{font-size:15px;font-weight:800;padding:7px 12px;border-radius:99px;background:#EEE8FB;color:#5A3FB0}
+/* 弹窗 */
+.mask{position:fixed;inset:0;background:rgba(40,30,15,.38);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
+.mask.show{display:flex}
+.pop{width:min(620px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:26px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:up .22s ease}
+@keyframes up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@media (max-width:640px){.mask{align-items:flex-end;padding:0}.pop{border-radius:26px 26px 0 0;max-height:90vh}}
+.pophead{position:sticky;top:0;background:#fff;padding:16px 18px 10px;border-bottom:2px solid #F3ECDD;display:flex;align-items:flex-start;gap:12px;z-index:1}
+.pophead .ttl{flex:1}
+.pophead h2{margin:0;font-size:28px}
+.pophead .sub{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px}
+.badge{font-size:14px;font-weight:800;color:#fff;border-radius:99px;padding:3px 10px}
+.close{width:50px;height:50px;border-radius:50%;background:#F5EFE2;font-size:24px;flex:none}
+.popbody{padding:6px 18px 22px}
+.sec{margin-top:16px}
+.sec h4{margin:0 0 8px;font-size:17px;color:#6B6257}
+.reason{background:#FFF6D6;border-radius:16px;padding:12px 14px;font-size:19px;line-height:1.6}
+.words{display:flex;flex-wrap:wrap;gap:8px}
+.word{font-size:24px;font-weight:700;background:var(--bamboo-l);color:var(--bamboo-d);border-radius:14px;padding:6px 14px}
+.form{font-size:20px;line-height:1.7;background:#F4F8FF;border-radius:16px;padding:10px 14px}
+.form em{font-style:normal;color:var(--blue);font-weight:800}
+.ex{font-size:20px;line-height:1.7;display:flex;gap:10px;align-items:flex-start}
+.ex .rbtn{width:46px;height:46px;font-size:20px;flex:none}
+.wy{background:#FBF6EA;border-radius:16px;padding:12px 14px;border-left:6px solid #C9A86A}
+.wy .o{font-size:22px;line-height:1.7}
+.wy .s{font-size:15px;color:var(--muted);margin-top:2px}
+.wy .tr{font-size:17px;line-height:1.6;margin-top:8px;color:#4c463e}
+.wy.pending{border-left-color:#bbb;color:var(--muted);font-size:18px}
+.sure{display:inline-flex;align-items:center;gap:6px;font-size:17px;font-weight:800;padding:6px 14px;border-radius:99px}
+.s-1{background:#E2F5E7;color:#23733F}.s-2{background:#E6F0FC;color:#1E5FA3}.s-3{background:#F1EEE9;color:#6B6257}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(30px);background:#2B2A28;color:#fff;font-size:17px;font-weight:700;padding:12px 20px;border-radius:99px;opacity:0;transition:.25s;z-index:80;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo kai">字</div><div><h1>汉字成长树</h1><small>儿童汉字学习 · 单字样板</small></div></div>
+  <nav class="topnav" id="topnav"></nav>
+</header>
+
+<div class="layout">
+  <aside class="card subnav" id="subnav"></aside>
+
+  <main class="main" id="main">
+    <section class="card hero">
+      <div class="bigchar kai">节<sup class="kai">節</sup></div>
+      <div class="meta">
+        <div class="py">jié <span style="font-size:18px;color:var(--muted);font-weight:600">（另读 jiē）</span></div>
+        <div class="sw">部首 <b>艹</b>（繁体 <b>⺮</b>）· 共 <b>5</b> 画 · <b>形声字</b></div>
+        <div class="sw kai" style="font-size:19px">《说文》：節，竹約也。从竹即聲。</div>
+      </div>
+      <div class="act">
+        <button class="rbtn" id="speak" aria-label="读一读">🔊</button>
+        <button class="rbtn fav" id="fav" aria-label="收藏">☆</button>
+      </div>
+    </section>
+
+    <section class="card mapcard">
+      <div class="maptitle">🎋 义项网：从“竹节”长出来的意思</div>
+      <div class="maptool">
+        <button id="zin" aria-label="放大">＋</button>
+        <button id="zout" aria-label="缩小">－</button>
+        <button id="zreset" aria-label="复位" style="font-size:20px">⟲</button>
+      </div>
+      <svg id="net" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="节的义项网"></svg>
+      <div class="legend" id="legend"></div>
+      <div class="tip">👆 点圆圈看详情 · 拖动可移动 · 滚轮/双指/＋－可缩放 · 箭头从左（具体）走向右（抽象）</div>
+    </section>
+  </main>
+
+  <aside class="side" id="side">
+    <div class="card">
+      <h3>🪶 字形演变</h3>
+      <div class="evo">
+        <div class="glyph"><div class="g ph">金文字形<br>待补图</div><div class="n">金文</div></div><div class="arr">→</div>
+        <div class="glyph"><div class="g ph">小篆字形<br>待补图</div><div class="n">小篆</div></div><div class="arr">→</div>
+        <div class="glyph" style="border-style:solid"><div class="g kai" style="color:var(--bamboo-d)">節</div><div class="n">楷书</div></div>
+      </div>
+      <div class="note">古文字处为文字占位，正式字形图待补；古文字均为示意。简化字“节”上部写作草字头。</div>
+    </div>
+    <div class="card">
+      <h3>🧩 偏旁拆分</h3>
+      <div class="split">
+        <div class="part p-yi"><div class="g kai">⺮</div><div class="n">表义：竹</div></div><div class="op">＋</div>
+        <div class="part p-yin"><div class="g kai">即</div><div class="n">表音：jí</div></div><div class="op">＝</div>
+        <div class="part p-all"><div class="g kai">節</div><div class="n">jié</div></div>
+      </div>
+      <div class="note">竹字头告诉我们它和竹子有关，“即”提示读音（古音相近，今天读音已有变化）。简化后写成：艹 ＋ 卩 ＝ 节。</div>
+    </div>
+    <div class="card">
+      <h3>🩺 易读错 · 易写错</h3>
+      <ul class="warnlist">
+        <li><b>读音：</b>一般读 jié；“节骨眼”“节子（木头上的疤）”里读 <b>jiē</b>。</li>
+        <li><b>字头：</b>简化字“节”是<b>草字头</b>，不要写成竹字头；繁体“節”才是竹字头。</li>
+        <li><b>下部：</b>是“卩”（两画：横折钩、竖），不要写成“阝”或“卫”。</li>
+        <li><b>别混淆：</b>“节约”的“节”和“结束”的“结”读音不同、意思不同。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🔐 汉字密码</h3>
+      <div class="tags" id="tags"></div>
+    </div>
+  </aside>
+</div>
+
+<div class="mask" id="mask"><div class="pop" id="pop" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 数据 ================= */
+const TIER = {
+  root:{name:'本义',fill:'#FFE27A',stroke:'#D6A400'},
+  ju:{name:'具体',fill:'#DDF1E2',stroke:'#3C8D5A'},
+  duan:{name:'分段·计数',fill:'#E3EEFB',stroke:'#2F86D6'},
+  shi:{name:'时间',fill:'#FFEBD6',stroke:'#F08A2C'},
+  chou:{name:'抽象',fill:'#ECE5FB',stroke:'#7F5AD6'},
+  de:{name:'品德',fill:'#FBE1E1',stroke:'#D64B4B'},
+  li:{name:'音乐·礼仪',fill:'#DFF5F5',stroke:'#1C9C9C'}
+};
+const ETYPE = {
+  '引申':{c:'#2F86D6',dash:''},
+  '比喻':{c:'#2FA35A',dash:'12 8'},
+  '转喻':{c:'#F08A2C',dash:'3 9'}
+};
+const SURE = {'确定':'s-1','通行说法':'s-2','待查':'s-3'};
+
+const SENSES = [
+ {id:'root',gloss:'竹节',tier:'root',x:470,y:450,parent:null,
+  words:['竹节','节节高','节外生枝'],
+  form:'竹节 ＝ <em>竹</em>[竹子] ＋ <em>节</em>[竹竿上一圈一圈鼓起来的地方]',
+  example:'春雨过后，竹笋一节一节往上长。',
+  wenyan:{text:'節，竹約也。从竹即聲。',src:'许慎《说文解字·竹部》',tr:'节，就是竹子上像被绳子束住一样的地方。字从“竹”，“即”表示读音。'},
+  sure:'确定',sureNote:'本义有《说文》明文。'},
+ {id:'zhi',gloss:'植物的节',tier:'ju',x:190,y:230,parent:'root',etype:'引申',why:'竹子有节，别的植物茎上也有节',
+  words:['枝节','藕节','节外生枝'],
+  form:'枝节 ＝ <em>枝</em>[树枝] ＋ <em>节</em>[枝上的节]；节外生枝：节以外又冒出枝，比喻多出麻烦',
+  example:'莲藕被一个个藕节分开，像串起来的小胖子。',
+  wenyan:null,sure:'通行说法',sureNote:'意义通行，文言书证待查。'},
+ {id:'guan',gloss:'关节',tier:'ju',x:190,y:680,parent:'root',etype:'比喻',why:'骨头连接的地方，像竹子的节',
+  words:['关节','骨节','指节','节骨眼'],
+  form:'关节 ＝ <em>关</em>[关口] ＋ <em>节</em>[骨头相接处]',
+  example:'运动前要活动一下膝关节。',
+  wenyan:{text:'彼节者有间，而刀刃者无厚。',src:'《庄子·养生主》',tr:'牛的骨节之间有空隙，而刀刃薄得像没有厚度。'},
+  sure:'确定',sureNote:'庄子“庖丁解牛”中的名句。'},
+ {id:'duan',gloss:'段落、一段',tier:'duan',x:790,y:240,parent:'root',etype:'引申',why:'竹节把竹子隔成一段一段',
+  words:['章节','环节','细节','情节'],
+  form:'章节 ＝ <em>章</em>[文章的大段] ＋ <em>节</em>[章里的小段]',
+  example:'这本书的第三章第二节最精彩。',
+  wenyan:null,sure:'通行说法',sureNote:'意义通行，文言书证待查。'},
+ {id:'liang',gloss:'量词：一节课',tier:'duan',x:1080,y:95,parent:'duan',etype:'引申',why:'分成一段段的东西，就能一节节地数',
+  words:['一节课','两节车厢','三节电池'],
+  form:'一节课 ＝ 一 ＋ <em>节</em>[量词：一段] ＋ 课',
+  example:'今天上午有四节课。',
+  wenyan:null,sure:'通行说法',sureNote:'现代常用量词，文言书证待查。'},
+ {id:'ling',gloss:'时令、节气',tier:'shi',x:1090,y:330,parent:'duan',etype:'比喻',why:'一年像竹子，被分成一段段时令',
+  words:['节气','季节','时节','节令'],
+  form:'节气 ＝ <em>节</em>[一年中分段的时间点] ＋ <em>气</em>[气候]',
+  example:'清明是二十四节气之一，也是传统节日。',
+  wenyan:{text:'清明时节雨纷纷，路上行人欲断魂。',src:'杜牧《清明》',tr:'清明时节细雨纷纷，路上的行人心情低落、愁苦。'},
+  sure:'确定',sureNote:'名篇诗句。'},
+ {id:'jieri',gloss:'节日',tier:'shi',x:1370,y:330,parent:'ling',etype:'转喻',why:'用这个时间点，指这天的庆祝活动',
+  words:['春节','节日','过节','佳节','中秋节'],
+  form:'春节 ＝ <em>春</em>[春天] ＋ <em>节</em>[节日]',
+  example:'春节到了，家家户户贴春联。',
+  wenyan:{text:'独在异乡为异客，每逢佳节倍思亲。',src:'王维《九月九日忆山东兄弟》',tr:'独自在外乡做客，每到美好的节日，就更加想念亲人。'},
+  sure:'确定',sureNote:'名篇诗句。'},
+ {id:'pai',gloss:'音乐节拍',tier:'li',x:560,y:85,parent:'duan',etype:'比喻',why:'音乐也被分成一小段一小段的拍子',
+  words:['节拍','节奏','节律'],
+  form:'节奏 ＝ <em>节</em>[节拍] ＋ <em>奏</em>[演奏]',
+  example:'我们跟着鼓点的节奏拍手。',
+  wenyan:null,sure:'待查',sureNote:'由“分段”引申的说法较通行，具体演变路径与书证待查。'},
+ {id:'zhi2',gloss:'节制',tier:'chou',x:800,y:650,parent:'root',etype:'引申',why:'竹节像一道箍，把竹子管住',
+  words:['节制','调节','节食'],
+  form:'节制 ＝ <em>节</em>[限制] ＋ <em>制</em>[控制]',
+  example:'玩游戏要有节制，到时间就停下。',
+  wenyan:{text:'知和而和，不以礼节之，亦不可行也。',src:'《论语·学而》',tr:'只为和谐而和谐，不用礼来节制它，也是行不通的。'},
+  sure:'通行说法',sureNote:'原句确定；从“竹约”到“节制”的解释是通行说法。'},
+ {id:'yue',gloss:'节约、节俭',tier:'chou',x:1090,y:540,parent:'zhi2',etype:'引申',why:'管住花销、不浪费，就是节约',
+  words:['节约','节俭','节省','节水','节能'],
+  form:'节约 ＝ <em>节</em>[节制] ＋ <em>约</em>[约束]',
+  example:'洗手时随手关水龙头，节约每一滴水。',
+  wenyan:{text:'节用而爱人，使民以时。',src:'《论语·学而》',tr:'节约开支，爱护百姓，役使百姓要不误农时。'},
+  sure:'确定',sureNote:'论语原句。'},
+ {id:'qi',gloss:'节操、气节',tier:'de',x:1090,y:800,parent:'zhi2',etype:'比喻',why:'像竹节一样硬，关键时刻管得住自己',
+  words:['气节','节操','名节','高风亮节'],
+  form:'气节 ＝ <em>气</em>[志气] ＋ <em>节</em>[坚守的操守]',
+  example:'文天祥宁死不屈，表现出崇高的气节。',
+  wenyan:{text:'时穷节乃见，一一垂丹青。',src:'文天祥《正气歌》',tr:'到了危难的时候，人的气节才显现出来，一个个被写进史册。'},
+  sure:'确定',sureNote:'原句确定；“竹节象征品格”是通行文化说法。'},
+ {id:'li',gloss:'礼节',tier:'li',x:1400,y:690,parent:'zhi2',etype:'引申',why:'礼的分寸和规矩，也是一种“管住”',
+  words:['礼节','小节','不拘小节','繁文缛节'],
+  form:'礼节 ＝ <em>礼</em>[礼貌] ＋ <em>节</em>[分寸、规矩]',
+  example:'见到客人主动问好，是基本的礼节。',
+  wenyan:null,sure:'待查',sureNote:'意义通行，文言书证待查。'}
+];
+const TAGS = ['#竹字家族','#形声字','#一字多义','#具体到抽象','#二十四节气','#传统节日','#品格象征'];
+
+/* ================= 菜单 ================= */
+const TOP = ['字义扩展图','偏旁部首','声旁音部','字词句','汉字密码','易错诊所','记忆复习','学习路径'];
+const SUB = [['🔍','按字查'],['🎒','按学段'],['🧱','按部首'],['🌿','按义项多少'],['⭐','我的收藏']];
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+let topOn = 0, subOn = 0;
+const mainHTML = $('#main').innerHTML;
+
+function toast(t){ const el=$('#toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('show'),1800); }
+function say(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='zh-CN'; u.rate=.85; speechSynthesis.speak(u);}catch(e){ toast('这台设备暂不支持朗读'); } }
+
+function renderTop(){
+  $('#topnav').innerHTML = TOP.map((t,i)=>`<button class="${i===topOn?'on':''}" data-i="${i}">${t}</button>`).join('');
+}
+$('#topnav').onclick = e => {
+  const b=e.target.closest('button'); if(!b) return; topOn=+b.dataset.i; renderTop();
+  if(topOn===0){ $('#main').innerHTML=mainHTML; $('#side').style.display=''; initMain(); }
+  else { $('#main').innerHTML=`<section class="card wip"><div class="ic">🚧</div><h2>「${TOP[topOn]}」建设中</h2><p>这个栏目正在搭建，先去「字义扩展图」看看“节”字吧！</p><button class="chip" style="font-size:18px;padding:10px 18px;margin-top:10px" onclick="document.querySelector('#topnav button').click()">← 回到字义扩展图</button></section>`; $('#side').style.display='none'; }
+};
+const favs = () => { try{ return JSON.parse(localStorage.getItem('hz_favs')||'[]'); }catch(e){ return []; } };
+function renderSub(){
+  let box='';
+  if(subOn===0) box=`<div class="subbox"><div class="search"><input id="q" placeholder="输入汉字" value="节" maxlength="1"><button class="rbtn" id="go" style="width:46px;height:46px;font-size:20px">🔍</button></div><span class="chip kai" style="font-size:20px">节</span></div>`;
+  if(subOn===4){ const f=favs(); box=`<div class="subbox">${f.length?f.map(c=>`<span class="chip kai" style="font-size:20px">⭐ ${esc(c)}</span>`).join(''):'<div class="note">还没有收藏，点“节”旁边的 ☆ 收藏吧。</div>'}</div>`; }
+  $('#subnav').innerHTML = SUB.map(([ic,t],i)=>`<button class="${i===subOn?'on':''}" data-i="${i}"><span>${ic}</span>${t}</button>${i===subOn?box:''}`).join('');
+  const go=$('#go'); if(go) go.onclick=()=>{ const v=$('#q').value.trim(); if(!v||v==='节'||v==='節') toast('正在显示：节'); else toast(`「${v}」的扩展图建设中`); };
+}
+$('#subnav').onclick = e => {
+  const b=e.target.closest('button[data-i]'); if(!b) return; const i=+b.dataset.i;
+  if(i===1||i===2||i===3){ toast(`「${SUB[i][1]}」建设中`); return; }
+  subOn=i; renderSub();
+};
+
+/* ================= 义项网 ================= */
+const VB0 = {x:0,y:0,w:1520,h:900};
+let vb = {...VB0};
+function wrap2(s){ if(s.length<=4) return [s]; const n=Math.ceil(s.length/2); return [s.slice(0,n),s.slice(n)]; }
+function drawNet(){
+  const svg=$('#net'), byId=Object.fromEntries(SENSES.map(s=>[s.id,s]));
+  let defs='<defs>'+Object.entries(ETYPE).map(([k,v],i)=>`<marker id="ar${i}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="${v.c}"/></marker>`).join('')+'</defs>';
+  let edges='', labels='', nodes='';
+  // 竹子背景装饰
+  let deco=`<g opacity=".18"><rect x="455" y="40" width="30" height="820" rx="15" fill="#3C8D5A"/>${[140,300,600,760].map(y=>`<rect x="447" y="${y}" width="46" height="10" rx="5" fill="#2A6B42"/>`).join('')}</g>`;
+  SENSES.forEach(s=>{
+    if(!s.parent) return;
+    const p=byId[s.parent], t=ETYPE[s.etype], ti=Object.keys(ETYPE).indexOf(s.etype);
+    const rp=p.id==='root'?84:62, rc=62, dx=s.x-p.x, dy=s.y-p.y, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L;
+    const x1=p.x+ux*(rp+4), y1=p.y+uy*(rp+4), x2=s.x-ux*(rc+8), y2=s.y-uy*(rc+8);
+    edges+=`<line class="edge" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${t.c}" stroke-dasharray="${t.dash}" marker-end="url(#ar${ti})"/>`;
+    const mx=(x1+x2)/2, my=(y1+y2)/2, w=52, why=wrap2w(s.why,10);
+    const ww=Math.max(...why.map(l=>l.length))*14+16, wh=why.length*18+8;
+    labels+=`<g class="elab" data-id="${s.id}" style="cursor:pointer"><rect class="whybg" x="${mx-ww/2}" y="${my+12}" width="${ww}" height="${wh}" rx="9"/>`+
+      why.map((l,i)=>`<text class="why" x="${mx}" y="${my+30+i*18}" text-anchor="middle">${esc(l)}</text>`).join('')+
+      `<rect x="${mx-w/2}" y="${my-16}" width="${w}" height="30" rx="15" fill="${t.c}"/><text class="t" x="${mx}" y="${my+5}" text-anchor="middle">${s.etype}</text></g>`;
+  });
+  SENSES.forEach(s=>{
+    const tr=TIER[s.tier], r=s.id==='root'?84:62, lines=wrap2(s.gloss), fs=s.id==='root'?34:23;
+    const y0=s.y-(lines.length-1)*fs*.6+fs*.36+(s.id==='root'?10:4);
+    nodes+=`<g class="node" data-id="${s.id}" tabindex="0" role="button" aria-label="${esc(s.gloss)}"><circle class="bg" cx="${s.x}" cy="${s.y}" r="${r}" fill="${tr.fill}" stroke="${tr.stroke}"/>`+
+      `<text class="lv" x="${s.x}" y="${s.y-r*.52}" text-anchor="middle">${tr.name}</text>`+
+      lines.map((l,i)=>`<text class="${s.id==='root'?'kai':''}" x="${s.x}" y="${y0+i*fs*1.2}" text-anchor="middle" style="font-size:${fs}px">${esc(l)}</text>`).join('')+`</g>`;
+  });
+  svg.innerHTML=defs+deco+edges+nodes+labels;
+  setVB();
+}
+function wrap2w(s,n){ if(s.length<=n) return [s]; const h=Math.ceil(s.length/2); return [s.slice(0,h),s.slice(h)]; }
+function setVB(){ $('#net').setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`); }
+function zoomAt(f,cx,cy){
+  const nw=Math.min(VB0.w*2.2,Math.max(VB0.w*.35,vb.w*f)), k=nw/vb.w;
+  if(cx===undefined){cx=vb.x+vb.w/2; cy=vb.y+vb.h/2;}
+  vb={x:cx-(cx-vb.x)*k, y:cy-(cy-vb.y)*k, w:nw, h:vb.h*k}; setVB();
+}
+function toSvg(e){ const svg=$('#net'), r=svg.getBoundingClientRect(); const sc=Math.max(vb.w/r.width, vb.h/r.height);
+  // preserveAspectRatio xMidYMid meet
+  const ox=(r.width*sc-vb.w)/2, oy=(r.height*sc-vb.h)/2;
+  return {x:vb.x+(e.clientX-r.left)*sc-ox, y:vb.y+(e.clientY-r.top)*sc-oy, sc}; }
+function initNet(){
+  const svg=$('#net'); vb={...VB0}; drawNet();
+  const pts=new Map(); let start=null, moved=false, pinch0=null;
+  svg.addEventListener('pointerdown',e=>{ svg.setPointerCapture(e.pointerId); pts.set(e.pointerId,{x:e.clientX,y:e.clientY}); moved=false;
+    if(pts.size===1) start={x:e.clientX,y:e.clientY,vb:{...vb}};
+    if(pts.size===2){ const [a,b]=[...pts.values()]; pinch0={d:Math.hypot(a.x-b.x,a.y-b.y),w:vb.w}; } });
+  svg.addEventListener('pointermove',e=>{ if(!pts.has(e.pointerId)) return; pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===2&&pinch0){ const [a,b]=[...pts.values()], d=Math.hypot(a.x-b.x,a.y-b.y); const m=toSvg({clientX:(a.x+b.x)/2,clientY:(a.y+b.y)/2});
+      zoomAt((pinch0.w*pinch0.d/d)/vb.w,m.x,m.y); moved=true; return; }
+    if(start){ const dx=e.clientX-start.x, dy=e.clientY-start.y; if(Math.hypot(dx,dy)>6){moved=true; svg.classList.add('drag');}
+      if(moved){ const sc=toSvg(e).sc; vb={...vb,x:start.vb.x-dx*sc,y:start.vb.y-dy*sc}; setVB(); } } });
+  const up=e=>{ pts.delete(e.pointerId); svg.classList.remove('drag'); if(pts.size<2) pinch0=null;
+    if(pts.size===0){ if(!moved){ const el=document.elementFromPoint(e.clientX,e.clientY); const n=el&&el.closest('.node,.elab'); if(n) openPop(n.dataset.id); } start=null; }
+    else { const p=[...pts.values()][0]; start={x:p.x,y:p.y,vb:{...vb}}; } };
+  svg.addEventListener('pointerup',up); svg.addEventListener('pointercancel',up);
+  svg.addEventListener('wheel',e=>{ e.preventDefault(); const p=toSvg(e); zoomAt(e.deltaY>0?1.12:1/1.12,p.x,p.y); },{passive:false});
+  svg.addEventListener('keydown',e=>{ const n=e.target.closest&&e.target.closest('.node'); if(n&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openPop(n.dataset.id);} });
+  $('#zin').onclick=()=>zoomAt(1/1.25); $('#zout').onclick=()=>zoomAt(1.25); $('#zreset').onclick=()=>{vb={...VB0};setVB();};
+  $('#legend').innerHTML = Object.entries(ETYPE).map(([k,v])=>`<span><i style="border-top-color:${v.c};border-top-style:${v.dash?(v.dash.startsWith('3')?'dotted':'dashed'):'solid'}"></i>${k}</span>`).join('')
+    + Object.values(TIER).map(t=>`<span><b style="background:${t.fill};border:3px solid ${t.stroke}"></b>${t.name}</span>`).join('');
+}
+
+/* ================= 弹窗 ================= */
+function openPop(id){
+  const s=SENSES.find(x=>x.id===id), p=SENSES.find(x=>x.id===s.parent), tr=TIER[s.tier];
+  document.querySelectorAll('#net .node').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
+  const how = s.parent ? `<div class="sec"><h4>🔀 怎么变来的</h4><div class="reason">从「${esc(p.gloss)}」<b style="color:${ETYPE[s.etype].c}">${s.etype}</b>而来：${esc(s.why)}。</div></div>`
+                       : `<div class="sec"><h4>⭐ 本义</h4><div class="reason">“节”最早指竹竿上一圈一圈鼓起来、像被绳子束住的地方，下面所有意思都从这里长出来。</div></div>`;
+  const wy = s.wenyan ? `<div class="wy"><div class="o kai">“${esc(s.wenyan.text)}”</div><div class="s">—— ${esc(s.wenyan.src)}</div><div class="tr">译文：${esc(s.wenyan.tr)}</div></div>`
+                      : `<div class="wy pending">📜 文言原句：<b>待查</b>（没有找到可靠出处前不写，绝不编造）</div>`;
+  $('#pop').innerHTML = `
+   <div class="pophead"><div class="ttl"><h2>${esc(s.gloss)}</h2><div class="sub">
+     <span class="badge" style="background:${tr.stroke}">${tr.name}</span>
+     ${s.parent?`<span class="badge" style="background:${ETYPE[s.etype].c}">${s.etype}</span>`:'<span class="badge" style="background:#D6A400">本义</span>'}
+   </div></div><button class="close" aria-label="关闭">✕</button></div>
+   <div class="popbody">
+     ${how}
+     <div class="sec"><h4>🧺 词族</h4><div class="words">${s.words.map(w=>`<span class="word kai">${esc(w)}</span>`).join('')}</div></div>
+     <div class="sec"><h4>🔧 构词说明</h4><div class="form">${s.form}</div></div>
+     <div class="sec"><h4>✏️ 现代例句</h4><div class="ex"><button class="rbtn" aria-label="朗读">🔊</button><span>${esc(s.example)}</span></div></div>
+     <div class="sec"><h4>📜 文言原句</h4>${wy}</div>
+     <div class="sec"><h4>🎯 把握程度</h4><span class="sure ${SURE[s.sure]}">${s.sure==='确定'?'✅':s.sure==='通行说法'?'📘':'🔎'} ${s.sure}</span><div class="note">${esc(s.sureNote)}</div></div>
+   </div>`;
+  $('#pop .close').onclick=closePop; $('#pop .ex .rbtn').onclick=()=>say(s.example);
+  $('#mask').classList.add('show'); $('#pop .close').focus();
+}
+function closePop(){ $('#mask').classList.remove('show'); }
+$('#mask').addEventListener('click',e=>{ if(e.target.id==='mask') closePop(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closePop(); });
+
+/* ================= 初始化 ================= */
+function initMain(){
+  initNet();
+  $('#speak').onclick=()=>say('节，jié。节日的节，节约的节。');
+  const fb=$('#fav'), upd=()=>{ const on=favs().includes('节'); fb.classList.toggle('on',on); fb.textContent=on?'★':'☆'; };
+  fb.onclick=()=>{ let f=favs(); if(f.includes('节')){ f=f.filter(c=>c!=='节'); toast('已取消收藏'); } else { f.push('节'); toast('已收藏到「我的收藏」'); }
+    try{ localStorage.setItem('hz_favs',JSON.stringify(f)); }catch(e){} upd(); if(subOn===4) renderSub(); };
+  upd();
+}
+$('#tags').innerHTML = TAGS.map(t=>`<button class="tag" onclick="toast('「汉字密码」栏目建设中')">${t}</button>`).join('');
+renderTop(); renderSub(); initMain();
+</script>
+</body>
+</html>

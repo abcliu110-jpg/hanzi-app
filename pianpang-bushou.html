@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>汉字乐园 · 偏旁部首 & 声旁音部</title>
+<style>
+:root{
+  --bg:#FFF9F0; --ink:#2D2A32; --muted:#7A7385; --card:#fff;
+  --c1:#FF7A59; --c2:#3D8BFD; --c3:#2EC4B6; --c4:#9B5DE5; --c5:#FFB703; --c6:#EF476F;
+  --zhun:#22B07D; --ban:#F2A900; --bu:#EF476F;
+  --sh:0 6px 0 rgba(45,42,50,.06),0 12px 28px rgba(45,42,50,.08);
+  --han:"Kaiti SC","STKaiti","KaiTi","楷体","Noto Serif SC","Songti SC","PingFang SC","Microsoft YaHei",serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;font-size:19px;
+  background-image:radial-gradient(circle at 10% 10%,#FFE8D6 0,transparent 30%),radial-gradient(circle at 90% 0,#E0F0FF 0,transparent 30%)}
+button{font-family:inherit}
+header{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);box-shadow:0 2px 14px rgba(0,0,0,.06)}
+.hd{display:flex;align-items:center;gap:14px;padding:10px 16px;max-width:1300px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:8px;font-weight:900;font-size:22px;white-space:nowrap}
+.logo svg{width:42px;height:42px}
+nav.top{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:4px 2px}
+nav.top::-webkit-scrollbar{display:none}
+.tb{flex:none;border:none;background:transparent;padding:10px 14px;border-radius:16px;font-size:17px;font-weight:800;color:var(--muted);cursor:pointer;min-height:48px;position:relative}
+.tb:hover{background:#F4EFE8}
+.tb.on{background:var(--ink);color:#fff}
+.tb .soon{font-size:11px;background:#EEE;color:#999;border-radius:6px;padding:1px 4px;margin-left:3px;vertical-align:2px}
+.tb.on .soon{background:#555;color:#ddd}
+.wrap{display:grid;grid-template-columns:230px 1fr;gap:18px;max-width:1300px;margin:0 auto;padding:18px 16px 40px}
+aside{position:sticky;top:90px;align-self:start;background:#fff;border-radius:26px;box-shadow:var(--sh);padding:12px}
+aside h4{margin:4px 8px 10px;font-size:15px;color:var(--muted)}
+.sb{display:flex;align-items:center;gap:10px;width:100%;border:none;background:transparent;text-align:left;padding:13px 14px;border-radius:16px;font-size:18px;font-weight:800;cursor:pointer;color:var(--ink);min-height:54px}
+.sb .ic{font-size:24px}
+.sb:hover{background:#F7F2EA}
+.sb.on{background:var(--accent,var(--c1));color:#fff}
+main{min-width:0}
+.title{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:2px 0 14px}
+.title h1{margin:0;font-size:32px}
+.title p{margin:0;color:var(--muted);font-size:17px}
+.panel{background:#fff;border-radius:26px;box-shadow:var(--sh);padding:18px;margin-bottom:16px}
+
+/* 卡片网格 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.rc{border:none;cursor:pointer;background:#fff;border-radius:24px;box-shadow:var(--sh);padding:14px 10px 12px;text-align:center;position:relative;transition:transform .15s;border-top:8px solid var(--cc,#ccc)}
+.rc:hover{transform:translateY(-4px)}
+.rc:active{transform:scale(.97)}
+.rc .g{font-family:var(--han);font-size:62px;font-weight:700;line-height:1.1;color:var(--cc)}
+.rc .n{font-weight:800;font-size:17px;margin-top:2px}
+.rc .o{font-size:14px;color:var(--muted);margin-top:4px;min-height:20px}
+.rc .em{position:absolute;right:10px;top:8px;font-size:22px}
+.rc .ex{font-family:var(--han);font-size:22px;letter-spacing:3px;margin-top:6px}
+.badge{display:inline-block;border-radius:999px;padding:3px 10px;font-size:14px;font-weight:800;color:#fff}
+.b-准{background:var(--zhun)}.b-半准{background:var(--ban)}.b-不准{background:var(--bu)}.b-混合{background:var(--c4)}
+.bar{display:flex;height:10px;border-radius:6px;overflow:hidden;margin-top:8px;background:#eee}
+.bar i{display:block;height:100%}
+
+.cats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.cat{border:none;border-radius:18px;padding:12px 20px;font-size:19px;font-weight:800;cursor:pointer;background:#F3EEE6;min-height:54px}
+.cat.on{color:#fff}
+
+/* 易混 */
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch;margin-bottom:16px}
+.side{border-radius:24px;padding:16px;background:#F8F6FF}
+.side .g{font-family:var(--han);font-size:70px;font-weight:700;line-height:1}
+.side h3{margin:6px 0;font-size:22px}
+.side p{margin:6px 0;font-size:17px;line-height:1.6}
+.side .ex{font-family:var(--han);font-size:30px;letter-spacing:6px}
+.vsmid{display:flex;align-items:center;font-size:30px;font-weight:900;color:var(--muted)}
+.tip{background:#FFF6D6;border-radius:18px;padding:12px 14px;font-size:17px;line-height:1.6;margin-top:6px}
+.tip b{color:#B07A00}
+
+/* 演变 */
+.evo{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.ev{background:#fff;border-radius:24px;box-shadow:var(--sh);padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.ev .row{display:flex;align-items:center;gap:10px}
+.ev .a{font-family:var(--han);font-size:52px;font-weight:700;color:var(--muted)}
+.ev .b{font-family:var(--han);font-size:60px;font-weight:700;color:var(--c2)}
+.ev .arr{font-size:30px;color:var(--c1)}
+.ev .em{font-size:30px}
+.ev p{margin:0;font-size:15px;color:var(--muted);text-align:center;line-height:1.5}
+.ev .pos{font-size:14px;font-weight:800;background:#EAF3FF;color:var(--c2);border-radius:999px;padding:2px 10px}
+
+/* 字族树 */
+.picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.pk{border:none;width:56px;height:56px;border-radius:16px;background:#F3EEE6;font-family:var(--han);font-size:32px;font-weight:700;cursor:pointer}
+.pk.on{background:var(--c1);color:#fff}
+.treebox{display:flex;justify-content:center}
+.treebox svg{width:100%;max-width:560px;height:auto}
+.leaf{cursor:pointer}
+.leaf:hover circle{stroke-width:6}
+
+/* 表音规则 */
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.rule{border-radius:24px;padding:16px;color:var(--ink)}
+.rule h3{margin:0 0 6px;font-size:26px;display:flex;align-items:center;gap:8px}
+.rule .def{font-size:17px;line-height:1.6;margin-bottom:10px}
+.pair{display:inline-flex;flex-direction:column;align-items:center;background:#fff;border-radius:16px;padding:6px 10px;margin:4px;min-width:66px;cursor:pointer}
+.pair .z{font-family:var(--han);font-size:34px;font-weight:700;line-height:1.1}
+.pair .y{font-size:15px;font-weight:800}
+.pair .f{font-size:12px;color:var(--muted)}
+
+/* 陷阱 */
+.trap{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.tr{background:#FFF0F3;border-radius:20px;padding:12px;text-align:center;cursor:pointer}
+.tr .z{font-family:var(--han);font-size:52px;font-weight:700}
+.tr .w{text-decoration:line-through;color:var(--bu);font-weight:800;font-size:16px}
+.tr .r{color:var(--zhun);font-weight:900;font-size:22px}
+.quiz{text-align:center}
+.qz{font-family:var(--han);font-size:120px;font-weight:700;line-height:1.1}
+.qopts{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.qo{border:none;border-radius:22px;padding:16px 30px;font-size:30px;font-weight:900;cursor:pointer;background:#EEF4FF;color:var(--c2);min-width:150px;box-shadow:0 5px 0 #C8DAFB}
+.qo.ok{background:var(--zhun);color:#fff;box-shadow:0 5px 0 #168A61}
+.qo.no{background:var(--bu);color:#fff;box-shadow:0 5px 0 #B8324F;animation:shake .4s}
+.qfb{min-height:32px;font-size:19px;font-weight:800}
+.btn{border:none;border-radius:18px;padding:12px 22px;font-size:19px;font-weight:800;cursor:pointer;background:var(--ink);color:#fff;min-height:52px}
+
+/* 右文说 */
+.yw{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.ywc{border-radius:24px;padding:16px;background:linear-gradient(160deg,#F3ECFF,#fff)}
+.ywc .g{font-family:var(--han);font-size:64px;font-weight:700;color:var(--c4);line-height:1}
+.ywc .m{font-size:20px;font-weight:900;margin:6px 0}
+.ywc .ex{display:flex;flex-wrap:wrap;gap:6px}
+.ywc .ex span{background:#fff;border-radius:12px;padding:6px 10px;font-size:16px}
+.ywc .ex b{font-family:var(--han);font-size:24px}
+.check{display:inline-block;background:#FFE3E3;color:#C0392B;border-radius:8px;padding:2px 8px;font-size:13px;font-weight:800;margin-left:4px}
+
+/* 建设中 */
+.soonpage{text-align:center;padding:60px 20px}
+.soonpage .big{font-size:110px}
+.soonpage h2{font-size:32px;margin:10px 0}
+
+/* 弹窗 */
+.mask{position:fixed;inset:0;background:rgba(45,42,50,.5);display:none;align-items:center;justify-content:center;z-index:60;padding:12px}
+.mask.on{display:flex}
+.modal{background:#fff;border-radius:30px;max-width:640px;width:100%;max-height:94vh;overflow:auto;padding:20px;position:relative;animation:rise .35s cubic-bezier(.2,1.3,.4,1)}
+.x{position:absolute;right:12px;top:12px;border:none;width:48px;height:48px;border-radius:50%;background:#F3EEE6;font-size:22px;cursor:pointer}
+.mh{display:flex;gap:14px;align-items:center}
+.mh .g{width:110px;height:110px;flex:none;border-radius:28px;display:flex;align-items:center;justify-content:center;font-family:var(--han);font-size:78px;font-weight:700;color:#fff}
+.mh h2{margin:0;font-size:28px}
+.mh .sub{color:var(--muted);font-size:16px;margin-top:4px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;margin-top:14px;font-size:18px;line-height:1.55}
+.kv b{white-space:nowrap}
+.say{border:none;background:var(--ink);color:#fff;border-radius:999px;padding:8px 16px;font-size:17px;font-weight:800;cursor:pointer;min-height:44px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:15px;font-weight:800;margin-top:6px}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.legend i{width:14px;height:14px;border-radius:50%;display:inline-block}
+.note{color:var(--muted);font-size:15px;text-align:center;margin-top:8px}
+
+@keyframes rise{from{transform:translateY(30px) scale(.95);opacity:0}to{transform:none;opacity:1}}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@media (max-width:820px){
+  .wrap{grid-template-columns:1fr;padding:12px}
+  aside{position:static;display:flex;gap:6px;overflow-x:auto;padding:8px;border-radius:20px}
+  aside h4{display:none}
+  .sb{flex:none;width:auto;padding:10px 14px;font-size:16px;min-height:48px}
+  .logo span{display:none}
+  .title h1{font-size:26px}
+  .rules{grid-template-columns:1fr}
+  .vs{grid-template-columns:1fr}
+  .vsmid{justify-content:center}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .rc .g{font-size:52px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="hd">
+    <div class="logo">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="4" width="56" height="56" rx="16" fill="#FF7A59"/><path d="M32 4v56M4 32h56M4 4l56 56M60 4L4 60" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3" opacity=".6"/><text x="32" y="45" text-anchor="middle" font-size="34" font-weight="900" fill="#fff" font-family="serif">字</text></svg>
+      <span>汉字乐园</span>
+    </div>
+    <nav class="top" id="topnav"></nav>
+  </div>
+</header>
+<div class="wrap">
+  <aside id="side"></aside>
+  <main id="main"></main>
+</div>
+<div class="mask" id="mask"><div class="modal" id="modal"></div></div>
+
+<script>
+/* ================= 数据 ================= */
+var CATS = {"人体":{c:"#FF7A59",ic:"🧒"},"动物":{c:"#2EC4B6",ic:"🐾"},"植物":{c:"#22B07D",ic:"🌱"},"器物":{c:"#9B5DE5",ic:"🏺"},"自然":{c:"#3D8BFD",ic:"⛰️"}};
+// r 偏旁, name 名称, from 来自哪个字, cat 分类, ori 原义, mean 在字里表示什么, ex 5个例字, em 图标
+var RADS = [
+ {r:"亻",name:"单人旁",from:"人",cat:"人体",ori:"侧着身子站着的人",mean:"和人、人的动作有关",ex:"你他们休信",em:"🧍"},
+ {r:"口",name:"口字旁",from:"口",cat:"人体",ori:"张开的嘴巴",mean:"和嘴巴、吃喝、说话、发声有关",ex:"吃喝叫唱吹",em:"👄"},
+ {r:"扌",name:"提手旁",from:"手",cat:"人体",ori:"人的手",mean:"和手的动作有关",ex:"打拍提推拉",em:"✋"},
+ {r:"足",name:"足字旁",from:"足",cat:"人体",ori:"人的脚",mean:"和脚、走路、跑跳有关",ex:"跑跳踢路跟",em:"🦶"},
+ {r:"目",name:"目字旁",from:"目",cat:"人体",ori:"眼睛",mean:"和眼睛、看有关",ex:"看眼睛盯眨",em:"👁️"},
+ {r:"耳",name:"耳字旁",from:"耳",cat:"人体",ori:"耳朵",mean:"多和耳朵、听有关",ex:"聪聊耻聆耷",em:"👂"},
+ {r:"忄",name:"竖心旁",from:"心",cat:"人体",ori:"心脏（古人认为心管想事情）",mean:"和心情、想法有关；在字下面写作「心」",ex:"情快怕想思",em:"❤️"},
+ {r:"月",name:"肉月旁",from:"肉",cat:"人体",ori:"一块肉",mean:"和身体部位有关（不是月亮！）",ex:"肚脸胖胸腿",em:"💪"},
+ {r:"页",name:"页字旁",from:"页",cat:"人体",ori:"人的头",mean:"和头、脸、脖子有关",ex:"顶额颈领颜",em:"🙂"},
+ {r:"女",name:"女字旁",from:"女",cat:"人体",ori:"女子",mean:"和女性、家人称呼有关",ex:"妈姐妹奶好",em:"👩"},
+ {r:"讠",name:"言字旁",from:"言",cat:"人体",ori:"说话",mean:"和说话、语言有关",ex:"说话语读谢",em:"💬"},
+ {r:"彳",name:"双人旁",from:"彳",cat:"人体",ori:"小步慢走",mean:"多和走路、道路有关",ex:"往徒径待循",em:"🚶"},
+ {r:"疒",name:"病字旁",from:"疒",cat:"人体",ori:"人生病躺靠在床上",mean:"和生病、疼痛有关",ex:"病疼痛疤痒",em:"🤒"},
+ {r:"欠",name:"欠字旁",from:"欠",cat:"人体",ori:"人张大嘴打哈欠",mean:"和张嘴、出气有关",ex:"歌欣歇欲歉",em:"🥱"},
+ {r:"犭",name:"反犬旁",from:"犬",cat:"动物",ori:"狗",mean:"和动物（多是兽类）有关",ex:"狗猫狼猪猴",em:"🐕"},
+ {r:"鸟",name:"鸟字旁",from:"鸟",cat:"动物",ori:"鸟",mean:"和鸟类有关",ex:"鸡鸭鹅鸽鹰",em:"🐦"},
+ {r:"隹",name:"隹字旁",from:"隹",cat:"动物",ori:"短尾巴的鸟",mean:"多和鸟有关",ex:"雀雁雄雅集",em:"🐤"},
+ {r:"虫",name:"虫字旁",from:"虫",cat:"动物",ori:"一种蛇（后来指小虫）",mean:"和虫子、蛇等小动物有关",ex:"蚂蚁蝴蝶蛇",em:"🐛"},
+ {r:"鱼",name:"鱼字旁",from:"鱼",cat:"动物",ori:"鱼",mean:"和鱼、水里的动物有关（鲸其实不是鱼哦）",ex:"鲤鲨鲸鳞鲜",em:"🐟"},
+ {r:"马",name:"马字旁",from:"马",cat:"动物",ori:"马",mean:"和马、骑马有关",ex:"骑驰驴驾驮",em:"🐎"},
+ {r:"牜",name:"牛字旁",from:"牛",cat:"动物",ori:"牛",mean:"和牛、家畜有关",ex:"牧物牲特犁",em:"🐂"},
+ {r:"羊",name:"羊字旁",from:"羊",cat:"动物",ori:"羊",mean:"和羊、美好吉祥有关",ex:"群羔美羞羚",em:"🐑"},
+ {r:"木",name:"木字旁",from:"木",cat:"植物",ori:"一棵树",mean:"和树木、木头做的东西有关",ex:"林森树桌椅",em:"🌳"},
+ {r:"艹",name:"草字头",from:"艸",cat:"植物",ori:"小草",mean:"和花草植物有关",ex:"花草苗芽菜",em:"🌿"},
+ {r:"竹",name:"竹字头",from:"竹",cat:"植物",ori:"竹子",mean:"和竹子、竹子做的东西有关",ex:"笔笛篮筷箱",em:"🎋"},
+ {r:"禾",name:"禾木旁",from:"禾",cat:"植物",ori:"垂着穗子的庄稼",mean:"和庄稼、粮食有关",ex:"秧稻秋种租",em:"🌾"},
+ {r:"米",name:"米字旁",from:"米",cat:"植物",ori:"去了壳的谷粒",mean:"和粮食、米做的东西有关",ex:"粮粒粉糖精",em:"🍚"},
+ {r:"钅",name:"金字旁",from:"金",cat:"器物",ori:"金属",mean:"和金属、金属做的东西有关",ex:"铁铜钢针钟",em:"🔩"},
+ {r:"刂",name:"立刀旁",from:"刀",cat:"器物",ori:"刀",mean:"和刀、切割有关",ex:"刻剪割利剑",em:"🔪"},
+ {r:"纟",name:"绞丝旁",from:"糸",cat:"器物",ori:"一束丝",mean:"和丝线、纺织有关",ex:"线红纸织绳",em:"🧵"},
+ {r:"衤",name:"衣字旁",from:"衣",cat:"器物",ori:"衣服",mean:"和衣服、布料有关",ex:"衬衫裤袜被",em:"👕"},
+ {r:"礻",name:"示字旁",from:"示",cat:"器物",ori:"祭祀用的台子",mean:"和祭祀、神灵、祝福有关",ex:"神福祝祖礼",em:"🏮"},
+ {r:"饣",name:"食字旁",from:"食",cat:"器物",ori:"食物",mean:"和吃的东西、吃饭有关",ex:"饭饼饺饿饱",em:"🥟"},
+ {r:"车",name:"车字旁",from:"车",cat:"器物",ori:"车子",mean:"和车辆、车的部件有关",ex:"轮辆轨转输",em:"🛞"},
+ {r:"王",name:"斜玉旁",from:"玉",cat:"器物",ori:"串起来的玉片",mean:"作偏旁大多是「玉」，和玉石、宝物有关",ex:"玩珠球环理",em:"💎"},
+ {r:"贝",name:"贝字旁",from:"贝",cat:"器物",ori:"贝壳（古人拿贝壳当钱）",mean:"和钱财、买卖有关",ex:"财货购贵贫",em:"🐚"},
+ {r:"皿",name:"皿字底",from:"皿",cat:"器物",ori:"盛东西的器具",mean:"和碗盘等器具有关",ex:"盘盆盒盖盛",em:"🥣"},
+ {r:"门",name:"门字框",from:"门",cat:"器物",ori:"两扇门",mean:"和门、出入有关",ex:"闪闭闯闸阔",em:"🚪"},
+ {r:"宀",name:"宝盖头",from:"宀",cat:"器物",ori:"房屋的屋顶",mean:"和房屋、住处有关",ex:"家室宫宿安",em:"🏠"},
+ {r:"阝右",show:"阝",name:"右耳旁",from:"邑",cat:"器物",ori:"人住的城镇",mean:"在右边，和城镇、地名有关",ex:"都部邻郊邮",em:"🏘️"},
+ {r:"氵",name:"三点水",from:"水",cat:"自然",ori:"流水",mean:"和水、液体有关",ex:"河湖海洗流",em:"💧"},
+ {r:"冫",name:"两点水",from:"冫",cat:"自然",ori:"冰",mean:"和寒冷、冰有关",ex:"冰冷冻凉凝",em:"🧊"},
+ {r:"火",name:"火字旁",from:"火",cat:"自然",ori:"火苗",mean:"和火、热、光有关；在下面写作「灬」",ex:"炒烧灯热煮",em:"🔥"},
+ {r:"日",name:"日字旁",from:"日",cat:"自然",ori:"太阳",mean:"和太阳、时间、明暗有关",ex:"明晴晚早暖",em:"☀️"},
+ {r:"雨",name:"雨字头",from:"雨",cat:"自然",ori:"从天上落下的雨",mean:"和天气现象有关",ex:"雪雷雾霜露",em:"🌧️"},
+ {r:"土",name:"提土旁",from:"土",cat:"自然",ori:"地上的土堆",mean:"和泥土、土地有关",ex:"地场城堆坡",em:"🟫"},
+ {r:"石",name:"石字旁",from:"石",cat:"自然",ori:"山崖下的石块",mean:"和石头有关",ex:"砖碗破硬碰",em:"🪨"},
+ {r:"山",name:"山字旁",from:"山",cat:"自然",ori:"高高的山峰",mean:"和山有关",ex:"岭峰岛岩崖",em:"⛰️"},
+ {r:"阝左",show:"阝",name:"左耳旁",from:"阜",cat:"自然",ori:"土山、台阶",mean:"在左边，和山坡、高低有关",ex:"阶陆院阳险",em:"🪜"}
+];
+
+// 声旁：c 字, py 拼音
+var PHO = [
+ {p:"青",py:"qīng",ch:[["清","qīng"],["请","qǐng"],["情","qíng"],["晴","qíng"],["蜻","qīng"],["睛","jīng"],["精","jīng"],["猜","cāi"]]},
+ {p:"包",py:"bāo",ch:[["饱","bǎo"],["抱","bào"],["苞","bāo"],["胞","bāo"],["跑","pǎo"],["泡","pào"],["炮","pào"],["袍","páo"]]},
+ {p:"方",py:"fāng",ch:[["芳","fāng"],["房","fáng"],["防","fáng"],["访","fǎng"],["纺","fǎng"],["仿","fǎng"],["放","fàng"]]},
+ {p:"马",py:"mǎ",ch:[["妈","mā"],["码","mǎ"],["蚂","mǎ"],["玛","mǎ"],["骂","mà"],["吗","ma"]]},
+ {p:"工",py:"gōng",ch:[["功","gōng"],["攻","gōng"],["贡","gòng"],["红","hóng"],["虹","hóng"],["空","kōng"],["江","jiāng"],["扛","káng"],["杠","gàng"]]},
+ {p:"可",py:"kě",ch:[["坷","kě"],["柯","kē"],["苛","kē"],["河","hé"],["何","hé"],["荷","hé"],["阿","ā"]]},
+ {p:"也",py:"yě",ch:[["他","tā"],["她","tā"],["地","dì"],["池","chí"],["驰","chí"],["施","shī"]]},
+ {p:"其",py:"qí",ch:[["棋","qí"],["旗","qí"],["淇","qí"],["期","qī"],["欺","qī"],["基","jī"],["箕","jī"]]},
+ {p:"巴",py:"bā",ch:[["芭","bā"],["疤","bā"],["爸","bà"],["把","bǎ"],["吧","ba"],["爬","pá"]]},
+ {p:"皮",py:"pí",ch:[["披","pī"],["疲","pí"],["坡","pō"],["破","pò"],["波","bō"],["玻","bō"],["被","bèi"]]},
+ {p:"白",py:"bái",ch:[["柏","bǎi"],["拍","pāi"],["伯","bó"],["泊","bó"],["怕","pà"]]},
+ {p:"令",py:"lìng",ch:[["铃","líng"],["零","líng"],["龄","líng"],["玲","líng"],["领","lǐng"],["岭","lǐng"],["邻","lín"],["冷","lěng"]]},
+ {p:"交",py:"jiāo",ch:[["郊","jiāo"],["胶","jiāo"],["跤","jiāo"],["饺","jiǎo"],["较","jiào"],["校","xiào"],["效","xiào"],["咬","yǎo"]]},
+ {p:"分",py:"fēn",ch:[["芬","fēn"],["纷","fēn"],["粉","fěn"],["份","fèn"],["盆","pén"],["扮","bàn"],["贫","pín"]]},
+ {p:"古",py:"gǔ",ch:[["姑","gū"],["估","gū"],["故","gù"],["固","gù"],["枯","kū"],["苦","kǔ"],["胡","hú"],["湖","hú"]]},
+ {p:"生",py:"shēng",ch:[["牲","shēng"],["笙","shēng"],["胜","shèng"],["星","xīng"],["性","xìng"],["姓","xìng"]]},
+ {p:"主",py:"zhǔ",ch:[["住","zhù"],["注","zhù"],["柱","zhù"],["驻","zhù"],["蛀","zhù"]]}
+];
+
+var CONFUSE = [
+ {a:{g:"月",t:"肉月旁（来自「肉」）",d:"在字里多表示身体部位、肉。",ex:"肚 脸 胖 腿 胸"},
+  b:{g:"月",t:"月字旁（月亮）",d:"和月亮、时间有关。",ex:"朗 期 望"},
+  tip:"<b>小窍门：</b>说的是身体就是「肉月」，说的是月亮、日子就是「月亮月」。今天两个写法一样，古时候写法不同。"},
+ {a:{g:"王",t:"斜玉旁（来自「玉」）",d:"作偏旁时大多是「玉」，和玉石、宝物有关。",ex:"玩 珠 球 环 理"},
+  b:{g:"王",t:"王（国王的王）",d:"「王」单独用时才是国王。",ex:"王 皇"},
+  tip:"<b>小窍门：</b>在左边当偏旁，最后一笔是提（像斜着的一横），一般就是「玉」。"},
+ {a:{g:"礻",t:"示字旁（来自「示」）",d:"祭祀台子，和神灵、祝福、礼仪有关。",ex:"神 福 祝 祖 礼"},
+  b:{g:"衤",t:"衣字旁（来自「衣」）",d:"和衣服、布料有关。",ex:"衬 衫 裤 袜 被"},
+  tip:"<b>小窍门：</b>「衤」比「礻」多一点，衣服上多一颗扣子！祝福用「礻」，穿的用「衤」。"},
+ {a:{g:"阝",t:"左耳旁 = 阜",d:"在<b>左边</b>，原来是土山、台阶，表示山坡、高低。",ex:"阶 陆 院 阳 险"},
+  b:{g:"阝",t:"右耳旁 = 邑",d:"在<b>右边</b>，原来是城镇，多和地名、城邑有关。",ex:"都 部 邻 郊 邮"},
+  tip:"<b>小窍门：</b>左边爬山（阜），右边进城（邑）。"}
+];
+
+var EVO = [
+ ["人","亻","左边","🧍","人站在左边要变瘦，给右边让位置"],
+ ["水","氵","左边","💧","三点像三滴水"],
+ ["手","扌","左边","✋","手变窄，变成提手旁"],
+ ["心","忄","左边","❤️","在下面时还写「心」，如想、思"],
+ ["火","灬","下面","🔥","在下面变成四个点，如热、煮"],
+ ["刀","刂","右边","🔪","站在右边变成两竖"],
+ ["犬","犭","左边","🐕","犬在左边变成反犬旁"],
+ ["言","讠","左边","💬","简化字写成两笔"],
+ ["金","钅","左边","🔩","简化字写成钅"],
+ ["食","饣","左边","🥟","简化字写成三笔"],
+ ["糸","纟","左边","🧵","简化字写成三笔"],
+ ["示","礻","左边","🏮","在左边写作礻"],
+ ["衣","衤","左边","👕","在左边写作衤，比礻多一点"],
+ ["玉","王","左边","💎","在左边去掉一点，最后一笔变提"],
+ ["肉","月","左边","💪","和月亮的「月」长得一样了"],
+ ["足","⻊","左边","🦶","最后一笔变提"],
+ ["竹","⺮","上面","🎋","在上面变成竹字头"],
+ ["艸","艹","上面","🌿","两棵小草并排变成草字头"],
+ ["阜","阝","左边","🪜","左耳旁"],
+ ["邑","阝","右边","🏘️","右耳旁"],
+ ["牛","牜","左边","🐂","最后一笔变提"]
+];
+
+var YOUWEN = [
+ {g:"戋",m:"有「小、少」的意思",list:[["浅","水少"],["钱","小块金属"],["残","剩下的少"],["贱","价钱少"],["盏","小杯子"]],src:"宋代沈括《梦溪笔谈》记王圣美「右文说」，以「戋」为例",chk:"待核对"},
+ {g:"仑",m:"有「有条理、有次序」的意思",list:[["论","说话有条理"],["轮","车轮的辐条排得整齐"],["伦","人与人的次序"],["纶","整齐的丝线"]],src:"书证待查",chk:"待查"},
+ {g:"青",m:"有「干净、美好」的意思",list:[["清","水干净"],["晴","天干净"],["睛","明亮的眼珠"],["精","挑过的好米"]],src:"书证待查",chk:"待查"},
+ {g:"包",m:"有「包裹、裹住」的意思",list:[["胞","裹着胎儿的膜"],["苞","裹着花的花苞"],["袍","裹住身体的长衣"],["抱","用手臂围住"]],src:"书证待查",chk:"待查"}
+];
+
+/* ================= 工具 ================= */
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function say(t){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=.75;speechSynthesis.speak(u)}catch(e){}}
+function plain(p){return p.normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+function split(p){var m=plain(p).match(/^(zh|ch|sh|[bpmfdtnlgkhjqxrzcsyw])?(.*)$/);return{i:m[1]||'',f:m[2]}}
+function grade(py,base){var a=split(py),b=split(base);if(a.i===b.i&&a.f===b.f)return'准';if(a.i===b.i||a.f===b.f)return'半准';return'不准'}
+var GC={'准':'#22B07D','半准':'#F2A900','不准':'#EF476F'};
+function stat(ph){var s={'准':0,'半准':0,'不准':0};ph.ch.forEach(function(c){s[grade(c[1],ph.py)]++});return s}
+function overall(s){var t=s['准']+s['半准']+s['不准'];if(s['准']/t>=.7)return'准';if(s['不准']/t>=.7)return'不准';if((s['准']+s['半准'])/t>=.7)return'半准';return'混合'}
+function radByKey(k){return RADS.filter(function(r){return r.r===k})[0]}
+function showG(r){return r.show||r.r}
+
+/* ================= 字族树（SVG） ================= */
+function tree(root,rootSub,color,leaves){
+  var W=560,H=560,cx=280,cy=280,R=200,n=leaves.length,s='';
+  leaves.forEach(function(l,i){var a=-Math.PI/2+i*2*Math.PI/n;l.x=cx+Math.cos(a)*R;l.y=cy+Math.sin(a)*R;
+    s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+l.x+'" y2="'+l.y+'" stroke="'+(l.col||color)+'" stroke-width="6" stroke-linecap="round" opacity=".55"/>';});
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="78" fill="'+color+'"/><circle cx="'+cx+'" cy="'+cy+'" r="88" fill="none" stroke="'+color+'" stroke-width="3" stroke-dasharray="6 6" opacity=".5"/>'+
+     '<text x="'+cx+'" y="'+(cy+(rootSub?14:24))+'" text-anchor="middle" font-size="74" font-weight="700" fill="#fff" style="font-family:var(--han)">'+esc(root)+'</text>';
+  if(rootSub)s+='<text x="'+cx+'" y="'+(cy+52)+'" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">'+esc(rootSub)+'</text>';
+  leaves.forEach(function(l){var c=l.col||color;
+    s+='<g class="leaf" data-s="'+esc(l.c)+'"><circle cx="'+l.x+'" cy="'+l.y+'" r="52" fill="#fff" stroke="'+c+'" stroke-width="4"/>'+
+       '<text x="'+l.x+'" y="'+(l.y+(l.py?8:16))+'" text-anchor="middle" font-size="'+(l.py?44:50)+'" font-weight="700" fill="#2D2A32" style="font-family:var(--han)">'+esc(l.c)+'</text>'+
+       (l.py?'<text x="'+l.x+'" y="'+(l.y+34)+'" text-anchor="middle" font-size="19" font-weight="800" fill="'+c+'">'+esc(l.py)+'</text>':'')+'</g>';});
+  return '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+s+'</svg>';
+}
+function radTree(r){var col=CATS[r.cat].c;return tree(showG(r),r.name,col,r.ex.split('').map(function(c){return{c:c}}))}
+function phoTree(p){return tree(p.p,p.py,'#3D8BFD',p.ch.map(function(c){return{c:c[0],py:c[1],col:GC[grade(c[1],p.py)]}}))}
+function bindLeaves(el){el.querySelectorAll('.leaf,[data-s]').forEach(function(n){n.addEventListener('click',function(e){e.stopPropagation();say(n.getAttribute('data-s'))})})}
+var LEG='<div class="legend"><span><i style="background:#22B07D"></i>准：声母韵母都一样</span><span><i style="background:#F2A900"></i>半准：只一样一半</span><span><i style="background:#EF476F"></i>不准：读音变了</span></div>';
+
+/* ================= 弹窗 ================= */
+function openModal(html){$('modal').innerHTML='<button class="x" aria-label="关闭">✕</button>'+html;$('mask').classList.add('on');$('modal').querySelector('.x').onclick=closeModal;bindLeaves($('modal'))}
+function closeModal(){$('mask').classList.remove('on')}
+$('mask').onclick=function(e){if(e.target.id==='mask')closeModal()};
+function openRad(k){var r=radByKey(k),col=CATS[r.cat].c;
+  openModal('<div class="mh"><div class="g" style="background:'+col+'">'+showG(r)+'</div><div><h2>'+r.name+' '+r.em+'</h2><div class="sub">来自「'+r.from+'」 · '+CATS[r.cat].ic+' '+r.cat+'类</div></div></div>'+
+   '<div class="kv"><b>📜 原义</b><span>'+esc(r.ori)+'</span><b>🔍 在字里</b><span>'+esc(r.mean)+'</span></div>'+
+   '<div class="treebox">'+radTree(r)+'</div><p class="note">🌳 字族树：点一个字听读音</p>');
+  say(r.name)}
+function openPho(k){var p=PHO.filter(function(x){return x.p===k})[0],s=stat(p),o=overall(s);
+  openModal('<div class="mh"><div class="g" style="background:#3D8BFD">'+p.p+'</div><div><h2>声旁「'+p.p+'」 '+p.py+'</h2><div class="sub">准 '+s['准']+' · 半准 '+s['半准']+' · 不准 '+s['不准']+'　<span class="badge b-'+o+'">整体：'+o+'</span></div></div></div>'+
+   '<div class="treebox">'+phoTree(p)+'</div>'+LEG+'<p class="note">点一个字听读音。「准」只看声母和韵母，声调可以不同。</p>');
+  say(p.p)}
+
+/* ================= 菜单 ================= */
+var TOP=[["kz","字义扩展图"],["rad","偏旁部首"],["pho","声旁音部"],["zcj","字词句"],["mm","汉字密码"],["yc","易错诊所"],["jy","记忆复习"],["lj","学习路径"]];
+var SUB={
+ rad:[["all","部首总表","📋"],["cat","按意义分类","🗂️"],["mix","易混偏旁","⚖️"],["evo","偏旁演变","🔄"],["tree","字族树","🌳"]],
+ pho:[["all","声旁总表","📋"],["rule","表音规则","🎯"],["trap","读半边陷阱","⚠️"],["fam","同声旁字族","🌳"],["yw","声旁表义","💡"]]
+};
+var st={top:"rad",sub:"all",cat:"人体",treeR:"氵",treeP:"青",q:null,score:0};
+
+function drawTop(){
+  $('topnav').innerHTML=TOP.map(function(t){var live=t[0]==='rad'||t[0]==='pho';return '<button class="tb'+(st.top===t[0]?' on':'')+'" data-k="'+t[0]+'">'+t[1]+(live?'':'<span class="soon">建设中</span>')+'</button>'}).join('');
+  $('topnav').querySelectorAll('.tb').forEach(function(b){b.onclick=function(){st.top=b.dataset.k;st.sub='all';render()}});
+}
+function drawSide(){
+  var s=SUB[st.top],acc=st.top==='pho'?'#3D8BFD':'#FF7A59';
+  if(!s){$('side').style.display='none';return}
+  $('side').style.display='';
+  $('side').innerHTML='<h4>'+(st.top==='rad'?'偏旁部首':'声旁音部')+'</h4>'+s.map(function(x){return '<button class="sb'+(st.sub===x[0]?' on':'')+'" style="--accent:'+acc+'" data-k="'+x[0]+'"><span class="ic">'+x[2]+'</span>'+x[1]+'</button>'}).join('');
+  $('side').querySelectorAll('.sb').forEach(function(b){b.onclick=function(){st.sub=b.dataset.k;render();window.scrollTo({top:0,behavior:'smooth'})}});
+}
+function title(h,p){return '<div class="title"><h1>'+h+'</h1><p>'+p+'</p></div>'}
+function radCard(r){return '<button class="rc" style="--cc:'+CATS[r.cat].c+'" data-rad="'+r.r+'"><span class="em">'+r.em+'</span><div class="g">'+showG(r)+'</div><div class="n">'+r.name+'</div><div class="o">'+esc(r.ori)+'</div><div class="ex">'+r.ex+'</div></button>'}
+function phoCard(p){var s=stat(p),t=p.ch.length,o=overall(s);
+  return '<button class="rc" style="--cc:#3D8BFD" data-pho="'+p.p+'"><div class="g">'+p.p+'</div><div class="n">'+p.py+'</div><div class="ex">'+p.ch.slice(0,5).map(function(c){return c[0]}).join('')+'</div>'+
+   '<div class="bar"><i style="width:'+(s['准']/t*100)+'%;background:#22B07D"></i><i style="width:'+(s['半准']/t*100)+'%;background:#F2A900"></i><i style="width:'+(s['不准']/t*100)+'%;background:#EF476F"></i></div>'+
+   '<div style="margin-top:8px"><span class="badge b-'+o+'">'+o+'</span></div></button>'}
+
+/* ================= 页面 ================= */
+var PAGES={
+ rad:{
+  all:function(){return title('部首总表 📋','一共 '+RADS.length+' 个常用偏旁，点一点看字族树')+'<div class="grid">'+RADS.map(radCard).join('')+'</div>'},
+  cat:function(){var h=title('按意义分类 🗂️','偏旁住在五个家里');
+    h+='<div class="cats">'+Object.keys(CATS).map(function(k){var on=st.cat===k;return '<button class="cat'+(on?' on':'')+'" style="'+(on?'background:'+CATS[k].c:'')+'" data-cat="'+k+'">'+CATS[k].ic+' '+k+'</button>'}).join('')+'</div>';
+    return h+'<div class="grid">'+RADS.filter(function(r){return r.cat===st.cat}).map(radCard).join('')+'</div>'},
+  mix:function(){return title('易混偏旁 ⚖️','长得像，意思可不一样')+CONFUSE.map(function(c){
+    function side(s,col){return '<div class="side" style="background:'+col+'"><div class="g">'+s.g+'</div><h3>'+s.t+'</h3><p>'+s.d+'</p><div class="ex">'+s.ex+'</div></div>'}
+    return '<div class="panel"><div class="vs">'+side(c.a,'#FFF1EA')+'<div class="vsmid">VS</div>'+side(c.b,'#EAF3FF')+'</div><div class="tip">'+c.tip+'</div></div>'}).join('')},
+  evo:function(){return title('偏旁演变 🔄','一个字变成偏旁时，会换个样子')+'<div class="evo">'+EVO.map(function(e){
+    return '<div class="ev" data-s="'+e[0]+'"><div class="em">'+e[3]+'</div><div class="row"><span class="a">'+e[0]+'</span><span class="arr">➜</span><span class="b">'+e[1]+'</span></div><span class="pos">放在'+e[2]+'</span><p>'+e[4]+'</p></div>'}).join('')+'</div>'+
+    '<p class="note">甲骨文、金文等古字形图片待补（待查），这里先展示「独体字 ➜ 偏旁」的变化。</p>'},
+  tree:function(){var r=radByKey(st.treeR);
+    return title('字族树 🌳','选一个偏旁，看它带出的一家子')+'<div class="panel"><div class="picker">'+RADS.map(function(x){return '<button class="pk'+(x.r===st.treeR?' on':'')+'" data-tr="'+x.r+'" title="'+x.name+'">'+showG(x)+'</button>'}).join('')+'</div>'+
+     '<div class="kv" style="margin-top:0"><b>'+r.em+' '+r.name+'</b><span>原义：'+esc(r.ori)+'；在字里：'+esc(r.mean)+'</span></div><div class="treebox">'+radTree(r)+'</div></div>'}
+ },
+ pho:{
+  all:function(){return title('声旁总表 📋',PHO.length+' 个声旁 · 色条显示读音准不准')+LEG+'<div class="grid" style="margin-top:14px">'+PHO.map(phoCard).join('')+'</div>'},
+  rule:function(){var g={'准':[],'半准':[],'不准':[]};PHO.forEach(function(p){p.ch.forEach(function(c){g[grade(c[1],p.py)].push([c[0],c[1],p.p])})});
+    var info={'准':['🟢','和声旁声母、韵母都一样，只有声调可能不同。看到声旁可以大胆猜！','#E3F7EE'],'半准':['🟡','声母一样或者韵母一样，只像一半。可以帮你猜，但要查一查。','#FFF6D6'],'不准':['🔴','声母韵母都变了。千万不能「读半边」！','#FFE8EE']};
+    return title('表音规则 🎯','声旁帮我们猜读音，但它不总是靠得住')+'<div class="rules">'+['准','半准','不准'].map(function(k){
+      return '<div class="rule" style="background:'+info[k][2]+'"><h3>'+info[k][0]+' '+k+' <small style="font-size:16px;color:var(--muted)">'+g[k].length+'个</small></h3><div class="def">'+info[k][1]+'</div>'+
+       g[k].map(function(x){return '<span class="pair" data-s="'+x[0]+'"><span class="z">'+x[0]+'</span><span class="y" style="color:'+GC[k]+'">'+x[1]+'</span><span class="f">声旁 '+x[2]+'</span></span>'}).join('')+'</div>'}).join('')+'</div>'+
+     '<p class="note">分级方法：把字的拼音和声旁的拼音拆成声母+韵母来比，不看声调。</p>'},
+  trap:function(){var list=[];PHO.forEach(function(p){p.ch.forEach(function(c){if(grade(c[1],p.py)==='不准')list.push({c:c[0],py:c[1],p:p.p,ppy:p.py})})});
+    if(!st.q)newQ(list);var q=st.q;
+    return title('读半边陷阱 ⚠️','「秀才识字读半边」——这些字最容易读错')+
+     '<div class="panel quiz"><div style="font-weight:800;color:var(--muted)">小挑战：这个字怎么读？　⭐ '+st.score+'</div><div class="qz">'+q.c+'</div>'+
+     '<div class="qopts">'+q.opts.map(function(o){return '<button class="qo" data-o="'+o+'">'+o+'</button>'}).join('')+'</div><div class="qfb" id="qfb"></div><button class="btn" id="qnext">下一题 ➜</button></div>'+
+     '<div class="panel"><h3 style="margin:0 0 10px">🚫 别读半边！</h3><div class="trap">'+list.map(function(x){return '<div class="tr" data-s="'+x.c+'"><div class="z">'+x.c+'</div><div class="w">不读 '+x.ppy+'（'+x.p+'）</div><div class="r">读 '+x.py+'</div></div>'}).join('')+'</div></div>'},
+  fam:function(){var p=PHO.filter(function(x){return x.p===st.treeP})[0],s=stat(p);
+    return title('同声旁字族 🌳','同一个声旁，带出一家子字')+'<div class="panel"><div class="picker">'+PHO.map(function(x){return '<button class="pk'+(x.p===st.treeP?' on':'')+'" style="'+(x.p===st.treeP?'background:#3D8BFD':'')+'" data-tp="'+x.p+'">'+x.p+'</button>'}).join('')+'</div>'+
+     '<div style="text-align:center;font-size:18px;font-weight:800">「'+p.p+'」'+p.py+'：准 '+s['准']+' · 半准 '+s['半准']+' · 不准 '+s['不准']+'</div><div class="treebox">'+phoTree(p)+'</div>'+LEG+'</div>'},
+  yw:function(){return title('声旁表义 💡','右文说：有的声旁不只管读音，还带点意思')+
+    '<div class="panel tip" style="margin-bottom:14px"><b>先记住：</b>只有一部分声旁同时表意思，大多数声旁只管读音。比如「也」在他、池、地里就看不出共同的意思。</div>'+
+    '<div class="yw">'+YOUWEN.map(function(y){return '<div class="ywc"><div class="g">'+y.g+'</div><div class="m">'+y.m+'</div><div class="ex">'+y.list.map(function(l){return '<span data-s="'+l[0]+'"><b>'+l[0]+'</b> '+l[1]+'</span>'}).join('')+'</div>'+
+     '<p style="font-size:14px;color:var(--muted);margin:10px 0 0">出处：'+esc(y.src)+'<span class="check">'+y.chk+'</span></p></div>'}).join('')+'</div>'}
+ }
+};
+function newQ(list){if(!list){list=[];PHO.forEach(function(p){p.ch.forEach(function(c){if(grade(c[1],p.py)==='不准')list.push({c:c[0],py:c[1],p:p.p,ppy:p.py})})})}
+  var x=list[Math.floor(Math.random()*list.length)];var opts=[x.py,x.ppy];if(Math.random()<.5)opts.reverse();st.q={c:x.c,py:x.py,ppy:x.ppy,p:x.p,opts:opts,done:false}}
+
+function soon(name){return '<div class="panel soonpage"><div class="big">🚧</div><h2>「'+name+'」建设中</h2><p style="color:var(--muted)">小工人正在努力搭建，先去「偏旁部首」和「声旁音部」玩一玩吧！</p><button class="btn" id="goRad">去偏旁部首 ➜</button></div>'}
+
+function render(){
+  drawTop();drawSide();var m=$('main');
+  if(PAGES[st.top]){m.innerHTML=PAGES[st.top][st.sub]()}
+  else{var t=TOP.filter(function(x){return x[0]===st.top})[0];m.innerHTML=soon(t[1]);$('goRad').onclick=function(){st.top='rad';st.sub='all';render()}}
+  m.querySelectorAll('[data-rad]').forEach(function(b){b.onclick=function(){openRad(b.dataset.rad)}});
+  m.querySelectorAll('[data-pho]').forEach(function(b){b.onclick=function(){openPho(b.dataset.pho)}});
+  m.querySelectorAll('[data-cat]').forEach(function(b){b.onclick=function(){st.cat=b.dataset.cat;render()}});
+  m.querySelectorAll('[data-tr]').forEach(function(b){b.onclick=function(){st.treeR=b.dataset.tr;render();say(radByKey(st.treeR).name)}});
+  m.querySelectorAll('[data-tp]').forEach(function(b){b.onclick=function(){st.treeP=b.dataset.tp;render();say(st.treeP)}});
+  bindLeaves(m);
+  m.querySelectorAll('.qo').forEach(function(b){b.onclick=function(){var q=st.q;if(q.done)return;q.done=true;
+    var ok=b.dataset.o===q.py;b.classList.add(ok?'ok':'no');
+    if(!ok)m.querySelectorAll('.qo').forEach(function(x){if(x.dataset.o===q.py)x.classList.add('ok')});
+    if(ok)st.score++;
+    $('qfb').innerHTML=ok?'<span style="color:#22B07D">🎉 答对了！没有掉进陷阱。</span>':'<span style="color:#EF476F">掉进陷阱啦！「'+q.c+'」读 '+q.py+'，不读半边「'+q.p+'」。</span>';
+    say(q.c)}});
+  var nx=$('qnext');if(nx)nx.onclick=function(){newQ();render()};
+}
+render();
+</script>
+</body>
+</html>

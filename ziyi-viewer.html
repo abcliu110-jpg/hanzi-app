@@ -560,7 +560,7 @@ function openPop(s,list){
   if(has(s.gloss))h+=`<p class="p">${esc(s.gloss)}</p>`;
   if(!s._root&&has(s.why))h+=`<p class="p" style="color:var(--ink2);font-size:13px;margin-top:4px">为什么：${esc(s.why)}</p>`;
   const words=arr(s.words);
-  h+=sec("词族",words.length?`<div class="words">${words.map(w=>`<span>${esc(w)}</span>`).join("")}</div>`:"");
+  h+=sec("词族",words.length?`<div class="words">${words.map(w=>`<span>${esc(w)}</span>`).join("")}</div>`:'<span style="color:var(--xzq-muted,#7A7896)">例词待补</span>');
   h+=sec("构词拆解",has(s.build)?`<p class="p">${esc(s.build)}</p>`:"");
   if(has(ex.text))h+=`<h4>例句${has(ex.tag)?`<span class="tag">${esc(ex.tag)}</span>`:""}</h4><p class="p">${esc(ex.text)}</p>`;
   if(has(cl.text))h+=`<h4>文言原句</h4><div class="quote">${esc(cl.text)}</div>${has(cl.src)?`<div class="src">出处：${esc(cl.src)}</div>`:""}${has(cl.trans)?`<p class="p" style="margin-top:6px;font-size:13px">译文：${esc(cl.trans)}</p>`:""}`;
@@ -594,9 +594,9 @@ function renderSide(){
   if(has(o.name)||has(o.gloss))ob+=`<p class="p"><b>${esc(o.name||"")}</b>${has(o.gloss)?"：<span>"+esc(o.gloss)+"</span>":""}</p>`;
   if(has(o.sw))ob+=`<h4>《说文》原文</h4><div class="quote">${esc(o.sw)}</div>${has(o.swSrc)?`<div class="src">${esc(o.swSrc)}</div>`:""}`;
   const evo=(Array.isArray(c.evo)?c.evo:[]).filter(has);
-  if(evo.length)ob+=`<h4>字形演变（文字占位）</h4><div class="evo">${evo.map(e=>`<div>${has(e.stage)?`<b>${esc(e.stage)}</b>`:""}${esc(e.desc||"")}</div>`).join("")}</div>`;
+  if(evo.length)ob+=`<h4>字形演变（文字占位）</h4><div class="evo">${evo.map(e=>`<div><b>${has(e.stage)?esc(e.stage):"说明"}</b>${has(e.desc)?esc(e.desc):'<span style="color:var(--xzq-muted,#7A7896)">资料待补</span>'}</div>`).join("")}</div>`;
   if(has(o.why))ob+=`<h4>本义判定理由</h4><p class="p">${esc(o.why)}</p>`;
-  if(has(ob)&&has(o.conf))ob+=`<div style="margin-top:10px">${badge(o.conf)}</div>`;
+  if(has(ob))ob+=`<div style="margin-top:10px">${has(o.conf)?badge(o.conf):'<span class="badge" style="color:var(--xzq-muted,#7A7896)">可信度待标注</span>'}</div>`;
   h+=card("本义溯源",ob);
   /* 偏旁拆分 */
   const pt=c.parts||{}; let pb="";

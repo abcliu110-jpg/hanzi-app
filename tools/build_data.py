@@ -30,30 +30,36 @@ def group_no(p):
 
 def maps_index_html(files):
     import html
+    from urllib.parse import quote
     items = []
     for p in files:
         n = group_no(p)
         if not (ROOT / "maps" / f"maps-{n}.html").exists():
             continue
         chars = "".join(c.get("zi", "") for c in json.loads(p.read_text(encoding="utf-8")).get("chars", []))
-        items.append(f'<a href="maps-{n}.html"><b>第 {n} 批</b><span>{html.escape(chars)}</span></a>')
+        viewer = "../ziyi-viewer.html?zi=" + quote(chars[:1])
+        items.append(f'<div class="item"><a class="main" href="{viewer}"><b>第 {n} 组</b><span>{html.escape(chars)}</span></a>'
+                     f'<a class="old" href="maps-{n}.html">旧版页面</a></div>')
     page = f"""<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>字义扩展图 · 各批字目录</title>
+<title>字义扩展图 · 各组目录</title>
 <link rel="stylesheet" href="../xzq-theme.css">
 <style>
 main{{max-width:1080px;margin:0 auto;padding:24px 18px 60px}}
 h1{{font-family:var(--xzq-kai);margin:0 0 6px}}
 .top{{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}}
 .top a{{color:var(--xzq-meaning)}}
+.top .home{{display:inline-flex;align-items:center;min-height:44px}}
 .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}}
-.grid a{{display:block;background:var(--xzq-card);border:1px solid var(--xzq-line);border-radius:16px;padding:12px 14px;text-decoration:none;box-shadow:var(--xzq-shadow)}}
+.item{{background:var(--xzq-card);border:1px solid var(--xzq-line);border-radius:16px;box-shadow:var(--xzq-shadow);display:flex;flex-direction:column}}
+.item .main{{display:block;padding:12px 14px 6px;text-decoration:none;min-height:44px}}
+.item .old{{align-self:flex-end;display:inline-flex;align-items:center;min-height:44px;padding:0 14px;font-size:13px;color:var(--xzq-muted)}}
 .grid b{{display:block;color:var(--xzq-meaning)}}
 .grid span{{font-family:var(--xzq-kai);font-size:20px;letter-spacing:2px;word-break:break-all}}
 </style></head>
 <body class="xzq" style="padding-top:0"><main>
-<div class="top"><div><h1>字义扩展图 · 各批字</h1><p style="color:var(--xzq-muted);margin:0">共 {len(items)} 批，点一批打开</p></div><a href="../index.html">← 回首页</a></div>
+<div class="top"><div><h1>字义扩展图 · 各组</h1><p style="color:var(--xzq-muted);margin:0">共 {len(items)} 组，点一组在新版字义扩展图中打开；旧版页面只作存档，不再更新</p></div><a class="home" href="../index.html">← 回首页</a></div>
 <div class="grid">
 {chr(10).join(items)}
 </div></main></body></html>

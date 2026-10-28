@@ -255,6 +255,13 @@ function layout(senses){
       pos[c.id] = {x:Math.cos(a)*r, y:Math.sin(a)*r*0.84, a, lv:2};
     });
   });
+  /* 兜底：根节点不叫 s0 或层级更深时，补上位置，避免报错 */
+  let rest = senses.filter(s=>!pos[s.id]);
+  for(let guard=0; rest.length && guard<6; guard++){
+    rest.forEach(s=>{ const p=s.parent&&pos[s.parent]; if(!s.parent){pos[s.id]={x:0,y:0,lv:0};} else if(p){const a=(p.a||0)+0.25,r=Math.hypot(p.x,p.y)+170; pos[s.id]={x:Math.cos(a)*r,y:Math.sin(a)*r*0.84,a,lv:(p.lv||0)+1};} });
+    rest = senses.filter(s=>!pos[s.id]);
+  }
+  rest.forEach((s,i)=>{ pos[s.id]={x:-300+i*120,y:460,a:Math.PI/2,lv:3}; });
   return pos;
 }
 
@@ -276,6 +283,7 @@ function renderMap(c){
   c.senses.forEach(s=>{
     if(!s.parent) return;
     const a=pos[s.parent], b=pos[s.id], col=COLOR[s.type]||'#999';
+    if(!a||!b) return; // 第三层义项没有布局位置时跳过连线（原来会报错）
     const dx=b.x-a.x, dy=b.y-a.y, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L;
     const ra = a.lv===0?70:48, rb=48;
     const x1=a.x+ux*ra, y1=a.y+uy*ra, x2=b.x-ux*rb, y2=b.y-uy*rb;

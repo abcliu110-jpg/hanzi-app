@@ -6,9 +6,13 @@
 
 生成：
   data/char-index.js  —— 把 char-index.json 包成 window.XZQ_FILES，供 file:// 下读取
-  data/bundle.js      —— 把全部 data/zi-*.json 包成 window.XZQ_FILES，供 file:// 下 ziyi-viewer 使用
+  data/bundle.js      —— 把全部 data/zi-*.json 包成 window.XZQ_FILES（整包离线兜底，保留给需要一次读全部数据的场合）
+  data/js/zi-N.js     —— 每组一个，file:// 下 ziyi-viewer 按组加载时用
   maps/index.html     —— maps 各批字的目录页（首页「打开 maps 各批字」链接到这里）
-通过 http(s) 访问时页面直接 fetch JSON，不会加载这两个文件。
+通过 http(s) 访问时页面直接 fetch JSON，不会加载这些 .js 文件。
+
+    python3 tools/build_data.py --check
+只做校验，并检查生成文件是否和数据一致（CI 用），不写任何文件。
 """
 import json, re, sys
 from pathlib import Path
@@ -24,7 +28,7 @@ def group_no(p):
     return int(m.group(1)) if m else None
 
 
-def write_maps_index(files):
+def maps_index_html(files):
     import html
     items = []
     for p in files:
@@ -54,7 +58,7 @@ h1{{font-family:var(--xzq-kai);margin:0 0 6px}}
 {chr(10).join(items)}
 </div></main></body></html>
 """
-    (ROOT / "maps" / "index.html").write_text(page, encoding="utf-8")
+    return page
 
 
 def main():
@@ -91,9 +95,26 @@ def main():
         print("发现问题，未生成：", *errors[:50], sep="\n  ")
         sys.exit(1)
 
-    (DATA / "bundle.js").write_text(PREFIX + ",".join(parts) + SUFFIX, encoding="utf-8")
-    (DATA / "char-index.js").write_text(PREFIX + '"char-index.json": ' + index_raw + SUFFIX, encoding="utf-8")
-    write_maps_index(files)
+    outputs = {
+        DATA / "bundle.js": PREFIX + ",".join(parts) + SUFFIX,
+        DATA / "char-index.js": PREFIX + '"char-index.json": ' + index_raw + SUFFIX,
+    }
+    for p in files:
+        raw = p.read_text(encoding="utf-8").strip()
+        outputs[DATA / "js" / (p.stem + ".js")] = PREFIX + json.dumps(f"data/{p.name}") + ":" + raw + SUFFIX
+    outputs[ROOT / "maps" / "index.html"] = maps_index_html(files)
+
+    if "--check" in sys.argv:
+        stale = [str(k.relative_to(ROOT)) for k, v in outputs.items() if not k.exists() or k.read_text(encoding="utf-8") != v]
+        if stale:
+            print("生成文件已过期，请运行 python3 tools/build_data.py：", *stale[:20], sep="\n  ")
+            sys.exit(1)
+        print(f"校验通过：{len(files)} 组，{len(seen)} 字，生成文件是最新的")
+        return
+
+    (DATA / "js").mkdir(exist_ok=True)
+    for k, v in outputs.items():
+        k.write_text(v, encoding="utf-8")
     print(f"完成：{len(files)} 组，{len(seen)} 字")
 
 

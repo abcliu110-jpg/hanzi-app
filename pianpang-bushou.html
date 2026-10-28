@@ -356,11 +356,13 @@ var SUB={
  rad:[["all","部首总表","📋"],["cat","按意义分类","🗂️"],["mix","易混偏旁","⚖️"],["evo","偏旁演变","🔄"],["tree","字族树","🌳"]],
  pho:[["all","声旁总表","📋"],["rule","表音规则","🎯"],["trap","读半边陷阱","⚠️"],["fam","同声旁字族","🌳"],["yw","声旁表义","💡"]]
 };
-var st={top:"rad",sub:"all",cat:"人体",treeR:"氵",treeP:"青",q:null,score:0};
+/* 其他模块已有独立页面，点菜单直接跳过去 */
+var TOP_LINKS={kz:"ziyi-viewer.html",zcj:"zicijv.html",mm:"hanzi-mima.html",yc:"yicuo-fuxi.html",jy:"yicuo-fuxi.html#review",lj:"learning-path.html"};
+var st={top:location.hash==="#shengpang"?"pho":"rad",sub:"all",cat:"人体",treeR:"氵",treeP:"青",q:null,score:0};
 
 function drawTop(){
-  $('topnav').innerHTML=TOP.map(function(t){var live=t[0]==='rad'||t[0]==='pho';return '<button class="tb'+(st.top===t[0]?' on':'')+'" data-k="'+t[0]+'">'+t[1]+(live?'':'<span class="soon">建设中</span>')+'</button>'}).join('');
-  $('topnav').querySelectorAll('.tb').forEach(function(b){b.onclick=function(){st.top=b.dataset.k;st.sub='all';render()}});
+  $('topnav').innerHTML=TOP.map(function(t){var live=t[0]==='rad'||t[0]==='pho'||TOP_LINKS[t[0]];return '<button class="tb'+(st.top===t[0]?' on':'')+'" data-k="'+t[0]+'">'+t[1]+(live?'':'<span class="soon">建设中</span>')+'</button>'}).join('');
+  $('topnav').querySelectorAll('.tb').forEach(function(b){b.onclick=function(){var k=b.dataset.k;if(TOP_LINKS[k]){location.href=TOP_LINKS[k];return}st.top=k;st.sub='all';location.hash=k==='pho'?'shengpang':'';render()}});
 }
 function drawSide(){
   var s=SUB[st.top],acc=st.top==='pho'?'#3D8BFD':'#FF7A59';

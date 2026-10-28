@@ -2,9 +2,9 @@
    用法：<script src="xzq-back.js" data-target="CSS 选择器"></script>（放在 </body> 前）
    按钮插到 data-target 元素的最前面；没有 data-target 时插到页面顶部。
    有站内上一页时返回上一页，否则回首页 index.html。
-   页面被 app-shell 用 iframe 嵌入时不显示（外壳自带导航）。 */
+   在 app-shell 的 iframe 里也显示：没有上一页时让整个窗口回首页。 */
 (function(){
-  if (window.top !== window) return;
+  var framed = window.top !== window;
   var me = document.currentScript;
   var sel = me && me.getAttribute('data-target');
   var home = (me && me.getAttribute('data-home')) || 'index.html';
@@ -17,6 +17,7 @@
     var ref = document.referrer;
     var sameSite = ref && (location.protocol === 'file:' ? ref.indexOf('file:') === 0 : ref.indexOf(location.origin) === 0);
     if (sameSite && history.length > 1) history.back();
+    else if (framed) { try { window.top.location.href = home; } catch (e) { location.href = home; } }
     else location.href = home;
   };
   var css = document.createElement('style');

@@ -118,7 +118,8 @@ iframe{flex:1;width:100%;border:0;background:var(--xzq-bg);display:block}
 .resume button{margin-left:auto;border:0;background:var(--xzq-meaning);color:#fff;border-radius:999px;padding:8px 16px}
 @media (max-width:860px){.main{grid-template-columns:1fr}aside{display:none}.search{width:160px}}
 </style>
-<script>if(location.protocol==="file:")document.write('<script src="data/char-index.js"><\/script>')</script><script>/* file:// 离线兜底：本地直接打开时从 data/*.js 读数据 */(function(){if(location.protocol!=='file:')return;var of=window.fetch;window.fetch=function(u,o){var k=String(u).replace(/^\.\//,'');var F=window.XZQ_FILES||{};if(k in F)return Promise.resolve(new Response(JSON.stringify(F[k]),{status:200,headers:{'Content-Type':'application/json'}}));if(/\.json$/.test(k))return Promise.resolve(new Response('',{status:404}));return of.apply(this,arguments)}})();</script></head>
+<script>if(location.protocol==="file:")document.write('<script src="data/char-index.js"><\/script>')</script><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FF8A5C"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><script src="xzq-common.js"></script>
+</head>
 <body>
 <header>
   <button class="logo" id="logo" title="回到首页"><span class="planet kai">识</span>识字星球</button>
@@ -171,7 +172,7 @@ FALLBACK_INDEX.forEach(o=>o.radical=FALLBACK_RAD[o.zi]);
 let INDEX = [], indexSource = '';
 let state = {module:null, sub:null, url:'', zi:'', group:null, grade:null, radical:null};
 const $ = id => document.getElementById(id);
-const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc = XZQ.esc;
 const mod = id => MODULES.find(m=>m.id===id);
 
 /* ================= 索引 ================= */
@@ -187,32 +188,18 @@ function normalize(raw){
       radical:o.radical||o.bushou||o['部首']||'', mean:o.mean||o.meaning||o.gloss||''};
   }).filter(o=>o.zi);
 }
+/* 读字表、搜索都用 xzq-common.js（file:// 下自动改读 data/char-index.js） */
 async function loadIndex(){
-  try{
-    const r = await fetch('char-index.json',{cache:'no-cache'});
-    if(!r.ok) throw 0;
-    INDEX = normalize(await r.json()); indexSource = 'char-index.json';
-    if(!INDEX.length) throw 0;
-  }catch(e){ INDEX = FALLBACK_INDEX.slice(); indexSource = 'fallback'; }
+  const raw = await XZQ.loadIndex();
+  INDEX = raw ? normalize(raw) : [];
+  if(INDEX.length) indexSource = 'char-index.json';
+  else { INDEX = FALLBACK_INDEX.slice(); indexSource = 'fallback'; }
 }
-function toneless(s){return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ü/g,'v').toLowerCase().replace(/[^a-z\s\/]/g,'')}
-function searchIndex(q){
-  q=q.trim(); if(!q) return [];
-  const t=toneless(q);
-  const hits=[];
-  INDEX.forEach(o=>{
-    let score=-1;
-    if(q.includes(o.zi)) score=0;
-    else if(t && o.py){const p=toneless(o.py); if(p.split(/[\s\/]+/).some(x=>x===t)) score=1; else if(p.includes(t)) score=2;}
-    if(score<0 && o.mean && o.mean.includes(q)) score=3;
-    if(score>=0) hits.push([score,o]);
-  });
-  return hits.sort((a,b)=>a[0]-b[0]).slice(0,40).map(h=>h[1]);
-}
+const searchIndex = q => XZQ.search(INDEX, q, 40);
 
 /* ================= 记忆位置 ================= */
-function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(Object.assign({ts:Date.now()}, state))); }catch(e){} }
-function restore(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; } }
+function save(){ XZQ.store.set(LS_KEY, Object.assign({ts:Date.now()}, state)); }
+function restore(){ return XZQ.store.get(LS_KEY, null); }
 
 /* ================= 渲染 ================= */
 function renderTop(){

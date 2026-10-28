@@ -90,6 +90,7 @@ mark{background:#ffe27a;border-radius:.2rem;padding:0 .1rem}
  .hero .big{font-size:4rem}
 }
 </style>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FF8A5C"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><script src="xzq-common.js"></script>
 </head>
 <body>
 <header>
@@ -255,7 +256,8 @@ const CATS=[
   quiz:{q:"“大同小异”里，和“同”相对的是哪个字？",o:["异","大","小"],a:0,e:"“同”对“异”，“大”对“小”。"}}
 ]}
 ];
-const TOP=["字义扩展图","偏旁部首","声旁音部","字词句","汉字密码","易错诊所","记忆复习","学习路径"];
+/* 一级菜单统一来自 xzq-common.js 的 XZQ.NAV */
+const TOP=XZQ.NAV.map(n=>n[1]);
 
 /* ===================== 状态与渲染 ===================== */
 let topSel=4,catSel="c1",ruleSel=null,query="";
@@ -268,7 +270,7 @@ function hl(html){if(!query)return html;const re=new RegExp("("+escR(query)+")",
 function renderTop(){
  $("topnav").innerHTML=TOP.map((t,i)=>`<button class="tn ${i===topSel?"on":""}" onclick="pickTop(${i})">${t}</button>`).join("");
 }
-const TOP_LINKS=["ziyi-viewer.html","pianpang-bushou.html","pianpang-bushou.html#shengpang","zicijv.html",null,"yicuo-fuxi.html","yicuo-fuxi.html#review","learning-path.html"];
+const TOP_LINKS=XZQ.NAV.map(n=>n[0]==="code"?null:n[2]);
 function pickTop(i){if(TOP_LINKS[i]){location.href=TOP_LINKS[i];return}topSel=i;renderTop();$("wrap").style.gridTemplateColumns=i===4?"":"1fr";$("side").style.display=i===4?"":"none";renderMain()}
 function renderSide(){
  $("catlist").innerHTML=CATS.map((c,ci)=>`<div class="cat ${c.id===catSel||query?"open":""}">

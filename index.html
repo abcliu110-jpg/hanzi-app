@@ -171,6 +171,7 @@ footer{color:var(--xzq-muted);font-size:12px;text-align:center;padding:10px 0 30
 @media(max-width:860px){.two,.charts{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.side{position:static;display:flex;flex-wrap:wrap;gap:4px}.side .ttl{width:100%}.side button{width:auto}.xzq-brand b{display:none}}
 @media(max-width:560px){.kpis,.goal{grid-template-columns:1fr}.hero h1{font-size:24px}.search input{font-size:24px}}
 </style>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FF8A5C"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><script src="xzq-common.js"></script>
 </head>
 <body class="xzq">
 <a href="app-shell.html" style="position:fixed;right:12px;bottom:12px;z-index:999;background:#3D4FB8;color:#fff;padding:8px 14px;border-radius:20px;text-decoration:none;font-size:14px">新版总入口 · 全部 3499 字</a>
@@ -266,9 +267,8 @@ const THEMES=[
 ];
 
 /* ================= 工具 ================= */
-const MEM={};
-const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return k in MEM?MEM[k]:d}},
-          set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){MEM[k]=v}}};
+/* 存储用 XZQ.store（xzq-common.js）：localStorage 不可用时退回内存 */
+const LS={get:(k,d)=>XZQ.store.get(k,d),set:(k,v)=>XZQ.store.set(k,v)};
 const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const today=()=>ymd(new Date());

@@ -7,6 +7,7 @@ module.exports = defineConfig({
   fullyParallel: true,
   workers: process.env.CI ? 4 : undefined,
   reporter: process.env.CI ? [["list"], ["github"]] : "list",
+  expect: { timeout: 10_000 },
   use: { baseURL: `http://127.0.0.1:${PORT}/`, serviceWorkers: "block" },
   // 已经自己起了服务器时：PW_NO_SERVER=1 npx playwright test
   webServer: process.env.PW_NO_SERVER ? undefined : {

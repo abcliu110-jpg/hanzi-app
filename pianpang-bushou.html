@@ -165,6 +165,7 @@ main{min-width:0}
   .rc .g{font-size:52px}
 }
 </style>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FF8A5C"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><script src="xzq-common.js"></script>
 </head>
 <body>
 <header>
@@ -307,8 +308,9 @@ var YOUWEN = [
 
 /* ================= 工具 ================= */
 function $(id){return document.getElementById(id)}
-function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-function say(t){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=.75;speechSynthesis.speak(u)}catch(e){}}
+var esc=XZQ.esc;
+/* 朗读：XZQ.speech 会检测浏览器是否支持、优先选中文（zh-CN）声音，不能读时给出提示 */
+function say(t){if(t)XZQ.speech.speak(t,{rate:.75})}
 function plain(p){return p.normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
 function split(p){var m=plain(p).match(/^(zh|ch|sh|[bpmfdtnlgkhjqxrzcsyw])?(.*)$/);return{i:m[1]||'',f:m[2]}}
 function grade(py,base){var a=split(py),b=split(base);if(a.i===b.i&&a.f===b.f)return'准';if(a.i===b.i||a.f===b.f)return'半准';return'不准'}
@@ -352,13 +354,15 @@ function openPho(k){var p=PHO.filter(function(x){return x.p===k})[0],s=stat(p),o
   say(p.p)}
 
 /* ================= 菜单 ================= */
-var TOP=[["kz","字义扩展图"],["rad","偏旁部首"],["pho","声旁音部"],["zcj","字词句"],["mm","汉字密码"],["yc","易错诊所"],["jy","记忆复习"],["lj","学习路径"]];
+/* 一级菜单统一来自 xzq-common.js 的 XZQ.NAV */
+var TOP_KEYS=["kz","rad","pho","zcj","mm","yc","jy","lj"];
+var TOP=XZQ.NAV.map(function(n,i){return [TOP_KEYS[i],n[1]]});
 var SUB={
  rad:[["all","部首总表","📋"],["cat","按意义分类","🗂️"],["mix","易混偏旁","⚖️"],["evo","偏旁演变","🔄"],["tree","字族树","🌳"]],
  pho:[["all","声旁总表","📋"],["rule","表音规则","🎯"],["trap","读半边陷阱","⚠️"],["fam","同声旁字族","🌳"],["yw","声旁表义","💡"]]
 };
 /* 其他模块已有独立页面，点菜单直接跳过去 */
-var TOP_LINKS={kz:"ziyi-viewer.html",zcj:"zicijv.html",mm:"hanzi-mima.html",yc:"yicuo-fuxi.html",jy:"yicuo-fuxi.html#review",lj:"learning-path.html"};
+var TOP_LINKS={};XZQ.NAV.forEach(function(n,i){if(TOP_KEYS[i]!=="rad"&&TOP_KEYS[i]!=="pho")TOP_LINKS[TOP_KEYS[i]]=n[2]});
 var st={top:location.hash==="#shengpang"?"pho":"rad",sub:"all",cat:"人体",treeR:"氵",treeP:"青",q:null,score:0};
 
 function drawTop(){

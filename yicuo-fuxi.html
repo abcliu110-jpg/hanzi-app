@@ -187,6 +187,7 @@ th{color:var(--muted);font-weight:600;font-size:13px}
 footer{color:var(--muted);font-size:12px;text-align:center;padding:30px 0 40px}
 @media(max-width:640px){.hero .big{font-size:100px}.qtext{font-size:19px}.days{grid-template-columns:repeat(8,1fr);height:auto}.days .day{height:110px}}
 </style>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FF8A5C"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><script src="xzq-common.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -202,11 +203,8 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:30px 0 40px}
 
 <script>
 /* ============ 存储 ============ */
-const MEM={};
-const LS={
-  get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return k in MEM?MEM[k]:d}},
-  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){MEM[k]=v}}
-};
+/* 存储用 XZQ.store（xzq-common.js）：localStorage 不可用时退回内存 */
+const LS={get:(k,d)=>XZQ.store.get(k,d),set:(k,v)=>XZQ.store.set(k,v)};
 const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const today=()=>ymd(new Date());
@@ -405,13 +403,16 @@ const CATS={poly:'多音字',misread:'易读错字',similar:'形近字',stroke:'
 function questions(cat){
   const qs=[];
   if(cat==='poly'){POLY.forEach(it=>{const ops=it.r.map(x=>x[0]);it.r.forEach(rd=>rd[2].split(' ').forEach(w=>{
-    qs.push({key:'poly|'+w,q:'「'+hl(w,it.c)+'」中的“'+it.c+'”读什么？',opts:ops,ans:rd[0],hz:false,exp:'“'+it.c+'”读 '+rd[0]+' 时表示“'+rd[1]+'”，如：'+rd[2].replace(/ /g,'、')+'。'})}))})}
-  if(cat==='misread'){MISREAD.forEach(it=>qs.push({key:'mis|'+it.w,q:'「'+hl(it.w,it.c)+'」中的“'+it.c+'”读什么？',opts:[it.ok,it.bad],ans:it.ok,hz:false,exp:'正确读音：'+it.w+' '+it.full+'；常见误读为 '+it.bad+'。'+(it.n||'')}))}
-  if(cat==='similar'||cat==='homo'){(cat==='similar'?SIMILAR:HOMO).forEach(it=>it.q.forEach(([t,a])=>qs.push({key:cat+'|'+t,q:'选字填空：'+t.replace('__','<u>　</u>'),opts:it.g,ans:a,hz:true,exp:it.tip})))}
+    qs.push({zi:it.c,key:'poly|'+w,q:'「'+hl(w,it.c)+'」中的“'+it.c+'”读什么？',opts:ops,ans:rd[0],hz:false,exp:'“'+it.c+'”读 '+rd[0]+' 时表示“'+rd[1]+'”，如：'+rd[2].replace(/ /g,'、')+'。'})}))})}
+  if(cat==='misread'){MISREAD.forEach(it=>qs.push({zi:it.c,key:'mis|'+it.w,q:'「'+hl(it.w,it.c)+'」中的“'+it.c+'”读什么？',opts:[it.ok,it.bad],ans:it.ok,hz:false,exp:'正确读音：'+it.w+' '+it.full+'；常见误读为 '+it.bad+'。'+(it.n||'')}))}
+  if(cat==='similar'||cat==='homo'){(cat==='similar'?SIMILAR:HOMO).forEach(it=>it.q.forEach(([t,a])=>qs.push({zi:a,key:cat+'|'+t,q:'选字填空：'+t.replace('__','<u>　</u>'),opts:it.g,ans:a,hz:true,exp:it.tip})))}
   if(cat==='stroke'){STROKE.forEach(it=>{const n=it.s.length;
-    qs.push({key:'stk|n|'+it.c,q:'<span style="font-family:var(--kai);font-size:44px">'+it.c+'</span>　一共几画？',opts:[n-1,n,n+1].filter(x=>x>0).map(x=>x+'画'),ans:n+'画',hz:false,exp:'“'+it.c+'”共'+n+'画：'+it.s.join('、')+'。'+it.r});
+    qs.push({zi:it.c,key:'stk|n|'+it.c,q:'<span style="font-family:var(--kai);font-size:44px">'+it.c+'</span>　一共几画？',opts:[n-1,n,n+1].filter(x=>x>0).map(x=>x+'画'),ans:n+'画',hz:false,exp:'“'+it.c+'”共'+n+'画：'+it.s.join('、')+'。'+it.r});
     const last=it.s[n-1];const others=shuffle(STROKE_POOL.filter(x=>x!==last)).slice(0,2);
-    qs.push({key:'stk|l|'+it.c,q:'<span style="font-family:var(--kai);font-size:44px">'+it.c+'</span>　最后一笔是什么？',opts:[last,...others],ans:last,hz:false,exp:'“'+it.c+'”的笔顺：'+it.s.join('、')+'。'+it.r});})}
+    qs.push({zi:it.c,key:'stk|l|'+it.c,q:'<span style="font-family:var(--kai);font-size:44px">'+it.c+'</span>　最后一笔是什么？',opts:[last,...others],ans:last,hz:false,exp:'“'+it.c+'”的笔顺：'+it.s.join('、')+'。'+it.r});})}
+  /* 从学习路径带着 ?zis=本关的字 进来时，只出和这些字有关的题（一题都没有就照常出全部题） */
+  const zis=new URLSearchParams(location.search).get('zis');
+  if(zis){const set=new Set([...zis]);const mine=qs.filter(q=>set.has(q.zi));if(mine.length)return mine;}
   return qs;
 }
 
@@ -420,8 +421,9 @@ const getWrong=()=>LS.get('hz_wrong',[]);
 const setWrong=v=>LS.set('hz_wrong',v);
 function addWrong(cat,q,picked){
   const w=getWrong();let it=w.find(x=>x.key===q.key);
-  if(it){it.times++;it.picked=picked;it.last=today()}
-  else w.unshift({key:q.key,cat,q:q.q,opts:q.opts,ans:q.ans,exp:q.exp,hz:q.hz,picked,times:1,last:today()});
+  /* 每条错题都带上 zi，学习路径的错题本和统计按字读取 */
+  if(it){it.times++;it.picked=picked;it.last=today();if(q.zi)it.zi=q.zi}
+  else w.unshift({zi:q.zi||'',key:q.key,cat,q:q.q,opts:q.opts,ans:q.ans,exp:q.exp,hz:q.hz,picked,times:1,last:today()});
   setWrong(w);
   srsAdd({id:'w|'+q.key,tag:CATS[cat]+'错题',front:q.q,back:'答案：<b>'+q.ans+'</b><br>'+q.exp},true);
 }
@@ -447,7 +449,8 @@ function grade(id,ok){
 }
 
 /* ============ 路由 ============ */
-const TOP=[['meaning','字义扩展图'],['radical','偏旁部首'],['phon','声旁音部'],['word','字词句'],['code','汉字密码'],['clinic','易错诊所'],['review','记忆复习'],['path','学习路径']];
+/* 一级菜单统一来自 xzq-common.js 的 XZQ.NAV */
+const TOP=XZQ.NAV.map(n=>[n[0],n[1]]);
 const SUB={
   clinic:[['poly','🔔 多音字'],['misread','🗣️ 易读错字'],['similar','🔍 形近字'],['stroke','✍️ 笔画笔顺'],['homo','🎧 同音别字'],['wrong','📒 我的错题本']],
   review:[['today','📅 今日复习'],['family','🌳 字族串记'],['radical','🧩 偏旁联想'],['contrast','⚖️ 对比辨析'],['plan','🗓️ 复习计划']]
@@ -457,9 +460,9 @@ const S={top:'clinic',sub:{clinic:'poly',review:'today'},wf:'all'};
 function renderNav(){
   document.getElementById('topnav').innerHTML=TOP.map(([k,n])=>'<button class="'+(S.top===k?'on ':'')+'" onclick="goTop(\''+k+'\')">'+n+'</button>').join('');
 }
-const LINKS={meaning:'ziyi-viewer.html',radical:'pianpang-bushou.html',phon:'pianpang-bushou.html#shengpang',word:'zicijv.html',code:'hanzi-mima.html',path:'index.html#path'};
+const LINKS={};XZQ.NAV.forEach(n=>{if(n[0]!=='clinic'&&n[0]!=='review')LINKS[n[0]]=n[2]});
 function goTop(k){if(LINKS[k]){location.href=LINKS[k];return}S.top=k;history.replaceState(null,'',k==='review'?'#review':'#clinic');render();window.scrollTo({top:0,behavior:'smooth'})}
-window.addEventListener('hashchange',()=>{S.top=location.hash==='#review'?'review':'clinic';render()});
+window.addEventListener('hashchange',()=>{S.top=/^#(review|fuxi)$/.test(location.hash)?'review':'clinic';render()});
 function goSub(k){S.sub[S.top]=k;render()}
 
 function render(){
@@ -628,8 +631,9 @@ function vPlan(){
 }
 function delCard(id){setSRS(getSRS().filter(x=>x.id!==id));render()}
 
-if(location.hash==='#review')S.top='review';
+if(/^#(review|fuxi)$/.test(location.hash))S.top='review';
 render();
+if(!XZQ.store.ok){const f=document.querySelector('footer');if(f)f.textContent='当前浏览器不允许保存学习记录（可能是隐私模式），本次可以照常练习，关闭页面后记录会丢失。';}
 </script>
 <script src="xzq-back.js" data-target="header .brandrow"></script>
 </body>

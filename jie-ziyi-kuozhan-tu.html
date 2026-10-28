@@ -139,6 +139,7 @@ header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#fffdf
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(30px);background:#2B2A28;color:#fff;font-size:17px;font-weight:700;padding:12px 20px;border-radius:99px;opacity:0;transition:.25s;z-index:80;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%)}
 </style>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FF8A5C"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><script src="xzq-common.js"></script>
 </head>
 <body>
 <header>
@@ -304,21 +305,23 @@ const SENSES = [
 const TAGS = ['#竹字家族','#形声字','#一字多义','#具体到抽象','#二十四节气','#传统节日','#品格象征'];
 
 /* ================= 菜单 ================= */
-const TOP = ['字义扩展图','偏旁部首','声旁音部','字词句','汉字密码','易错诊所','记忆复习','学习路径'];
+/* 一级菜单统一来自 xzq-common.js 的 XZQ.NAV */
+const TOP = XZQ.NAV.map(n=>n[1]);
 const SUB = [['🔍','按字查'],['🎒','按学段'],['🧱','按部首'],['🌿','按义项多少'],['⭐','我的收藏']];
 const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const esc = XZQ.esc;
 let topOn = 0, subOn = 0;
 const mainHTML = $('#main').innerHTML;
 
 function toast(t){ const el=$('#toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('show'),1800); }
-function say(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='zh-CN'; u.rate=.85; speechSynthesis.speak(u);}catch(e){ toast('这台设备暂不支持朗读'); } }
+/* 朗读：XZQ.speech 会检测浏览器是否支持、优先选中文（zh-CN）声音，不能读时给出提示 */
+function say(t){ XZQ.speech.speak(t,{rate:.85}); }
 
 function renderTop(){
   $('#topnav').innerHTML = TOP.map((t,i)=>`<button class="${i===topOn?'on':''}" data-i="${i}">${t}</button>`).join('');
 }
 $('#topnav').onclick = e => {
-  const b=e.target.closest('button'); if(!b) return; topOn=+b.dataset.i; renderTop();
+  const b=e.target.closest('button'); if(!b) return; if(+b.dataset.i!==0){ location.href=XZQ.NAV[+b.dataset.i][2]; return; } topOn=+b.dataset.i; renderTop();
   if(topOn===0){ $('#main').innerHTML=mainHTML; $('#side').style.display=''; initMain(); }
   else { $('#main').innerHTML=`<section class="card wip"><div class="ic">🚧</div><h2>「${TOP[topOn]}」建设中</h2><p>这个栏目正在搭建，先去「字义扩展图」看看“节”字吧！</p><button class="chip" style="font-size:18px;padding:10px 18px;margin-top:10px" onclick="document.querySelector('#topnav button').click()">← 回到字义扩展图</button></section>`; $('#side').style.display='none'; }
 };

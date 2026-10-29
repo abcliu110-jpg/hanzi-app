@@ -243,7 +243,7 @@
 
     /* 手 */
     const hand = E('image', { href: data.hand || '', width: 300, height: 302 }); const TIPX = 3.3, TIPY = 18;
-    function ptAt(seg, f) { const p = seg.el.getPointAtLength(seg.L * f), m = seg.el.getCTM(); const q = svg.createSVGPoint(); q.x = p.x; q.y = p.y; return q.matrixTransform(m) }
+    function ptAt(seg, f) { const p = seg.el.getPointAtLength(seg.L * f), m = svg.getScreenCTM().inverse().multiply(seg.el.getScreenCTM()); const q = svg.createSVGPoint(); q.x = p.x; q.y = p.y; return q.matrixTransform(m) }
     segs.sort((a, b) => a.start - b.start); segs.forEach(s => { s.p0 = ptAt(s, 0); s.p1 = ptAt(s, 1); s.end = s.start + s.dur });
     const OFF = { x: 1750, y: 1050 };
     function handAt(t) {

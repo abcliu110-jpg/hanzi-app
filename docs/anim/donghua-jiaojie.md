@@ -22,6 +22,7 @@ subtitle: v2.1 · 2026-10-30 · 配合《设计文档》一起看
 | 字源“待查”的字不讲字源；“通行说法”加角落小字 | 避免把推测当事实 |
 | 每个字 4–6 个义项章节 + 回顾，总长 ≤120 秒 | 儿童注意力；义项多的字只挑常用的 |
 | 直接提交 GitHub master；每完成一个小任务（如每 2 个字）提交一次，并同步更新本文档 | 产品负责人 2026-10-30 要求 |
+| 2026-10-31 产品负责人决定采用引擎 v2（`tools/anim2/`，`dist/anim2/xzq-anim2.js`）；新做的字按 `docs/anim/v2-sop.md` 制作，除 `snap.py --lines` 外还要在 v2 里验证（`tools/anim2/test/determinism.py 字 --v1` 逐像素一致、iframe 无报错、0 警告；`allchars.py` 全部 0 警告），新增字后重跑 `node tools/anim2/build.mjs --dist` 更新字体子集 | 产品负责人 2026-10-31：“要采用最新的技术方案做动画” |
 
 # 3. 仓库里的文件
 
@@ -45,8 +46,8 @@ MP4 和离线 HTML 不进仓库（`.gitignore` 已排除 `exports/` 和 `.cache/
 制作顺序：首批 20 字 → 其余 A 类 → B 类（含借声音段落）→ C 类（不讲字源）。
 
 <!--progress-->
-- 已完成并提交（34/100）：人 大 上 下 中 天 小 心 生 年 家 出 开 本 前 看 动 学 好 分 一 在 为 和 国 到 以 时 要 就 会 可 对 得。
-- 待做（66）：自 过 作 用 行 种 事 多 经 去 法 同 现 当 没 起 定 还 进 主 理 她 因 从 想 实 的 是 有 我 他 个 来 地 说 你 能 而 子 那 之 发 后 里 道 然 成 方 如 都 面 其 些 样 但 只 不 了 这 们 也 于 着 所 么 部。
+- 已完成并提交（36/100）：人 大 上 下 中 天 小 心 生 年 家 出 开 本 前 看 动 学 好 分 一 在 为 和 国 到 以 时 要 就 会 可 对 得 自 过。
+- 待做（64）：作 用 行 种 事 多 经 去 法 同 现 当 没 起 定 还 进 主 理 她 因 从 想 实 的 是 有 我 他 个 来 地 说 你 能 而 子 那 之 发 后 里 道 然 成 方 如 都 面 其 些 样 但 只 不 了 这 们 也 于 着 所 么 部。
 <!--/progress-->
 
 ## 4.1 待产品负责人确认
@@ -81,13 +82,14 @@ MP4 和离线 HTML 不进仓库（`.gitignore` 已排除 `exports/` 和 `.cache/
 | 2 | 更新 `anim/index.json`（✅ 每做完一个字跑 `make.py --index`） |
 | 3 | 接入 App（✅ 已完成，CI 通过）：<br>✅ `ziyi-viewer.html` “看动画”按钮（`anim/index.json` 里有的字才显示）→ 浮层播放，`xzq_anim` 有记录时显示“已看”；减少动画由引擎处理；音轨整段读成 blob 再播放（服务器不支持 Range 也能拖动）<br>✅ PWA：`sw.js` 升到 `xzq-v2`，`xzq-anim.js/css` 进预缓存；动画单独缓存 `xzq-anim-1`（升级 VERSION 时保留），不预缓存 mp3，看过一次的字先用缓存；`anim/index.json` 先走网络，某字 `version`/`updated` 变了就删掉它缓存的 json/timeline/mp3<br>✅ Playwright 用例 `tests/anim.spec.js`（随 `npx playwright test` / GitHub Actions 跑）：“人”有入口、没动画的字没有；播放 / 章节跳转 / 拖动 / 暂停无控制台报错、引擎无警告；Esc 关闭后停声；看完 90% 写入 `xzq_anim` 并显示“已看”；减少动画时是静态板（整页画好、无手、不滑动）；PWA 只缓存看过的字的 mp3，断网可重看<br>✅ `anim/index.json` 已收录「人」「大」（2026-10-31 用 `make.py --index` 重新生成，34 字齐全；`tests/anim.spec.js` 7/7 通过）。`make.py --index` 现在对 git 里没改过的 mp3 保留原 `updated`，新 clone 后重建目录不会让所有字的 PWA 缓存失效。<br>（原记录：⚠️ 目录曾没有收录「人」「大」，像是按 98 字清单生成的；测试遇到会临时补上并标 warning。） |
 | 4 | 换正式配音并重新生成全部音轨 |
-| 5 | 引擎 v2（Canvas + rough.js，见 `v2-jishu.md`）：✅ 第一版完成（`tools/anim2/`，`dist/anim2/xzq-anim2.js`），数据格式和 `mount` API 不变，现有 34 字 0 警告；确定性、沙箱 iframe 验收通过。✅ 共享块嵌入模式（`build.mjs --embed`）✅ 减少动画 ☐ 产品负责人看过 v1/v2 对比后再决定 App 是否切换（`ziyi-viewer.html` 仍用 v1）☐ 绿幕角色（未做，见 `v2-jishu.md` §7） |
+| 5 | 引擎 v2（Canvas + rough.js，见 `v2-jishu.md`）：✅ 第一版完成（`tools/anim2/`，`dist/anim2/xzq-anim2.js`），数据格式和 `mount` API 不变，现有 34 字 0 警告；确定性、沙箱 iframe 验收通过。✅ 共享块嵌入模式（`build.mjs --embed`）✅ 减少动画 ☐ 产品负责人看过 v1/v2 对比后再决定 App 是否切换（`ziyi-viewer.html` 仍用 v1）☐ 绿幕角色（未做，见 `v2-jishu.md` §7）<br>✅ 2026-10-31 产品负责人决定采用 v2（见第 2 节），上面“产品负责人看过对比后再决定”一项已有结论；新字（自、过起）都在 v2 验证 0 警告；☐ `ziyi-viewer.html` 切到 v2 播放器（保留 v1 文件） |
 
 ## 7.1 每个字的制作流程
 
 1. `python3 tools/anim/draft.py 字` 出初稿；改写文案（每句 ≤25 字），按 A/B/C 和可信度规则处理。
 2. 配 cue，复用线稿，必要时新增。
 3. `tts.py 字` → `snap.py 字 --lines`（必须全过）→ 看 `.cache/anim/字/snaps.jpg` → `mix.py 字`。
+3b. （2026-10-31 起）v2 验证：`python3 tools/anim2/test/determinism.py 字 --v1`（逐像素一致、iframe 无报错、警告 0）→ 看 `.cache/anim2/字/snaps.jpg` → `node tools/anim2/build.mjs --dist`（字体子集）→ `python3 tools/anim2/test/allchars.py` 全部 0 警告。
 4. 脚本 `status` 设为 `done`；凑满 2 个字一起提交 GitHub master，同时更新本文档第 4 节进度。
 
 # 8. 联系与资料

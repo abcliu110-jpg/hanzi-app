@@ -9,6 +9,8 @@ subtitle: v2.1 · 2026-10-30 · 配合《设计文档》一起看
 
 **引擎 v2（Canvas 2D + rough.js + GSAP 取值 + 文楷子集 + esbuild 单文件）**正在开发，技术文档见 `docs/anim/v2-jishu.md`，制作流程见 `docs/anim/v2-sop.md`。数据格式和 `XZQAnim.mount` 接口不变，v1 验收前继续可用。
 
+**2026-10-31：首批 100 字完成**（A 60 + B 30 + C 10，全部 `status: done`，`anim/index.json` 收录 100 字；v1 `snap.py --lines` 全过，v2 `determinism.py --v1` 每字 0 警告，`allchars.py` 100 字 0 失败，`npx playwright test` 216/216 通过）。待产品负责人逐条确认 4.1 里的内容问题，并人工试听多音字。
+
 
 # 2. 已经定下的决定
 
@@ -47,7 +49,7 @@ MP4 和离线 HTML 不进仓库（`.gitignore` 已排除 `exports/` 和 `.cache/
 
 <!--progress-->
 - 已完成并提交（100/100）：人 大 上 下 中 天 小 心 生 年 家 出 开 本 前 看 动 学 好 分 一 在 为 和 国 到 以 时 要 就 会 可 对 得 自 过 作 用 行 种 事 多 经 去 法 同 现 当 没 起 定 还 进 主 理 她 因 从 想 实 的 是 有 我 他 个 来 地 说 你 能 而 子 那 之 发 后 里 道 然 成 方 如 都 面 其 些 样 但 只 不 了 这 们 也 于 着 所 么 部。
-- 待做（0）：。
+- 待做（0）：无。
 <!--/progress-->
 
 ## 4.1 待产品负责人确认
@@ -85,6 +87,7 @@ MP4 和离线 HTML 不进仓库（`.gitignore` 已排除 `exports/` 和 `.cache/
 - 用 `on:` 贴附的线稿不参与重叠检查，要自己看 `snaps.jpg`。
 - 3 个字以上的词会缩到 200 px 以下，不画下划线。
 - 新线稿先查 `anim/art/` 有没有，重名不要覆盖。
+- **角注只能有一条**：`note` 都画在右下角同一位置，同一个场景里放两条（如“通行说法”和“字源还没有定论”/“来历还没有定论”）会叠在一起。第二条要么省掉，要么改成 `label` 放到右区词表下方（见「些」）。C 类开场已有“字源还没有定论”，开场里再讲待查义项时不再加角注（见「部」）。
 - `circle` / `label` 的 `x y` 坐标是 1600×900 逻辑画布（不是 1920×1080）；圈田字格（GL）里字的右半边约 `x 530, y 405, rx 115, ry 175`。
 
 # 6. 已知问题和风险
@@ -96,12 +99,13 @@ MP4 和离线 HTML 不进仓库（`.gitignore` 已排除 `exports/` 和 `.cache/
 5. **手的图片**是 AI 生成的，正式版建议换矢量手。
 6. **提交方式**：GitHub Git Data API（blobs → trees → commits → 更新 refs）一次提交多个文件。Gitee 仓库停止更新，若 Gitee→GitHub 有自动镜像需关掉，否则可能覆盖 GitHub 上的提交。（2026-10-31：沙箱里 `git push` 拿不到凭据，`git pull`/`fetch` 正常；做法是本地正常 commit，再用 Git Data API 把 `origin/master..HEAD` 逐个重放成远端提交并 `reset --soft` 到远端。另：沙箱里 edge-tts 要去掉 HTTP(S)_PROXY 环境变量才能连上；Playwright 需先 `apt-get install` libatk 等系统库。）
 7. 仓库 CI 是 GitHub Actions，迁到 GitHub 后会自动跑，新增的动画检查要保证能通过。
+8. （2026-10-31）沙箱里直接 `npx playwright test` 会报 `Timed out waiting 30000ms from config.webServer`（HTTP(S)_PROXY 环境变量让就绪检查走了代理）。做法：先 `python3 -m http.server 4173 --bind 127.0.0.1` 起服务器，再 `PW_NO_SERVER=1 env -u HTTPS_PROXY -u HTTP_PROXY npx playwright test`。CI 不受影响。
 
 # 7. 下一步
 
 | # | 任务 |
 |---|---|
-| 1 | 继续做完首批 100 字（每 2 字提交 master） |
+| 1 | ✅ 继续做完首批 100 字（每 2 字提交 master）：2026-10-31 完成 100/100，最后 10 个 C 类字（不 了 这 们 也 于 着 所 么 部）按“不讲字源”做 |
 | 2 | 更新 `anim/index.json`（✅ 每做完一个字跑 `make.py --index`） |
 | 3 | 接入 App（✅ 已完成，CI 通过）：<br>✅ `ziyi-viewer.html` “看动画”按钮（`anim/index.json` 里有的字才显示）→ 浮层播放，`xzq_anim` 有记录时显示“已看”；减少动画由引擎处理；音轨整段读成 blob 再播放（服务器不支持 Range 也能拖动）<br>✅ PWA：`sw.js` 升到 `xzq-v2`，`xzq-anim.js/css` 进预缓存；动画单独缓存 `xzq-anim-1`（升级 VERSION 时保留），不预缓存 mp3，看过一次的字先用缓存；`anim/index.json` 先走网络，某字 `version`/`updated` 变了就删掉它缓存的 json/timeline/mp3<br>（2026-10-31 起播放器换成 v2，见第 5 项；下面描述的 SVG 判定已改为 Canvas 判定）<br>✅ Playwright 用例 `tests/anim.spec.js`（随 `npx playwright test` / GitHub Actions 跑）：“人”有入口、没动画的字没有；播放 / 章节跳转 / 拖动 / 暂停无控制台报错、引擎无警告；Esc 关闭后停声；看完 90% 写入 `xzq_anim` 并显示“已看”；减少动画时是静态板（整页画好、无手、不滑动）；PWA 只缓存看过的字的 mp3，断网可重看<br>✅ `anim/index.json` 已收录「人」「大」（2026-10-31 用 `make.py --index` 重新生成，34 字齐全；`tests/anim.spec.js` 7/7 通过）。`make.py --index` 现在对 git 里没改过的 mp3 保留原 `updated`，新 clone 后重建目录不会让所有字的 PWA 缓存失效。<br>（原记录：⚠️ 目录曾没有收录「人」「大」，像是按 98 字清单生成的；测试遇到会临时补上并标 warning。） |
 | 4 | 换正式配音并重新生成全部音轨 |

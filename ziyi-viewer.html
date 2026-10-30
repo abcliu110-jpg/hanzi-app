@@ -678,7 +678,7 @@ function renderSide(){
   $("right").innerHTML=h;
 }
 
-/* ---------- 看动画（字义白板动画，xzq-anim.js） ----------
+/* ---------- 看动画（字义白板动画，引擎 v2：dist/anim2/xzq-anim2.js，API 与 v1 相同） ----------
    anim/index.json 里有的字显示“看动画”按钮；点开后在浮层里用 XZQAnim.mount 播放。
    播放器脚本和样式第一次打开时才加载。看完 90% 由播放器写入 localStorage.xzq_anim[字]，这里据此显示“已看”。
    减少动画（prefers-reduced-motion）由播放器自己处理：静态板 + 配音。 */
@@ -696,8 +696,8 @@ function renderAnimBtn(){
 function animLib(){
   if(window.XZQAnim)return Promise.resolve();
   if(!ANIM.lib)ANIM.lib=new Promise((res,rej)=>{
-    const l=document.createElement("link");l.rel="stylesheet";l.href=XZQ.ROOT+"xzq-anim.css";document.head.appendChild(l);
-    const s=document.createElement("script");s.src=XZQ.ROOT+"xzq-anim.js";s.onload=()=>res();s.onerror=()=>{ANIM.lib=null;rej(new Error("xzq-anim.js"));};document.head.appendChild(s);
+    /* 2026-10-31 起用引擎 v2（Canvas + rough.js，样式和文楷字体由脚本自带/按脚本目录加载）；v1 xzq-anim.js/css 仍留在仓库 */
+    const s=document.createElement("script");s.src=XZQ.ROOT+"dist/anim2/xzq-anim2.js";s.onload=()=>res();s.onerror=()=>{ANIM.lib=null;rej(new Error("xzq-anim2.js"));};document.head.appendChild(s);
   });
   return ANIM.lib;
 }

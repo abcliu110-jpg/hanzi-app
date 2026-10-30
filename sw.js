@@ -11,12 +11,12 @@
    - anim/index.json：先走网络；发现某个字的 version / updated 变了，就删掉这个字缓存的三个文件，下次播放重新下载
    - anim/art/、anim/hz/、hand.png（各字共用的小文件）：先用缓存，同时在后台更新
    动画缓存格式变了才改 ANIM_CACHE。 */
-const VERSION = "xzq-v2";
+const VERSION = "xzq-v3";
 const ANIM_CACHE = "xzq-anim-1";
 const CORE = [
   "./", "index.html", "app-shell.html", "ziyi-viewer.html", "pianpang-bushou.html", "zicijv.html",
   "hanzi-mima.html", "yicuo-fuxi.html", "learning-path.html", "jie-ziyi-kuozhan-tu.html", "verify-pilot.html",
-  "maps/index.html", "xzq-theme.css", "xzq-common.js", "xzq-back.js", "xzq-anim.js", "xzq-anim.css", "char-index.json",
+  "maps/index.html", "xzq-theme.css", "xzq-common.js", "xzq-back.js", "dist/anim2/xzq-anim2.js", "dist/anim2/xzq-anim2-font.woff2", "char-index.json",
   "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"
 ];
 

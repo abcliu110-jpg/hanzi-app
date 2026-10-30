@@ -31,7 +31,7 @@ async function useIndex(page, zi) {  // page 或 context（有 service worker �
 
 function watch(page) {
   const errors = [];
-  page.on("console", m => { if (m.type() === "error" || (m.type() === "warning" && m.text().includes("[xzq-anim]"))) errors.push(m.type() + ": " + m.text()); });
+  page.on("console", m => { if (m.type() === "error" || (m.type() === "warning" && /\[xzq-anim2?\]/.test(m.text()))) errors.push(m.type() + ": " + m.text()); });
   page.on("pageerror", e => errors.push("pageerror: " + e.message));
   page.on("response", r => { const u = new URL(r.url()); if (u.hostname === "127.0.0.1" && r.status() >= 400) errors.push(`HTTP ${r.status()}: ${decodeURIComponent(u.pathname)}`); });
   return errors;
@@ -52,7 +52,7 @@ test("动画目录里的每个字文件齐全", () => {
   const bad = [];
   for (const z of Object.keys(INDEX.chars)) for (const ext of [".json", ".timeline.json", ".mp3"]) if (!fs.existsSync(path.join(ANIM, z + ext))) bad.push(z + ext);
   expect(bad, "缺少：" + bad.join(", ")).toEqual([]);
-  expect(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")).toMatch(/"xzq-anim\.js", "xzq-anim\.css"/);
+  expect(fs.readFileSync(path.join(ROOT, "sw.js"), "utf8")).toMatch(/"dist\/anim2\/xzq-anim2\.js", "dist\/anim2\/xzq-anim2-font\.woff2"/);
 });
 
 test("有动画的字显示“看动画”，没有的字不显示", async ({ page }) => {
@@ -135,19 +135,16 @@ test.describe("减少动画", () => {
     await P(page, p => p.seek(p.chapters[2].start + 150));
     await P(page, p => p.pause());
     await page.waitForTimeout(300);
-    const st = await page.evaluate(() => {
-      const svg = document.querySelector("#animPlayer svg");
-      const vis = [...svg.children].filter(g => g.tagName === "g" && g.getAttribute("visibility") === "visible");
-      const paths = vis.length ? [...vis[0].querySelectorAll("path[stroke-dasharray]")] : [];
-      const drawn = paths.filter(e => Math.abs(parseFloat(e.getAttribute("stroke-dashoffset") || "0")) < 1).length;
-      const hand = svg.querySelector("image");
-      return { layers: vis.length, transform: vis[0] && vis[0].getAttribute("transform"), paths: paths.length, drawn, hand: hand && hand.getAttribute("visibility") };
+    // 引擎 v2 是 Canvas：同一章开头和临近结尾两帧应完全一样（整页一次画好、没有手、不滑动），且不是空白
+    const st = await P(page, p => {
+      const c = document.querySelector("#animPlayer canvas"), ch = p.chapters[2], next = p.chapters[3];
+      p.render(ch.start + 150); const a = c.toDataURL();
+      p.render((next ? next.start : p.total) - 400); const b = c.toDataURL();
+      const blank = document.createElement("canvas"); blank.width = c.width; blank.height = c.height;
+      return { same: a === b, blank: a === blank.toDataURL() };
     });
-    expect(st.layers).toBe(1);
-    expect(st.transform).toBe("translate(0,0)");
-    expect(st.paths).toBeGreaterThan(0);
-    expect(st.drawn).toBe(st.paths);
-    expect(st.hand).toBe("hidden");
+    expect(st.same).toBe(true);
+    expect(st.blank).toBe(false);
     expect(errors, errors.join("\n")).toEqual([]);
   });
 });
@@ -156,8 +153,12 @@ test("没有减少动画时同一时刻还在画（对照）", async ({ page }) 
   await useIndex(page, ZI);
   await openPlayer(page);
   expect(await P(page, p => p.reduced)).toBe(false);
-  const st = await P(page, p => { const t = p.chapters[2].start + 150; p.render(t); const paths = [...document.querySelectorAll("#animPlayer svg path[stroke-dasharray]")]; return paths.filter(e => parseFloat(e.getAttribute("stroke-dashoffset") || "0") > 1).length; });
-  expect(st).toBeGreaterThan(0);
+  const st = await P(page, p => {
+    const c = document.querySelector("#animPlayer canvas"), ch = p.chapters[2], next = p.chapters[3];
+    p.render(ch.start + 150); const a = c.toDataURL();
+    p.render((next ? next.start : p.total) - 400); return a !== c.toDataURL();
+  });
+  expect(st).toBe(true);
 });
 
 test.describe("PWA", () => {
@@ -175,7 +176,7 @@ test.describe("PWA", () => {
       return out;
     });
     let keys = await animKeys();
-    expect(keys).toEqual(expect.arrayContaining(["/xzq-anim.js", "/xzq-anim.css"]));
+    expect(keys).toEqual(expect.arrayContaining(["/dist/anim2/xzq-anim2.js", "/dist/anim2/xzq-anim2-font.woff2"]));
     expect(keys.filter(k => k.endsWith(".mp3"))).toEqual([]);
     await page.locator("#animBtn").click();
     await expect(page.locator("#animPlayer .xzq-ctrl")).toBeVisible({ timeout: 20000 });

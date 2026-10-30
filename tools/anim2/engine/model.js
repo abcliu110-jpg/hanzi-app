@@ -400,7 +400,7 @@ export function buildModel(data, opts = {}) {
     ctx.scale(K, K);
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     if (M.reduced) {
-      const te = scenes[si].end; tl.time(te / 1000, true);
+      const te = scenes[si].end + 5000; tl.time(te / 1000, true);   // 减少动画：直接画本场景全部画完的结果（含快结束时才出现的字）
       for (const it of scenes[si].items) drawItem(ctx, it, te);
     } else {
       tl.time(t / 1000, true);

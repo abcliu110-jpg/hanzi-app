@@ -76,7 +76,7 @@ MP4 和离线 HTML 不进仓库（`.gitignore` 已排除 `exports/` 和 `.cache/
 |---|---|
 | 1 | 继续做完首批 100 字（每 2 字提交 master） |
 | 2 | 更新 `anim/index.json` |
-| 3 | 接入 App（进行中）：<br>✅ `ziyi-viewer.html` “看动画”按钮（`anim/index.json` 里有的字才显示）→ 浮层播放，`xzq_anim` 有记录时显示“已看”；减少动画由引擎处理；音轨整段读成 blob 再播放（服务器不支持 Range 也能拖动）<br>☐ PWA 按需缓存 anim JSON/mp3<br>☐ Playwright 用例 |
+| 3 | 接入 App（进行中）：<br>✅ `ziyi-viewer.html` “看动画”按钮（`anim/index.json` 里有的字才显示）→ 浮层播放，`xzq_anim` 有记录时显示“已看”；减少动画由引擎处理；音轨整段读成 blob 再播放（服务器不支持 Range 也能拖动）<br>✅ PWA：`sw.js` 升到 `xzq-v2`，`xzq-anim.js/css` 进预缓存；动画单独缓存 `xzq-anim-1`（升级 VERSION 时保留），不预缓存 mp3，看过一次的字先用缓存；`anim/index.json` 先走网络，某字 `version`/`updated` 变了就删掉它缓存的 json/timeline/mp3<br>☐ Playwright 用例 |
 | 4 | 换正式配音并重新生成全部音轨 |
 
 ## 7.1 每个字的制作流程

@@ -79,7 +79,7 @@ MP4 和离线 HTML 不进仓库（`.gitignore` 已排除 `exports/` 和 `.cache/
 |---|---|
 | 1 | 继续做完首批 100 字（每 2 字提交 master） |
 | 2 | 更新 `anim/index.json` |
-| 3 | 接入 App（进行中）：<br>✅ `ziyi-viewer.html` “看动画”按钮（`anim/index.json` 里有的字才显示）→ 浮层播放，`xzq_anim` 有记录时显示“已看”；减少动画由引擎处理；音轨整段读成 blob 再播放（服务器不支持 Range 也能拖动）<br>✅ PWA：`sw.js` 升到 `xzq-v2`，`xzq-anim.js/css` 进预缓存；动画单独缓存 `xzq-anim-1`（升级 VERSION 时保留），不预缓存 mp3，看过一次的字先用缓存；`anim/index.json` 先走网络，某字 `version`/`updated` 变了就删掉它缓存的 json/timeline/mp3<br>☐ Playwright 用例 |
+| 3 | 接入 App（✅ 已完成，CI 通过）：<br>✅ `ziyi-viewer.html` “看动画”按钮（`anim/index.json` 里有的字才显示）→ 浮层播放，`xzq_anim` 有记录时显示“已看”；减少动画由引擎处理；音轨整段读成 blob 再播放（服务器不支持 Range 也能拖动）<br>✅ PWA：`sw.js` 升到 `xzq-v2`，`xzq-anim.js/css` 进预缓存；动画单独缓存 `xzq-anim-1`（升级 VERSION 时保留），不预缓存 mp3，看过一次的字先用缓存；`anim/index.json` 先走网络，某字 `version`/`updated` 变了就删掉它缓存的 json/timeline/mp3<br>✅ Playwright 用例 `tests/anim.spec.js`（随 `npx playwright test` / GitHub Actions 跑）：“人”有入口、没动画的字没有；播放 / 章节跳转 / 拖动 / 暂停无控制台报错、引擎无警告；Esc 关闭后停声；看完 90% 写入 `xzq_anim` 并显示“已看”；减少动画时是静态板（整页画好、无手、不滑动）；PWA 只缓存看过的字的 mp3，断网可重看<br>⚠️ `anim/index.json` 目前没有收录「人」「大」（两个字的脚本是 `status: done`、mp3 齐全，用 `make.py --index` 会收录，现在的目录像是按 98 字清单生成的）。App 里这两个字暂时没有“看动画”；测试遇到这种情况会临时补上并在报告里标 warning。请重新生成目录时把它们加回来 |
 | 4 | 换正式配音并重新生成全部音轨 |
 
 ## 7.1 每个字的制作流程

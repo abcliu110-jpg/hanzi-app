@@ -217,6 +217,23 @@ dl.kv dd{margin:0 0 6px}
 }
 .learn-btn{margin-left:auto;min-height:44px;padding:0 16px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font:700 15px/1 var(--xzq-sans);cursor:pointer;pointer-events:auto}
 .learn-btn.on{background:var(--xzq-review);border-color:var(--xzq-review);color:var(--xzq-on-ink,var(--xzq-on-color))}
+.anim-btn{min-height:44px;padding:0 16px;border-radius:999px;border:2px solid var(--xzq-meaning,#4C7DF0);background:var(--xzq-meaning,#4C7DF0);color:var(--xzq-on-color,#fff);font:700 15px/1 var(--xzq-sans);cursor:pointer;pointer-events:auto;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.anim-btn:disabled{opacity:.6;cursor:progress}
+.anim-btn .seen{font-size:11px;font-weight:700;padding:3px 7px;border-radius:999px;background:var(--xzq-on-color,#fff);color:var(--xzq-meaning,#4C7DF0)}
+.stage-head .anim-btn{margin-left:auto}
+.stage-head .anim-btn:not([hidden])+.learn-btn{margin-left:0}
+/* 看动画：全屏浮层，播放器本身是白板（深色模式也保持白底） */
+.anim-mask{position:fixed;inset:0;z-index:50;background:rgba(43,38,34,.55);display:grid;place-items:center;padding:16px;animation:fade .15s}
+.anim-box{width:min(1100px,100%,calc((100vh - 140px) * 16 / 9 + 36px));min-width:min(320px,100%);max-height:100%;overflow-y:auto;background:var(--surface);border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.3);padding:14px 18px 16px;animation:rise .2s}
+.anim-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.anim-top h2{margin:0;font-size:18px;display:flex;align-items:center;gap:8px}
+.anim-top h2 .kai{font-size:30px;font-weight:400}
+.anim-top .seen{font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--xzq-review-soft,#DDF5EF);color:var(--xzq-review,#22A98F)}
+.anim-top .x{margin-left:auto;width:44px;height:44px;border-radius:50%;border:0;background:var(--surface2);cursor:pointer;font-size:18px;color:var(--ink)}
+.anim-msg{padding:40px 10px;text-align:center;color:var(--ink2);font-size:14px}
+@media (max-width:820px){.anim-mask{padding:6px}.anim-box{padding:10px 10px 12px;border-radius:16px}}
+@media (max-width:560px){.anim-player .xzq-ctrl{flex-wrap:wrap;row-gap:4px}.anim-player .xzq-bar{flex-basis:100%;order:-1;height:34px}.anim-player .xzq-tr,.anim-player .xzq-fl{top:22px}.anim-player .xzq-mk{font-size:0;width:3px;height:12px;top:19px;background:var(--xzq-muted,#999);border-radius:2px;padding:0 0 0 0}.anim-player .xzq-speed{margin-left:auto}}
+@media (prefers-reduced-motion:reduce){.anim-mask,.anim-box,.pop-mask,.pop{animation:none}}
 </style>
 <script>if(location.protocol==="file:")document.write('<script src="data/char-index.js"><\/script>')</script><script src="xzq-common.js"></script><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FF8A5C"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 </head>
@@ -247,7 +264,7 @@ dl.kv dd{margin:0 0 6px}
     </aside>
     <section class="stage" id="stage">
       <div class="stars"></div>
-      <div class="stage-head"><div class="big" id="bigChar"></div><div class="meta" id="bigMeta"></div><button type="button" class="learn-btn" id="learnBtn" aria-pressed="false" hidden>☆ 我学会了</button></div>
+      <div class="stage-head"><div class="big" id="bigChar"></div><div class="meta" id="bigMeta"></div><button type="button" class="anim-btn" id="animBtn" hidden>▶ 看动画</button><button type="button" class="learn-btn" id="learnBtn" aria-pressed="false" hidden>☆ 我学会了</button></div>
       <div class="zoom"><button id="zin" title="放大">＋</button><button id="zout" title="缩小">－</button><button id="zfit" title="适应窗口">⤢</button></div>
       <svg id="svg"><defs><filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#5a3c14" flood-opacity=".13"/></filter></defs><g id="world"></g></svg>
       <div class="empty" id="empty" hidden></div>
@@ -256,6 +273,7 @@ dl.kv dd{margin:0 0 6px}
     </section>
     <aside class="right" id="right"></aside>
   </div>
+  <div id="animHost"></div>
 </div>
 
 <!-- 演示数据：仅在读不到 data 目录时使用。内容为示例，不作正式字库。 -->
@@ -449,10 +467,10 @@ $("q").addEventListener("keydown",async e=>{
 /* ---------- 选择字 ---------- */
 function select(z,push=true){
   if(!z||!S.chars[z])return;
-  S.cur=z; closePop();
+  S.cur=z; closePop(); closeAnim();
   const u=new URL(location.href);u.searchParams.set("zi",z);
   try{history[push?"pushState":"replaceState"]({zi:z},"",u);}catch(e){}
-  renderNav(); renderHead(); renderMap(true); renderSide();
+  renderNav(); renderHead(); renderAnimBtn(); renderMap(true); renderSide();
   document.querySelectorAll("#browse button[data-zi]").forEach(b=>b.classList.toggle("on",b.dataset.zi===z));
 }
 window.addEventListener("popstate",()=>{const z=new URLSearchParams(location.search).get("zi");if(z)go(z,false);});
@@ -659,6 +677,72 @@ function renderSide(){
   if(S.source==="demo")h+=`<p style="font-size:11px;color:var(--ink2);padding:0 4px">以上为演示数据，内容为示例。</p>`;
   $("right").innerHTML=h;
 }
+
+/* ---------- 看动画（字义白板动画，xzq-anim.js） ----------
+   anim/index.json 里有的字显示“看动画”按钮；点开后在浮层里用 XZQAnim.mount 播放。
+   播放器脚本和样式第一次打开时才加载。看完 90% 由播放器写入 localStorage.xzq_anim[字]，这里据此显示“已看”。
+   减少动画（prefers-reduced-motion）由播放器自己处理：静态板 + 配音。 */
+const ANIM={index:null,player:null,lib:null,back:null,url:null};
+fetch(XZQ.ROOT+"anim/index.json").then(r=>r.ok?r.json():null).then(o=>{ANIM.index=o&&o.chars||null;renderAnimBtn();}).catch(()=>{});
+function animWatched(z){const o=XZQ.store.get("xzq_anim",{});return !!(o&&typeof o==="object"&&o[z]);}
+function renderAnimBtn(){
+  const b=$("animBtn"),z=S.cur,on=!!(z&&ANIM.index&&ANIM.index[z]);
+  b.hidden=!on;if(!on)return;
+  const seen=animWatched(z),d=ANIM.index[z].duration;
+  b.innerHTML="▶ 看动画"+(seen?'<span class="seen">已看</span>':"");
+  b.title="字义白板动画"+(d?"，约 "+Math.round(d)+" 秒":"");
+  b.setAttribute("aria-label","看「"+z+"」的字义动画"+(seen?"（已看过）":""));
+}
+function animLib(){
+  if(window.XZQAnim)return Promise.resolve();
+  if(!ANIM.lib)ANIM.lib=new Promise((res,rej)=>{
+    const l=document.createElement("link");l.rel="stylesheet";l.href=XZQ.ROOT+"xzq-anim.css";document.head.appendChild(l);
+    const s=document.createElement("script");s.src=XZQ.ROOT+"xzq-anim.js";s.onload=()=>res();s.onerror=()=>{ANIM.lib=null;rej(new Error("xzq-anim.js"));};document.head.appendChild(s);
+  });
+  return ANIM.lib;
+}
+/* 音轨整个读进来再交给播放器（blob: 地址）：
+   不依赖服务器支持 Range 请求也能拖动进度；service worker 缓存的是完整的 200 响应，离线时同样能拖动。
+   读失败时退回直接地址（边下边播）。 */
+async function animAudio(u){
+  try{const r=await fetch(u);if(!r.ok)throw new Error(r.status);return URL.createObjectURL(await r.blob());}
+  catch(e){return u;}
+}
+function animFree(u){if(u&&u.startsWith("blob:"))URL.revokeObjectURL(u);}
+async function openAnim(){
+  const z=S.cur;if(!z||!ANIM.index||!ANIM.index[z])return;
+  closeAnim();ANIM.back=document.activeElement;
+  const seen=animWatched(z);
+  $("animHost").innerHTML=`<div class="anim-mask"><div class="anim-box" role="dialog" aria-modal="true" aria-label="${esc(z)} 字义动画"><div class="anim-top"><h2><span class="kai">${esc(z)}</span>字义动画${seen?'<span class="seen">已看</span>':""}</h2><button type="button" class="x" aria-label="关闭">✕</button></div><div class="anim-player" id="animPlayer"><div class="anim-msg">正在加载动画……</div></div></div></div>`;
+  const m=$("animHost").firstChild;
+  m.addEventListener("click",e=>{if(e.target===m||e.target.closest(".x"))closeAnim();});
+  m.querySelector(".x").focus();
+  const b=$("animBtn"),host=$("animPlayer");b.disabled=true;
+  try{
+    await animLib();
+    if(!host.isConnected)return;
+    const base=XZQ.ROOT+"anim/",d=await XZQAnim.load(z,{base,audio:false});
+    d.audio=await animAudio(base+encodeURIComponent(z)+".mp3");
+    if(!host.isConnected){animFree(d.audio);return;}
+    ANIM.url=d.audio;
+    const p=await XZQAnim.mount(host,d,{});
+    /* 加载期间浮层已被关掉或换了字：立刻停掉 */
+    if(!host.isConnected){if(p.destroy)p.destroy();return;}
+    ANIM.player=p;window.__xzqAnimPlayer=p;
+    host.focus({preventScroll:true});
+  }catch(e){
+    if(host.isConnected){host.className="anim-player";host.innerHTML='<div class="anim-msg">动画没有加载成功，请检查网络后再试。</div>';}
+  }finally{b.disabled=false;}
+}
+function closeAnim(){
+  if(ANIM.player&&ANIM.player.destroy)ANIM.player.destroy();
+  ANIM.player=null;window.__xzqAnimPlayer=null;animFree(ANIM.url);ANIM.url=null;
+  if(!$("animHost").firstChild)return;
+  $("animHost").innerHTML="";renderAnimBtn();
+  if(ANIM.back&&ANIM.back.focus)ANIM.back.focus();ANIM.back=null;
+}
+$("animBtn").onclick=openAnim;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("animHost").firstChild){e.stopImmediatePropagation();closeAnim();}},true);
 
 renderNav();
 boot();

@@ -82,11 +82,14 @@
 - 时钟：播放中音频在走时 t = `audio.currentTime`；音频还没起来、被拦（沙箱、自动播放策略）或没有音频时用 performance.now 推进。静音是 `audio.muted`，音频照常走，所以静音时仍以音频为准。
 - 沙箱 iframe（只有 `allow-scripts`）：localStorage 抛错时静音状态和“已看”不保存，不影响播放；iframe 的源是 `null`，**不能按 `base` 去 fetch `anim/` 文件**，所以 iframe 里请用单文件 HTML（或共享块模式）。
 
-## 5. 嵌入 App（共享块模式，可选）
+## 5. 嵌入 App（共享块模式，可选）——✅ 已实现
 
-- ≥2 KB 的图片和字体抽成共享块，按内容哈希去重。
-- 引擎整段 gzip 存一份；每字其余 HTML gzip+base64 存在 `<script type="text/plain">`。
-- 运行时按需解压（`DecompressionStream`）、挂进 iframe、同页缓存。几百个字共用一份引擎和字体。
+`node tools/anim2/build.mjs --embed <out.html> 人 大 …`（`tools/anim2/embed.mjs`，验收 `test/embed.py`）：
+
+- 共享块 `<script type="text/plain" class="xzq-chunk" data-h="<sha256 前 16 位>">`：引擎整段 gzip 一份、文楷子集（这一页所有字合起来一份）、≥2 KB 的图片/音频（`hand.png` 全页一份；mp3 每字一块），按内容哈希去重。
+- 每字数据 `<script type="text/plain" class="xzq-zi" data-zi="人">`：脚本+时间轴+线稿+笔画 JSON，gzip+base64，大块换成 `chunk:<hash>`。
+- 运行时点哪个字才解压哪个字（`DecompressionStream('gzip')`），解压结果同页缓存；拼成单字页面放进 `<iframe sandbox="allow-scripts" srcdoc>`。iframe 没有 `allow-same-origin`，所以引擎、字体（data: URL）、数据全部内联进 srcdoc，不依赖 blob: URL 或网络。
+- 「人」「大」两字一页 2.7 MB，其中 mp3 约 2.4 MB；引擎（gzip 后约 45 KB）和字体只算一次。
 - PWA：service worker 首播后缓存该字资源，不预缓存全部 MP3。
 
 ## 6. 目录约定
@@ -94,12 +97,13 @@
 - `tools/anim2/`：v2 源码
   - `engine/`：`model.js`（排时 + `drawFrame`）、`geom.js`（折线/路径工具）、`player.js` + `player.css`（控件、字幕、时钟）、`index.js`（load/mount）、`global.js`（IIFE 入口）
   - `build.mjs`（esbuild 打包）、`fonts.py`（文楷子集）、`package.json`（`npm i` 装 esbuild gsap roughjs）
-  - `test/determinism.py`（确定性 + 沙箱 iframe + v1 对比图）、`test/allchars.py`（全量回归）、`test/dist-demo.html`（dist 演示页）
+  - `lib.mjs`（build/embed 共用）、`embed.mjs`（共享块模式）
+  - `test/determinism.py`（确定性 + 沙箱 iframe + v1 对比图）、`test/allchars.py`（全量回归）、`test/embed.py`（共享块模式）、`test/dist-demo.html`（dist 演示页）
   - `.cache/`（源字体 TTF，不入库）、`node_modules/`（不入库）
 - `dist/anim2/`：构建产物 `xzq-anim2.js`（约 130 KB，含 rough.js + GSAP）、`xzq-anim2-font.woff2`、`OFL-LXGW-WenKai.txt`；单字 HTML 不入库，需要时生成
 - v1 文件（`xzq-anim.js/css`、`tools/anim/`）不改动
 
-## 7. 后续：AI 绿幕角色（未实施）
+## 7. 后续：AI 绿幕角色（未实施，本轮按要求跳过）
 
 - 生图：绿幕 `#00FF00` 关键帧；每个动作 3 帧（准备/发力/结果），走路、小跑各 4 帧循环；同一演员表、同一画风、脚底线统一。
 - 抠图（Python + Pillow + NumPy）：绿色判定 `g>150` 且 g 比 r、b 都大 50；半透明边去溢色（g 改成 max(r,b)）；裁边；缩到最高 520 px；WebP 质量约 74；base64 data URI 内嵌。

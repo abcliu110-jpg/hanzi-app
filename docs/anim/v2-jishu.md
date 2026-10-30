@@ -89,7 +89,7 @@
 - 共享块 `<script type="text/plain" class="xzq-chunk" data-h="<sha256 前 16 位>">`：引擎整段 gzip 一份、文楷子集（这一页所有字合起来一份）、≥2 KB 的图片/音频（`hand.png` 全页一份；mp3 每字一块），按内容哈希去重。
 - 每字数据 `<script type="text/plain" class="xzq-zi" data-zi="人">`：脚本+时间轴+线稿+笔画 JSON，gzip+base64，大块换成 `chunk:<hash>`。
 - 运行时点哪个字才解压哪个字（`DecompressionStream('gzip')`），解压结果同页缓存；拼成单字页面放进 `<iframe sandbox="allow-scripts" srcdoc>`。iframe 没有 `allow-same-origin`，所以引擎、字体（data: URL）、数据全部内联进 srcdoc，不依赖 blob: URL 或网络。
-- 「人」「大」两字一页 2.7 MB，其中 mp3 约 2.4 MB；引擎（gzip 后约 45 KB）和字体只算一次。
+- 「人」「大」两字一页 2.7 MB，其中 mp3 约 2.4 MB；引擎（gzip 后约 50 KB）和字体只算一次。
 - PWA：service worker 首播后缓存该字资源，不预缓存全部 MP3。
 
 ## 6. 目录约定

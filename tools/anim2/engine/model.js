@@ -129,8 +129,12 @@ export function buildModel(data, opts = {}) {
     if (pop) tl.fromTo(v, { s: 0.9 }, { s: 1, duration: d + 0.1, ease: 'back.out(2.4)' }, st / 1000);
     return v;
   }
+  /* 手写字：逐字之字形揭开（每个字分 3 行，左→右、右→左、左→右），时长按字数，最长 1.2 s */
   function label(x, y, s, size, st, c, ex = {}) {
-    cur.items.push({ type: 'text', start: st, x, y, text: s, size, color: col(c, '#555'), anchor: ex.anchor || 'middle', font: ex.font || (isLatin(s) ? LATIN : KAI), spacing: ex.spacing, v: popIn(st) });
+    const n = [...s].length, dur = Math.min(1.2, 0.05 + 0.13 * n);
+    const v = { a: 1, s: 1, r: 0 };
+    tl.fromTo(v, { r: 0 }, { r: 1, duration: dur, ease: 'none' }, st / 1000);
+    cur.items.push({ type: 'text', reveal: 1, start: st, x, y, text: s, size, color: col(c, '#555'), anchor: ex.anchor || 'middle', font: ex.font || (isLatin(s) ? LATIN : KAI), spacing: ex.spacing, v });
   }
 
   /* ---------- 时间 ---------- */
@@ -351,11 +355,12 @@ export function buildModel(data, opts = {}) {
       ctx.strokeStyle = it.color; ctx.lineWidth = 170; ctx.beginPath(); tracePart(ctx, it.med, it.med.len * e);
       ctx.stroke(); ctx.restore();
     } else if (it.type === 'text') {
-      const v = it.v; if (v.a <= 0) return;
+      const v = it.v; if (v.a <= 0 || (it.reveal && v.r <= 0)) return;
       ctx.save(); ctx.globalAlpha = clamp(v.a); ctx.translate(it.x, it.y); if (v.s !== 1) ctx.scale(v.s, v.s);
       ctx.font = `${it.size}px ${it.font}`; ctx.fillStyle = it.color; ctx.textBaseline = 'middle';
       ctx.textAlign = it.anchor === 'start' ? 'left' : it.anchor === 'end' ? 'right' : 'center';
       if (it.spacing) try { ctx.letterSpacing = typeof it.spacing === 'number' ? it.spacing + 'px' : it.spacing } catch (e) { }
+      if (it.reveal && v.r < 1) zigzagClip(ctx, it, v.r);
       ctx.fillText(it.text, 0, 0); ctx.restore();
     } else if (it.type === 'grid') {
       const v = it.v; if (v.a <= 0) return; const b = it.b;
@@ -365,6 +370,25 @@ export function buildModel(data, opts = {}) {
       ctx.moveTo(b.x, b.y + b.h / 2); ctx.lineTo(b.x + b.w, b.y + b.h / 2); ctx.moveTo(b.x + b.w / 2, b.y); ctx.lineTo(b.x + b.w / 2, b.y + b.h);
       ctx.stroke(); ctx.restore();
     }
+  }
+  /* 之字形遮罩：按字的实际宽度（measureText，每帧现量，不缓存）切 3 行，揭开到进度 r */
+  function zigzagClip(ctx, it, r) {
+    const chars = [...it.text], n = chars.length, full = ctx.measureText(it.text).width;
+    const x0 = it.anchor === 'start' ? 0 : it.anchor === 'end' ? -full : -full / 2;
+    const top = -it.size * 0.62, hh = it.size * 1.24, rows = 3, rh = hh / rows;
+    const P = r * n, ci = Math.min(n - 1, Math.floor(P)), f = P - ci;
+    const lx = ctx.measureText(chars.slice(0, ci).join('')).width, rx = ctx.measureText(chars.slice(0, ci + 1).join('')).width;
+    ctx.beginPath();
+    if (lx > 0) ctx.rect(x0 - 2, top, lx + 2, hh);
+    const cw = rx - lx, rp = f * rows, ri = Math.floor(rp), rf = rp - ri;
+    for (let k = 0; k < rows; k++) {
+      if (k < ri) ctx.rect(x0 + lx, top + k * rh, cw + 2, rh + 0.5);
+      else if (k === ri) { const w = cw * rf; ctx.rect(k % 2 ? x0 + lx + cw - w : x0 + lx, top + k * rh, w, rh + 0.5) }
+    }
+    ctx.clip();
+    ctx.textAlign = 'left';
+    ctx.translate(x0, 0);
+    // 改成左对齐后坐标已平移，fillText(…, 0, 0) 位置不变
   }
   M.reduced = !!opts.reducedMotion;
   /* ctx 的变换由调用方设成「1920×1080 逻辑画布」；这里再乘 1.2 进入 1600×900 数据坐标 */

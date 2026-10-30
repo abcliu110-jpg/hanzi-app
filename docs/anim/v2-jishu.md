@@ -1,6 +1,6 @@
 # 识字星球 · 白板动画引擎 v2 技术文档（Canvas + rough.js）
 
-> 状态：设计定稿，实现中（见交接文档第 7 节）。v1（SVG，`xzq-anim.js`）继续可用，v2 完成验收前不替换。
+> 状态（2026-10-31）：**第一版已实现并通过验收**——`tools/anim2/` 源码、`dist/anim2/xzq-anim2.js` 引擎；现有 34 个字的脚本不改一行即可在 v2 播放（0 警告）。App 仍用 v1（SVG，`xzq-anim.js`），切换前需产品负责人看过对比图。实现细节见 §1.1，与参考方案的偏差见 §0 和 §1.2。
 > 目标：手绘白板讲解动画，单文件 HTML，1920×1080 画布，可播放/暂停/拖动，配旁白与字幕，可嵌进 App 的 iframe。
 
 ## 0. 与参考方案的取舍
@@ -10,6 +10,8 @@
 | 英文 Web Speech 朗读 + 中文字幕 | **保留中文 MP3 旁白**（现 edge-tts，上线前换商用 TTS/真人）+ 中文字幕 | 用户是学汉字的儿童，需中文讲解；MP3 可确定性同步 |
 | 每幕一个 scene.js | **沿用 `anim/<字>.json` + `.timeline.json` + `.mp3` 数据格式** | 100 字正在批量制作，不重写脚本 |
 | 代码不画人，AI 绿幕关键帧 | 列为后续可选（§7），首版仍用线稿库 `anim/art/` | 先保证字的主线 |
+| 英文/数字用 Kalam | **不用 Kalam**：霞鹜文楷自带拉丁字母和带声调拼音（ā á ǎ à ü…） | 少一个字体，拼音和汉字同一风格 |
+| 笔速固定 2600 px/s | 线稿、圈、箭头、下划线按 2600 px/s（最短 0.12 s）；**脚本里写了 `k` 的 cue 和所有 `write` 仍按 v1 公式计时** | 已做好的脚本里 `k`/`gap` 是按配音调过的（如「人」的“一撇，一捺”），不能变 |
 | 其余（Canvas、rough、GSAP 取值、字体子集、esbuild、播放器、确定性验收、iframe 共享块） | **全部采用** | — |
 
 ## 1. 技术栈
@@ -21,11 +23,33 @@
   - 笔速约 2600 px/s，每笔最短 0.12 s。
   - 同一图形的两遍描边同时推进；hachure 填充在描边完成后淡入。
 - **汉字书写**：保留真实笔顺。用 `anim/hz/<字>.json`（hanzi-writer-data）的笔画轮廓做 clip，沿 median 按长度推进揭开；手/笔尖跟随 median 末端。
-- **普通手写字**（标题、标注）：逐字之字形遮罩揭开（clip 一条 zigzag 路径按长度推进）。
+- **普通手写字**（标题、标注）：逐字之字形遮罩揭开——每个字按 `measureText` 的真实宽度切 3 行，左→右、右→左、左→右依次揭开（clip 矩形组，进度由 GSAP 时间轴给出），每字约 0.13 s，最长 1.2 s。角落小字（`note`）、田字格只淡入。
 - **时间轴**：GSAP 只建 `paused` timeline，用 `tl.time(t)` 取镜头、弹字等数值，**永不自行播放**。
-- **字体**：中文 LXGW WenKai（霞鹜文楷），英文/数字 Kalam，均 OFL。fonttools 按全部用到的字做子集，转 woff2（brotli）内嵌。
-- **打包**：esbuild。`node build.mjs <字> <out.html>` 输出单文件 HTML = 共享引擎 + 字体子集 + 该字数据 + MP3（base64）。
+- **字体**：LXGW WenKai（霞鹜文楷，OFL，含拉丁/拼音，未用 Kalam）。`fonts.py` 用 fonttools 按用到的字做子集，转 woff2（brotli）：单字 HTML 只含该字用到的字（约 50 KB，`@font-face` 内嵌）；`dist/anim2/xzq-anim2-font.woff2` 覆盖 `anim/` 下全部脚本（约 165 KB，新增字后重跑 `--dist`），引擎从自身所在目录加载，缺字时浏览器回退楷体。
+- **打包**：esbuild。`node tools/anim2/build.mjs <字> <out.html>` 输出单文件 HTML = 共享引擎 + 字体子集 + 该字数据 + MP3（base64）；`--dist` 输出 App 用的引擎和字体。
 - **验收**：Playwright + Chromium 无头截图（见 SOP）。
+
+### 1.1 实现细节（与代码一致）
+
+| 项 | 做法 | 代码 |
+|---|---|---|
+| 模型 | mount 时一次性把脚本 + 时间轴排成每个场景的绘制项（rough 线、真实笔顺字、文字、田字格）和手的笔画队列；版位、引用、锚点、一只手排队、cue 时间解析与 v1 逐行一致，`report` / `layout()` / `warnings` 也一致，`tools/anim/snap.py` 的体检逻辑可照用 | `engine/model.js` |
+| 画一帧 | `drawFrame(ctx, t)`：底色 `#FBFBFB` → `tl.time(t)` 取镜头/文字进度 → 可见场景（最多 2 块）按 `cam.x` 平移绘制 → 手。只读 t 和预先算好的数据，不读上一帧、不用随机数和时钟 | `engine/model.js` |
+| rough | `rough.generator()`，起始 seed 20261030，每个图形 seed+1；roughness 0.9、bowing 0.8、maxRandomnessOffset 1.6；两遍描边线宽 = 原线宽 × 0.72；圈用 `curve`（点列与 v1 相同），其余用 `path`（先把线稿 400×400 路径变换到画布坐标再生成，抖动幅度与缩放无关） | `model.js` `roughItem` |
+| 画一部分 | rough 每段线输出两遍（相邻两个 move），按对推进：总长取第一遍，当前段第二遍按同一比例画；贝塞尔每段 10 点；进度曲线 0.4·线性 + 0.6·缓入缓出（近匀速） | `geom.js` `flattenOps` / `tracePart` |
+| 填充 | 线稿里带 `fill` 的笔画用 hachure（-41°，间距随线稿大小 4–8），描边画完后 0.3 s 淡入 | `model.js` |
+| 汉字 | `Path2D(笔画轮廓)` 做 clip，median 折线按长度画，线宽 170（字库单位）；时长、笔间隔公式与 v1 相同（`k`、`gap`） | `model.js` `write` |
+| 镜头 | GSAP 暂停时间轴：每个场景开始时 `cam.x` 600 ms 推到下一块白板（power2.inOut），替代 v1 的整板滑动 | `model.js` |
+| 手 | `hand.png` 笔尖 (3.3, 18)，跟随正在画的那一笔的末端；笔与笔之间抬笔走弧线，空闲 0.45 s 移出画面（与 v1 相同） | `model.js` `handAt` |
+| 画布 | 逻辑 1920×1080；`#cap` 导出模式固定 1920×1080 像素，其他按显示宽度 × dpr（480–3840） | `player.js` |
+| 字幕 | DOM 叠在画布上（清晰、可关），按 timeline 的每字时间 `ct` 变深；被 cue 的 `at` 引用到的关键词读到时变橙 `#EF7226` | `player.js` |
+
+### 1.2 与 v1 的差别
+
+- 线稿、圈、箭头画得更快（2600 px/s），画完得更早，cue 顺延更少；`write` 速度不变。
+- 白板底色 `#FBFBFB`、墨色 `#0A0503`、橙 `#EF7226`、灰 `#8a8a86`；脚本里的 `green/red/blue` 仍用 v1 颜色。
+- 去掉 SVG 抖动滤镜，改成 rough.js 双线手绘。
+- 圈注目标还没画出来时只记警告，不再抛 TypeError（v1 已知问题 6.3）。
 
 ## 2. 硬规则
 
@@ -41,14 +65,11 @@
 
 - 输入不变：`anim/<字>.json`（场景、cue、义项章节）、`anim/<字>.timeline.json`（每句起止与词级时间戳）、`anim/<字>.mp3`。
 - 对外 API 兼容 v1：`XZQAnim.mount(el, '字', { base, capture, reducedMotion, subtitles })`，App 接入代码无需改。
-- 内部场景原语（与参考方案对齐，按时间顺序自动排时）：
-  - `line / path / curve / rect / ellipse / circle / arrow / cross / under`：rough 线条
-  - `text`：手写字；`hanzi`：真实笔顺写字
-  - `art`：线稿库图形（`anim/art/`）
-  - `prop`：道具；`cam`：镜头推拉；`pop`：橙色弹字
-  - `narr`：中文字幕（重点词变橙）
-  - `shade / end`：收尾
-  - 预留 `actor`（绿幕关键帧角色，§7）
+- 已实现的动作就是 v1 的全部 cue：`grid` `write` `draw` `path` `circle` `arrow` `label` `note` + 回顾关系图（参数、版位、锚点写法不变）。
+- 参考方案的其他原语（`rect / ellipse / cross / under`、`prop`、`cam` 推拉、`pop` 弹字、`shade / end`、`actor`）**尚未加进脚本格式**；需要时作为新 `do` 加到 `model.js` 的 `ACT`，v1 遇到不认识的 `do` 只会警告。
+- 加载顺序：`window.XZQ_ANIM_DATA[字]`（单文件 HTML）→ `window.XZQ_ANIM2_GET(字)`（共享块模式）→ 按 `base` 取 `anim/` 下的文件。也可以直接 `mount(el, 数据对象)`（App 把 mp3 读成 blob 时用）。
+- 全局名：`dist/anim2/xzq-anim2.js` 挂 `window.XZQAnim2`；页面里没有 v1 时同时挂成 `window.XZQAnim`（同一套 API，`version: 2`）。
+- player 对象：`render(ms)` `play()` `pause()` `seek(ms)` `setRate(r)` `toggle()` `time()` `destroy()` `total` `chapters` `warnings` `report` `layout()` `drawFrame(ctx, ms)`。
 
 ## 4. 播放器
 
@@ -57,8 +78,9 @@
 - 义项章节跳转、倍速 0.75 / 1 / 1.25（沿用 v1）。
 - 观看进度写 `localStorage.xzq_anim`（与 v1 同键）。
 - `prefers-reduced-motion`：直接显示每章结果帧，不做推拉。
-- `window.__seek(t)` 供测试跳帧。
-- 音频为主时钟：播放中 t = `audio.currentTime`；静音或无音频时用 performance.now 推进。
+- `window.__seek(秒)` 供测试跳帧（暂停后跳到该秒并同步画出，返回当前秒数）。
+- 时钟：播放中音频在走时 t = `audio.currentTime`；音频还没起来、被拦（沙箱、自动播放策略）或没有音频时用 performance.now 推进。静音是 `audio.muted`，音频照常走，所以静音时仍以音频为准。
+- 沙箱 iframe（只有 `allow-scripts`）：localStorage 抛错时静音状态和“已看”不保存，不影响播放；iframe 的源是 `null`，**不能按 `base` 去 fetch `anim/` 文件**，所以 iframe 里请用单文件 HTML（或共享块模式）。
 
 ## 5. 嵌入 App（共享块模式，可选）
 
@@ -69,8 +91,12 @@
 
 ## 6. 目录约定
 
-- `tools/anim2/`：v2 源码（`engine/`、`build.mjs`、`fonts.py`、`test/`）
-- `dist/anim2/`：构建产物（引擎 bundle、字体子集）；单字 HTML 不入库，需要时生成
+- `tools/anim2/`：v2 源码
+  - `engine/`：`model.js`（排时 + `drawFrame`）、`geom.js`（折线/路径工具）、`player.js` + `player.css`（控件、字幕、时钟）、`index.js`（load/mount）、`global.js`（IIFE 入口）
+  - `build.mjs`（esbuild 打包）、`fonts.py`（文楷子集）、`package.json`（`npm i` 装 esbuild gsap roughjs）
+  - `test/determinism.py`（确定性 + 沙箱 iframe + v1 对比图）、`test/allchars.py`（全量回归）、`test/dist-demo.html`（dist 演示页）
+  - `.cache/`（源字体 TTF，不入库）、`node_modules/`（不入库）
+- `dist/anim2/`：构建产物 `xzq-anim2.js`（约 130 KB，含 rough.js + GSAP）、`xzq-anim2-font.woff2`、`OFL-LXGW-WenKai.txt`；单字 HTML 不入库，需要时生成
 - v1 文件（`xzq-anim.js/css`、`tools/anim/`）不改动
 
 ## 7. 后续：AI 绿幕角色（未实施）
@@ -84,12 +110,12 @@
 ```
 pip install numpy pillow playwright fonttools brotli
 python3 -m playwright install chromium
-npm i esbuild gsap roughjs
+cd tools/anim2 && npm i      # esbuild gsap roughjs（版本见 package.json）
 ```
 
 ## 9. 许可
 
 - rough.js MIT，GSAP 标准许可（免费商用），esbuild MIT。
-- LXGW WenKai、Kalam：OFL，子集化后保留许可文本。
+- LXGW WenKai：OFL，子集化后保留许可文本（`dist/anim2/OFL-LXGW-WenKai.txt`）。未使用 Kalam。
 - hanzi-writer-data：Arphic Public License，保留 `ARPHICPL.TXT`。
 - edge-tts 无商用授权，上线前须换 Azure / 讯飞 / 火山或真人配音。

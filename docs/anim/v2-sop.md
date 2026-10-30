@@ -7,7 +7,7 @@
 ```
 pip install numpy pillow playwright fonttools brotli
 python3 -m playwright install chromium
-cd tools/anim2 && npm i esbuild gsap roughjs
+cd tools/anim2 && npm i      # esbuild gsap roughjs
 ```
 
 ## 2. 单字流程
@@ -18,11 +18,11 @@ cd tools/anim2 && npm i esbuild gsap roughjs
    - `circle` / `arrow` 只能指向本场景已画出的线稿。
    - 写字动作留 3–6 秒；场景最后一句不要落在正在写的字上；场景结束前留 ≥200 ms。
 3. **配音**：生成每句音频 → `mix.py` 混音到约 -16 LUFS → `anim/<字>.mp3` 与 `anim/<字>.timeline.json`（含词级时间戳）。检查 MP3 时长与 timeline 一致（差 >0.5 秒要查）。
-4. **字体子集**：新增用字后运行 `python3 tools/anim2/fonts.py`，重新生成 WenKai / Kalam woff2 子集。
-5. **构建预览**：`node tools/anim2/build.mjs <字> /tmp/<字>.html`（单文件，不入库）。
+4. **字体子集**：单字 HTML 打包时自动按该字用到的字做子集，不用手动跑。给 App 用的 `dist/anim2/xzq-anim2-font.woff2` 在新增字后重跑 `node tools/anim2/build.mjs --dist`（内部调用 `python3 tools/anim2/fonts.py --all`）。只用文楷，不需要 Kalam。
+5. **构建预览**：`node tools/anim2/build.mjs <字> /tmp/<字>.html`（单文件，不入库；加 `--no-audio` 更快）。
 6. **自检**（全部通过才算完成）：
    - `snap.py --lines`：无控制台错误；cue 延迟 ≤0.3 秒；无重叠/出框；章节跳转正常。
-   - 确定性：同一 t 截图两次，逐像素一致（`tools/anim2/test/determinism`）。
+   - 确定性：同一 t 截图两次，逐像素一致：`python3 tools/anim2/test/determinism.py <字> --v1`（每个场景中点 + 结束前各一帧；同时测沙箱 iframe；`--v1` 另出一张 v1 对比图 `.cache/anim2/<字>/v1.jpg`，v2 总览是 `snaps.jpg`）。
    - sandbox iframe 内加载无报错（localStorage、音频被禁时不崩）。
    - 字幕重点词与旁白同步变橙；动作结果帧保留。
    - **亲眼看** `.cache/anim/<字>/snaps.jpg`：笔顺正确、手跟笔尖、画面不挤。
@@ -33,7 +33,7 @@ cd tools/anim2 && npm i esbuild gsap roughjs
 ## 3. 引擎改动流程
 
 1. 只改 `tools/anim2/` 与 `dist/anim2/`；v1（`xzq-anim.js/css`、`tools/anim/`）不动。
-2. 每个小改动：构建 → 跑全部测试（确定性、iframe、已完成字的 `snap.py --lines` 回归）→ 立即提交。
+2. 每个小改动：`node tools/anim2/build.mjs --dist` → 跑全部测试：`python3 tools/anim2/test/determinism.py 人 大 --v1`（确定性、iframe、亲眼看对比图）+ `python3 tools/anim2/test/allchars.py`（全部已有脚本每 0.4 s 渲染一帧，无报错、无警告）→ 立即提交。
 3. 改完更新 `v2-jishu.md` 和交接文档第 7 节。
 
 ## 4. 禁止事项

@@ -19,8 +19,23 @@ def step(*args):
     return r.returncode
 
 
+def mp3_dirty(mp3):
+    """mp3 与 git HEAD 不同（或未跟踪）才算更新过；新 clone 的文件时间不可信。"""
+    try:
+        r = subprocess.run(['git', 'status', '--porcelain', '--', str(mp3)], cwd=ROOT,
+                           capture_output=True, text=True, check=True)
+        return bool(r.stdout.strip())
+    except Exception:
+        return True
+
+
 def update_index():
     idx = {}
+    out = ANIM / 'index.json'
+    try:
+        old = json.loads(out.read_text()).get('chars', {})
+    except Exception:
+        old = {}
     for p in sorted(ANIM.glob('*.json')):
         if p.name.endswith('.timeline.json') or p.name.endswith('.draft.json') or p.name == 'index.json':
             continue
@@ -35,7 +50,9 @@ def update_index():
                    'duration': round((tl[-1]['start'] + tl[-1]['dur']) / 1000, 1),
                    'chapters': [s.get('label') or s['id'] for s in sc['scenes']],
                    'updated': time.strftime('%Y-%m-%d', time.localtime(mp3.stat().st_mtime))}
-    out = ANIM / 'index.json'
+        prev = old.get(zi)
+        if prev and prev.get('updated') and not mp3_dirty(mp3) and prev.get('version') == idx[zi]['version']:
+            idx[zi]['updated'] = prev['updated']   # 音轨没改：保留原日期，免得 PWA 缓存全部失效
     out.write_text(json.dumps({'version': 1, 'chars': idx}, ensure_ascii=False, indent=1))
     print('anim/index.json:', ', '.join(f'{k} {v["duration"]}s' for k, v in idx.items()) or '（空）')
 

@@ -1,0 +1,21 @@
+name: 同步到源仓库 abcliu110/hanzi-app
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+jobs:
+  sync:
+    if: github.repository == 'abcliu110-jpg/hanzi-app'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: 推送到 abcliu110/hanzi-app
+        env:
+          TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then echo "缺少 MIRROR_TOKEN，跳过"; exit 0; fi
+          git push --force "https://x-access-token:${TOKEN}@github.com/abcliu110/hanzi-app.git" "HEAD:refs/heads/${GITHUB_REF_NAME}"
+          git push --force "https://x-access-token:${TOKEN}@github.com/abcliu110/hanzi-app.git" --tags

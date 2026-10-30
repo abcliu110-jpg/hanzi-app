@@ -7,6 +7,9 @@ subtitle: v2.1 · 2026-10-30 · 配合《设计文档》一起看
 
 通用引擎 `xzq-anim.js` + 工具链 `tools/anim/` + 线稿库 `anim/art/`（100+ 张）已完成，已在 master。**2026-10-30 起主仓库改为 GitHub `abcliu110-jpg/hanzi-app` 的 master**（Gitee 令牌已撤销，`anim-engine` 分支停用）。按产品负责人要求：读本文档和设计文档完成全部任务，**每完成一个小任务立即提交 GitHub，并同步更新本文档**。进度以 `anim/` 目录里的 `<字>.mp3` 为准（有 mp3 = 已混音完成）。
 
+**引擎 v2（Canvas 2D + rough.js + GSAP 取值 + 文楷子集 + esbuild 单文件）**正在开发，技术文档见 `docs/anim/v2-jishu.md`，制作流程见 `docs/anim/v2-sop.md`。数据格式和 `XZQAnim.mount` 接口不变，v1 验收前继续可用。
+
+
 # 2. 已经定下的决定
 
 | 决定 | 原因 / 来源 |

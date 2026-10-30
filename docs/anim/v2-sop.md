@@ -2,6 +2,8 @@
 
 > 每个字按本流程走完才能提交。技术细节见 `docs/anim/v2-jishu.md`，内容规则见 `docs/anim/donghua-sheji.md`。
 
+> **当前生产说明（2026-10-31）**：逐字制作仍走 v1 工具链 `tools/anim/`（tts.py → snap.py --lines → 看 snaps.jpg → mix.py → commit_chars.py）。v2 只换播放端，数据格式相同；v2 的确定性/iframe 检查由引擎维护者用 `tools/anim2/test/allchars.py` 批量跑，单字制作者不必跑。
+
 ## 1. 准备（一次性）
 
 ```

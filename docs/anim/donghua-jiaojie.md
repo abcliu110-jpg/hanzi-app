@@ -46,8 +46,8 @@ MP4 和离线 HTML 不进仓库（`.gitignore` 已排除 `exports/` 和 `.cache/
 制作顺序：首批 20 字 → 其余 A 类 → B 类（含借声音段落）→ C 类（不讲字源）。
 
 <!--progress-->
-- 已完成并提交（36/100）：人 大 上 下 中 天 小 心 生 年 家 出 开 本 前 看 动 学 好 分 一 在 为 和 国 到 以 时 要 就 会 可 对 得 自 过。
-- 待做（64）：作 用 行 种 事 多 经 去 法 同 现 当 没 起 定 还 进 主 理 她 因 从 想 实 的 是 有 我 他 个 来 地 说 你 能 而 子 那 之 发 后 里 道 然 成 方 如 都 面 其 些 样 但 只 不 了 这 们 也 于 着 所 么 部。
+- 已完成并提交（38/100）：人 大 上 下 中 天 小 心 生 年 家 出 开 本 前 看 动 学 好 分 一 在 为 和 国 到 以 时 要 就 会 可 对 得 自 过 作 用。
+- 待做（62）：行 种 事 多 经 去 法 同 现 当 没 起 定 还 进 主 理 她 因 从 想 实 的 是 有 我 他 个 来 地 说 你 能 而 子 那 之 发 后 里 道 然 成 方 如 都 面 其 些 样 但 只 不 了 这 们 也 于 着 所 么 部。
 <!--/progress-->
 
 ## 4.1 待产品负责人确认
@@ -71,7 +71,7 @@ MP4 和离线 HTML 不进仓库（`.gitignore` 已排除 `exports/` 和 `.cache/
 3. **引擎小问题**：circle 指向未画出的线稿会崩溃（应改成警告）；个别字混音后 mp3 比 timeline 长几秒（上：84.7 s vs 78.0 s），原因未查。
 4. **楷体字体**：建议打包霞鹜文楷子集（OFL）。
 5. **手的图片**是 AI 生成的，正式版建议换矢量手。
-6. **提交方式**：GitHub Git Data API（blobs → trees → commits → 更新 refs）一次提交多个文件。Gitee 仓库停止更新，若 Gitee→GitHub 有自动镜像需关掉，否则可能覆盖 GitHub 上的提交。
+6. **提交方式**：GitHub Git Data API（blobs → trees → commits → 更新 refs）一次提交多个文件。Gitee 仓库停止更新，若 Gitee→GitHub 有自动镜像需关掉，否则可能覆盖 GitHub 上的提交。（2026-10-31：沙箱里 `git push` 拿不到凭据，`git pull`/`fetch` 正常；做法是本地正常 commit，再用 Git Data API 把 `origin/master..HEAD` 逐个重放成远端提交并 `reset --soft` 到远端。另：沙箱里 edge-tts 要去掉 HTTP(S)_PROXY 环境变量才能连上；Playwright 需先 `apt-get install` libatk 等系统库。）
 7. 仓库 CI 是 GitHub Actions，迁到 GitHub 后会自动跑，新增的动画检查要保证能通过。
 
 # 7. 下一步
@@ -82,7 +82,7 @@ MP4 和离线 HTML 不进仓库（`.gitignore` 已排除 `exports/` 和 `.cache/
 | 2 | 更新 `anim/index.json`（✅ 每做完一个字跑 `make.py --index`） |
 | 3 | 接入 App（✅ 已完成，CI 通过）：<br>✅ `ziyi-viewer.html` “看动画”按钮（`anim/index.json` 里有的字才显示）→ 浮层播放，`xzq_anim` 有记录时显示“已看”；减少动画由引擎处理；音轨整段读成 blob 再播放（服务器不支持 Range 也能拖动）<br>✅ PWA：`sw.js` 升到 `xzq-v2`，`xzq-anim.js/css` 进预缓存；动画单独缓存 `xzq-anim-1`（升级 VERSION 时保留），不预缓存 mp3，看过一次的字先用缓存；`anim/index.json` 先走网络，某字 `version`/`updated` 变了就删掉它缓存的 json/timeline/mp3<br>✅ Playwright 用例 `tests/anim.spec.js`（随 `npx playwright test` / GitHub Actions 跑）：“人”有入口、没动画的字没有；播放 / 章节跳转 / 拖动 / 暂停无控制台报错、引擎无警告；Esc 关闭后停声；看完 90% 写入 `xzq_anim` 并显示“已看”；减少动画时是静态板（整页画好、无手、不滑动）；PWA 只缓存看过的字的 mp3，断网可重看<br>✅ `anim/index.json` 已收录「人」「大」（2026-10-31 用 `make.py --index` 重新生成，34 字齐全；`tests/anim.spec.js` 7/7 通过）。`make.py --index` 现在对 git 里没改过的 mp3 保留原 `updated`，新 clone 后重建目录不会让所有字的 PWA 缓存失效。<br>（原记录：⚠️ 目录曾没有收录「人」「大」，像是按 98 字清单生成的；测试遇到会临时补上并标 warning。） |
 | 4 | 换正式配音并重新生成全部音轨 |
-| 5 | 引擎 v2（Canvas + rough.js，见 `v2-jishu.md`）：✅ 第一版完成（`tools/anim2/`，`dist/anim2/xzq-anim2.js`），数据格式和 `mount` API 不变，现有 34 字 0 警告；确定性、沙箱 iframe 验收通过。✅ 共享块嵌入模式（`build.mjs --embed`）✅ 减少动画 ☐ 产品负责人看过 v1/v2 对比后再决定 App 是否切换（`ziyi-viewer.html` 仍用 v1）☐ 绿幕角色（未做，见 `v2-jishu.md` §7）<br>✅ 2026-10-31 产品负责人决定采用 v2（见第 2 节），上面“产品负责人看过对比后再决定”一项已有结论；新字（自、过起）都在 v2 验证 0 警告；☐ `ziyi-viewer.html` 切到 v2 播放器（保留 v1 文件） |
+| 5 | 引擎 v2（Canvas + rough.js，见 `v2-jishu.md`）：✅ 第一版完成（`tools/anim2/`，`dist/anim2/xzq-anim2.js`），数据格式和 `mount` API 不变，现有 34 字 0 警告；确定性、沙箱 iframe 验收通过。✅ 共享块嵌入模式（`build.mjs --embed`）✅ 减少动画 ☐ 产品负责人看过 v1/v2 对比后再决定 App 是否切换（`ziyi-viewer.html` 仍用 v1）☐ 绿幕角色（未做，见 `v2-jishu.md` §7）<br>✅ 2026-10-31 产品负责人决定采用 v2（见第 2 节），上面“产品负责人看过对比后再决定”一项已有结论；新字（自、过、作、用起）都在 v2 验证 0 警告；☐ `ziyi-viewer.html` 切到 v2 播放器（保留 v1 文件） |
 
 ## 7.1 每个字的制作流程
 

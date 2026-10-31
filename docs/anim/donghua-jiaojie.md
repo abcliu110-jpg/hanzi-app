@@ -139,3 +139,5 @@ MP4 和离线 HTML 不进仓库（`.gitignore` 已排除 `exports/` 和 `.cache/
 > ✅ 2026-10-31 产品负责人决定：App 仅自用，不商用，不更换 TTS，继续使用 edge-tts。§6 第 10 条、§7 第 6 项“待选择商用 TTS 供应商”据此关闭。若将来改为对外或商用，需重新评估配音授权（可选免费开源 CosyVoice / MeloTTS），换声后重跑 `tools/anim/polycheck.py`。
 
 > 2026-10-31 新需求：文学常识独立页，需求已逐项确认，见 `docs/wenxue/wenxue-xuqiu.md`（尚未实现）。
+
+> 2026-10-31：文学常识的设计文档与交接文档见 `docs/wenxue/wenxue-sheji.md`、`docs/wenxue/wenxue-jiaojie.md`。
